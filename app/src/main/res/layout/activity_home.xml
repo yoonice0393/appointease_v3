@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_beige"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Empty State Layout -->
+        <LinearLayout
+            android:id="@+id/layoutEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            android:paddingTop="100dp">
+
+            <ImageView
+                android:src="@drawable/ic_calendar"
+                android:layout_width="120dp"
+                android:layout_height="120dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="No Scheduled Appointments"
+                android:textColor="@color/brown_text"
+                android:textSize="18sp"
+                android:layout_marginTop="12dp"
+                android:fontFamily="@font/poppins_semi_bold"/>
+        </LinearLayout>
+
+        <!-- With Data Layout -->
+        <LinearLayout
+            android:id="@+id/layoutWithData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <!-- Upcoming Appointment Card -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Upcoming Appointment"
+                android:textColor="@color/brown_text"
+                android:textSize="18sp"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:elevation="3dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/tvUpcomingService"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Prenatal Check-up"
+                    android:textSize="16sp"
+                    android:textColor="@color/brown_text"/>
+
+                <TextView
+                    android:id="@+id/tvUpcomingDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Date: October 28, 2025"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/tvUpcomingTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Time: 9:00 AM"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="2dp"/>
+            </LinearLayout>
+
+            <!-- Recent Visits Section -->
+            <TextView
+                android:text="Recent Visits"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColor="@color/brown_text"
+                android:textSize="18sp"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/textView5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="android:layout_width=&quot;match_parent&quot;&#xA;                android:layout_height=&quot;match_parent&quot;" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRecentVisits"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

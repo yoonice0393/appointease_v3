@@ -1,0 +1,27 @@
+<!-- res/layout/dialog_success.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#FFFFFF"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:elevation="8dp"
+    android:gravity="center">
+
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/ic_check"
+        android:background="@drawable/dialog_bg"/>
+
+    <TextView
+        android:id="@+id/dialogMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Success!"
+        android:fontFamily="@font/poppins_semi_bold"
+        android:textSize="25sp"
+        android:textColor="@color/brown_text"
+        android:layout_marginTop="12dp" />
+
+</LinearLayout>

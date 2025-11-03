@@ -1,0 +1,14 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#9F7AE3"/> <!-- pressed shade -->
+            <corners android:radius="24dp"/>
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/brown_text"/> <!-- normal color: change to your custom color -->
+            <corners android:radius="24dp"/>
+        </shape>
+    </item>
+</selector>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="320dp"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_dialog_rounded"
+    android:gravity="center"
+    android:layout_gravity="center">
+
+    <ImageView
+        android:id="@+id/dialog_icon"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:src="@drawable/ic_warning"
+    android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/dialog_title"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Do you really want to log out?"
+        android:textSize="18sp"
+android:fontFamily="@font/poppins_semi_bold"
+        android:gravity="center"
+        android:textColor="@color/brown_text"
+        android:layout_marginBottom="6dp" />
+
+<!--    <TextView-->
+<!--        android:id="@+id/dialog_message"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Do you really want to log out?"-->
+<!--        android:fontFamily="@font/poppins_medium"-->
+<!--        android:textSize="14sp"-->
+<!--        android:gravity="center"-->
+<!--        android:textColor="@color/text_secondary"-->
+<!--        android:layout_marginBottom="20dp" />-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_yes"
+            android:layout_width="120dp"
+            android:layout_height="44dp"
+            android:text="Yes"
+            android:textAllCaps="false"
+            android:fontFamily="@font/poppins_semi_bold"
+            android:textColor="@color/card_white"
+            app:backgroundTint="#D14A4A"
+            android:background="@drawable/bg_button_yes" />
+
+
+        <Space
+            android:layout_width="20dp"
+            android:layout_height="wrap_content" />
+
+
+        <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_no"
+            android:layout_width="120dp"
+            android:layout_height="44dp"
+            android:text="No"
+            android:fontFamily="@font/poppins_semi_bold"
+            android:textAllCaps="false"
+            android:textColor="@color/card_white"
+            app:backgroundTint="#CBCBCB"
+            android:background="@drawable/bg_button_no" />
+    </LinearLayout>
+</LinearLayout>

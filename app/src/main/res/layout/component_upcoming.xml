@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/upcomingCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="24dp"
+    android:layout_marginTop="12dp"
+    android:layout_margin="18dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/card_white">
+
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <ImageView
+                android:id="@+id/ivDoctorAvatar"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/bg_circle_gray"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:contentDescription="Doctor's Avatar" />
+
+            <TextView
+                android:id="@+id/tvDoctorName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Dr. John Doe"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/brown_text"
+                android:layout_marginStart="12dp"
+                app:layout_constraintStart_toEndOf="@id/ivDoctorAvatar"
+                app:layout_constraintTop_toTopOf="@id/ivDoctorAvatar"
+                app:layout_constraintEnd_toStartOf="@id/btnNavigate" />
+
+            <TextView
+                android:id="@+id/tvDoctorSpecialty"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="OB-GYN"
+                android:textSize="14sp"
+                android:textColor="#808C5A3D"
+                android:fontFamily="@font/poppins_medium"
+                android:layout_marginStart="12dp"
+                app:layout_constraintStart_toEndOf="@id/ivDoctorAvatar"
+                app:layout_constraintTop_toBottomOf="@id/tvDoctorName"
+                app:layout_constraintBottom_toBottomOf="@id/ivDoctorAvatar"
+                app:layout_constraintEnd_toStartOf="@id/btnNavigate" />
+
+            <ImageView
+                android:id="@+id/btnNavigate"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_arrow_right"
+                android:background="@drawable/bg_circle_red"
+                android:padding="10dp"
+                app:tint="#FFFFFF"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/ivDoctorAvatar"
+                app:layout_constraintBottom_toBottomOf="@id/ivDoctorAvatar"
+                android:contentDescription="View Appointment Details" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="#D9D9D9"
+                android:layout_marginTop="16dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ivDoctorAvatar" />
+
+            <ImageView
+                android:id="@+id/ivCalendar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_calendar"
+                android:background="@drawable/bg_circle_light"
+                android:padding="8dp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider"
+                android:contentDescription="Calendar Icon" />
+
+            <TextView
+                android:id="@+id/tvDateLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date"
+                android:textSize="10sp"
+                android:textColor="#808C5A3D"
+                android:fontFamily="@font/poppins_medium"
+                android:layout_marginStart="8dp"
+                app:layout_constraintStart_toEndOf="@id/ivCalendar"
+                app:layout_constraintTop_toTopOf="@id/ivCalendar"
+                />
+
+            <TextView
+                android:id="@+id/tvAppointmentDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="09 September, 2025"
+                android:textSize="10sp"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:textColor="#000000"
+                android:layout_marginStart="8dp"
+                app:layout_constraintStart_toEndOf="@id/ivCalendar"
+                app:layout_constraintTop_toBottomOf="@id/tvDateLabel"
+                app:layout_constraintBottom_toBottomOf="@id/ivCalendar" />
+
+            <ImageView
+                android:id="@+id/ivClock"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_clock"
+                android:background="@drawable/bg_circle_light"
+                android:padding="8dp"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@id/tvAppointmentDate"
+                app:layout_constraintTop_toTopOf="@id/ivCalendar"
+                android:contentDescription="Clock Icon" />
+
+            <TextView
+                android:id="@+id/tvTimeLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Time"
+                android:textSize="10sp"
+                android:textColor="#808C5A3D"
+                android:fontFamily="@font/poppins_medium"
+                android:layout_marginStart="8dp"
+                app:layout_constraintStart_toEndOf="@id/ivClock"
+                app:layout_constraintTop_toTopOf="@id/ivClock" />
+
+            <TextView
+                android:id="@+id/tvAppointmentTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="8:00 - 9:00 PM"
+                android:textSize="10sp"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:textColor="#000000"
+                android:layout_marginStart="8dp"
+                app:layout_constraintStart_toEndOf="@id/ivClock"
+                app:layout_constraintTop_toBottomOf="@id/tvTimeLabel"
+                app:layout_constraintBottom_toBottomOf="@id/ivClock" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>

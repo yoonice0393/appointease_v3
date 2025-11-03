@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/card_white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/ivDoctorImage"
+            android:layout_width="90dp"
+            android:layout_height="123dp"
+            android:background="@drawable/bg_rounded_gray"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvDoctorNameCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Dr. John Doe"
+            android:textSize="16sp"
+            android:fontFamily="@font/montserrat_extra_bold"
+            android:textColor="@color/brown_text"
+            android:layout_marginStart="12dp"
+            app:layout_constraintStart_toEndOf="@id/ivDoctorImage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/ivDoctorImage" />
+
+        <TextView
+            android:id="@+id/tvDoctorSpecialtyCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="General Practitioner"
+            android:textSize="12sp"
+            android:textColor="#808C5A3D"
+            android:fontFamily="@font/poppins_medium"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            app:layout_constraintStart_toEndOf="@id/ivDoctorImage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDoctorNameCard" />
+
+        <ImageView
+            android:id="@+id/ivClockCard"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_clock2"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="8dp"
+            app:tint="@color/brown_text"
+            app:layout_constraintStart_toEndOf="@id/ivDoctorImage"
+            app:layout_constraintTop_toBottomOf="@id/tvDoctorSpecialtyCard" />
+
+        <TextView
+            android:id="@+id/tvDoctorHours"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="9:00 am - 2:00 pm"
+            android:textSize="11sp"
+            android:fontFamily="@font/poppins_medium"
+            android:textColor="@color/brown_text"
+            android:layout_marginStart="4dp"
+            app:layout_constraintStart_toEndOf="@id/ivClockCard"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/ivClockCard"
+            app:layout_constraintBottom_toBottomOf="@id/ivClockCard" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBookAppointment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/poppins_semi_bold"
+            android:text="Book Now"
+            android:textColor="@color/card_white"
+            android:textSize="14sp"
+            app:backgroundTint="@color/red_primary"
+            app:cornerRadius="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.718"
+            app:layout_constraintStart_toEndOf="@+id/ivDoctorImage"
+            app:layout_constraintTop_toBottomOf="@+id/tvDoctorHours" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

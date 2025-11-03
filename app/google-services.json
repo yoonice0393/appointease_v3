@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "784318648297",
+    "project_id": "appointease-7aa63",
+    "storage_bucket": "appointease-7aa63.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:784318648297:android:e4f602fb9e8d431bee4578",
+        "android_client_info": {
+          "package_name": "com.example.sttherese"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3LzoTgoQitJ0DX_YfeQYXoe44s3jbRmQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

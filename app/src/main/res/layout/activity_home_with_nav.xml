@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7F1EE"
+    >
+
+    <!-- Main Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp">
+
+            <!-- Header Section -->
+            <TextView
+                android:id="@+id/tvGreeting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GOOD MORNING"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#5A3825"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Clark!"
+                android:textSize="12sp"
+                android:textColor="#5A3825"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvGreeting" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/ProfileCard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="4dp">
+
+                    <ImageView
+                        android:id="@+id/ivNotification"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_notification"
+                        android:padding="12dp"
+                        android:src="@drawable/ic_notification"
+                        app:tint="#5A3825" />
+
+                    <ImageView
+                        android:id="@+id/ivProfile"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_circle_gray"
+                        />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Search Bar -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/searchCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="26dp"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#00FFFFFF"
+                android:background="@drawable/bg_search_outline_brown"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvUserName">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="4dp"
+                    android:background="@drawable/bg_search_outline_brown">
+
+                    <EditText
+                        android:id="@+id/etSearch"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Search"
+                        android:textSize="11sp"
+                        android:textColorHint="#D6C2B5"
+                        android:textColor="#5A3825"
+                        android:background="@android:color/transparent"
+                        android:padding="12dp"
+                        android:paddingStart="16dp"
+                        android:inputType="text" />
+
+                    <ImageView
+                        android:id="@+id/btnSearch"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_search"
+                        android:background="@drawable/bg_circle_red"
+                        android:padding="12dp"
+                        app:tint="#FFFFFF" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Upcoming Appointment -->
+            <TextView
+                android:id="@+id/tvUpcomingAppointment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Upcoming Appointment"
+                android:textSize="12sp"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:textColor="@color/brown_text"
+                android:layout_marginTop="24dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/searchCard" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/appointmentCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvUpcomingAppointment">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:id="@+id/ivDoctorAvatar"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_circle_gray"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvDoctorName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Dr. John Doe"
+                        android:textSize="15sp"
+                        android:textColor="@color/brown_text"
+                        android:fontFamily="@font/montserrat_extra_bold"
+                        android:layout_marginStart="12dp"
+                        app:layout_constraintStart_toEndOf="@id/ivDoctorAvatar"
+                        app:layout_constraintTop_toTopOf="@id/ivDoctorAvatar"
+                        app:layout_constraintEnd_toStartOf="@id/btnNavigate" />
+
+                    <TextView
+                        android:id="@+id/tvDoctorSpecialty"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="OB-GYN"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/poppins_medium"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginStart="12dp"
+                        app:layout_constraintStart_toEndOf="@id/ivDoctorAvatar"
+                        app:layout_constraintTop_toBottomOf="@id/tvDoctorName"
+                        app:layout_constraintBottom_toBottomOf="@id/ivDoctorAvatar"
+                        app:layout_constraintEnd_toStartOf="@id/btnNavigate" />
+
+                    <ImageView
+                        android:id="@+id/btnNavigate"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:src="@drawable/ic_arrow_right"
+                        android:background="@drawable/bg_circle_red"
+                        android:padding="10dp"
+                        app:tint="#FFFFFF"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/ivDoctorAvatar"
+                        app:layout_constraintBottom_toBottomOf="@id/ivDoctorAvatar" />
+
+                    <View
+                        android:id="@+id/divider"
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:background="#D9D9D9"
+                        android:layout_marginTop="14dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/ivDoctorAvatar" />
+
+                    <ImageView
+                        android:id="@+id/ivCalendar"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_calendar"
+                        android:background="@drawable/bg_circle_light"
+                        android:padding="8dp"
+                        android:layout_marginTop="14dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/divider" />
+
+                    <TextView
+                        android:id="@+id/tvDateLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Date"
+                        android:textSize="8sp"
+                        android:fontFamily="@font/poppins_medium"
+                        android:textColor="#808C5A3D"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintStart_toEndOf="@id/ivCalendar"
+                        app:layout_constraintTop_toTopOf="@id/ivCalendar" />
+
+                    <TextView
+                        android:id="@+id/tvAppointmentDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="09 September, 2025"
+                        android:textSize="8sp"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textColor="@color/brown_text"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintStart_toEndOf="@id/ivCalendar"
+                        app:layout_constraintTop_toBottomOf="@id/tvDateLabel"
+                        app:layout_constraintBottom_toBottomOf="@id/ivCalendar" />
+
+                    <ImageView
+                        android:id="@+id/ivClock"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_clock"
+                        android:background="@drawable/bg_circle_light"
+                        android:padding="8dp"
+                        android:layout_marginStart="16dp"
+                        app:layout_constraintStart_toEndOf="@id/tvAppointmentDate"
+                        app:layout_constraintTop_toTopOf="@id/ivCalendar" />
+
+                    <TextView
+                        android:id="@+id/tvTimeLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Time"
+                        android:textSize="12sp"
+                        android:textColor="#8C5A3D"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintStart_toEndOf="@id/ivClock"
+                        app:layout_constraintTop_toTopOf="@id/ivClock" />
+
+                    <TextView
+                        android:id="@+id/tvAppointmentTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="8:00 - 9:00 PM"
+                        android:textSize="8sp"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textColor="@color/brown_text"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintStart_toEndOf="@id/ivClock"
+                        app:layout_constraintTop_toBottomOf="@id/tvTimeLabel"
+                        app:layout_constraintBottom_toBottomOf="@id/ivClock" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Recent Visit -->
+            <TextView
+                android:id="@+id/tvRecentVisit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Recent Visit"
+                android:textSize="12sp"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:textColor="@color/brown_text"
+                android:layout_marginTop="24dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/appointmentCard" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/recentVisitCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvRecentVisit">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvVisitDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="September 01, 2025"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/montserrat_extra_bold"
+                        android:textColor="@color/brown_text"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvVisitDay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wednesday"
+                        android:textSize="10sp"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textColor="@color/text_secondary"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tvVisitDate" />
+
+                    <View
+                        android:id="@+id/divider2"
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:background="#D9D9D9"
+                        android:layout_marginTop="14dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tvVisitDay" />
+
+                    <ImageView
+                        android:id="@+id/ivService"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_medical"
+                        android:background="@drawable/bg_circle_light"
+                        android:padding="8dp"
+                        android:layout_marginTop="14dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/divider2" />
+
+                    <TextView
+                        android:id="@+id/tvServiceLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Last Service"
+                        android:textSize="8sp"
+                        android:fontFamily="@font/poppins_medium"
+                        android:textColor="#808C5A3D"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintStart_toEndOf="@id/ivService"
+                        app:layout_constraintTop_toTopOf="@id/ivService" />
+
+                    <TextView
+                        android:id="@+id/tvServiceType"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Prenatal Check-Up"
+                        android:textSize="8sp"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textColor="@color/brown_text"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintStart_toEndOf="@id/ivService"
+                        app:layout_constraintTop_toBottomOf="@id/tvServiceLabel"
+                        app:layout_constraintBottom_toBottomOf="@id/ivService" />
+
+                    <TextView
+                        android:id="@+id/tvCompleted"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="COMPLETED"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/card_white"
+                        android:background="@drawable/bg_completed"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/ivService"
+                        app:layout_constraintBottom_toBottomOf="@id/ivService" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Our Doctors Section -->
+            <TextView
+                android:id="@+id/tvOurDoctors"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Our Doctors"
+                android:textSize="12sp"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:textColor="@color/black_text"
+                android:layout_marginTop="12dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/recentVisitCard" />
+
+            <TextView
+                android:id="@+id/tvViewAll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View All"
+                android:textSize="14sp"
+                android:textColor="#D14A4A"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tvOurDoctors"
+                app:layout_constraintBottom_toBottomOf="@id/tvOurDoctors" />
+
+            <!-- Filter Chips -->
+            <HorizontalScrollView
+                android:id="@+id/filterScroll"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:scrollbars="none"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvOurDoctors">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipAll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="All"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textColor="#FFFFFF"
+                        app:chipBackgroundColor="@color/chip_background_selector"
+                        app:chipStrokeWidth="0dp"
+                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipObGyn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="OB-GYN"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textColor="@color/chip_text_selector"
+                        app:chipBackgroundColor="@color/chip_background_selector"
+                        app:chipStrokeWidth="0dp"
+                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipPerinatologist"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Perinatologist"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textColor="@color/chip_text_selector"
+                        app:chipBackgroundColor="@color/chip_background_selector"
+                        app:chipStrokeWidth="0dp"
+                        style="@style/Widget.MaterialComponents.Chip.Choice" />
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+
+            <!-- Doctor Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/doctorCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/filterScroll">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:id="@+id/ivDoctorImage"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/bg_rounded_gray"
+                        android:scaleType="centerCrop"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvDoctorNameCard"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Dr. John Doe"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/montserrat_extra_bold"
+                        android:textColor="@color/brown_text"
+                        android:layout_marginStart="12dp"
+                        app:layout_constraintStart_toEndOf="@id/ivDoctorImage"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/ivDoctorImage" />
+
+                    <TextView
+                        android:id="@+id/tvDoctorSpecialtyCard"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="General Practitioner"
+                        android:textSize="10sp"
+                        android:textColor="#808C5A3D"
+                        android:fontFamily="@font/poppins_medium"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="4dp"
+                        app:layout_constraintStart_toEndOf="@id/ivDoctorImage"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tvDoctorNameCard" />
+
+                    <ImageView
+                        android:id="@+id/ivClockCard"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_clock2"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintStart_toEndOf="@id/ivDoctorImage"
+                        app:layout_constraintTop_toBottomOf="@id/tvDoctorSpecialtyCard" />
+
+                    <TextView
+                        android:id="@+id/tvDoctorHours"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="9:00 am - 2:00 pm"
+                        android:textSize="10sp"
+                        android:fontFamily="@font/poppins_medium"
+                        android:textColor="@color/brown_text"
+                        android:layout_marginStart="4dp"
+                        app:layout_constraintStart_toEndOf="@id/ivClockCard"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/ivClockCard"
+                        app:layout_constraintBottom_toBottomOf="@id/ivClockCard" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnBookNow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Book Now"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="@color/red_primary"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:layout_marginTop="5dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tvDoctorHours" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <!-- Bottom Navigation -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="#FFFFFF">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="12dp">
+
+            <LinearLayout
+                android:id="@+id/btnHome"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_home"
+                    app:tint="#D14A4A" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Home"
+                    android:fontFamily="@font/montserrat_extra_bold"
+                    android:textSize="10sp"
+                    android:textColor="#D14A4A"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnLocation"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_medical"
+                    app:tint="#5A3825" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/btnAdd"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@drawable/ic_add"
+                android:background="@drawable/bg_circle_red"
+                android:padding="16dp"
+                app:tint="#FFFFFF"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <LinearLayout
+                android:id="@+id/btnCalendar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_calendar"
+                    app:tint="#5A3825" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnMenu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_menu"
+                    app:tint="#5A3825" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

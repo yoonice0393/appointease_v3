@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CodeInputStyle">
+        <item name="android:layout_width">32dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/sm_shadow</item>
+        <item name="android:inputType">number</item>
+        <item name="android:maxLength">1</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">@font/poppins_semi_bold</item>
+        <item name="android:textColor">@color/brown_text</item>
+    </style>
+
+    <style name="CustomEditTextStyle">
+        <item name="android:textColor">@color/brown_text</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+    <!-- For calendar header (month name, e.g., January) -->
+    <style name="CalendarHeaderText" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/brown_text</item>
+        <item name="android:fontFamily">@font/poppins_semi_bold</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- For weekday labels (Mo, Tu, We, etc.) -->
+    <style name="CalendarWeekText" parent="TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+    </style>
+
+    <!-- For day numbers -->
+    <style name="CalendarDateText" parent="TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@color/brown_text</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+    </style>
+
+    <style name="TimeSlotButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:backgroundTint">#408C5A3D</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:fontFamily">@font/poppins_medium</item>
+    </style>
+
+
+    <style name="CustomAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:windowMinWidthMajor">80%</item>
+        <item name="android:windowMinWidthMinor">80%</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+<!--    <style name="AlertDialogCustom" parent="Base.Theme.AppCompat.Light.Dialog.Alert">-->
+<!--    <item name="colorAccent">@color/text_secondary</item>-->
+<!--<item name="android:textColor">@color/brown_text</item>-->
+<!--    </style>-->
+
+
+</resources>

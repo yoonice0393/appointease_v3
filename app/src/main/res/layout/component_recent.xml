@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/recentVisitCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="24dp"
+    android:layout_marginTop="5dp"
+    android:layout_margin="18dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/card_white">
+    >
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:paddingBottom="140dp">
+
+            <TextView
+                android:id="@+id/tvVisitDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="September 01, 2025"
+                android:fontFamily="@font/montserrat_extra_bold"
+                android:textColor="@color/brown_text"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tvVisitDay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Wednesday"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:textSize="14sp"
+                android:textColor="#8C5A3D"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvVisitDate" />
+
+            <View
+                android:id="@+id/divider2"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="#D9D9D9"
+                android:layout_marginTop="14dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvVisitDay" />
+
+            <ImageView
+                android:id="@+id/ivService"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_medical"
+                android:background="@drawable/bg_circle_light"
+                android:padding="8dp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider2"
+                android:contentDescription="Service Icon" />
+
+            <TextView
+                android:id="@+id/tvServiceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Last Service"
+                android:fontFamily="@font/poppins_medium"
+                android:textSize="12sp"
+                android:textColor="#808C5A3D"
+                android:layout_marginStart="8dp"
+                app:layout_constraintStart_toEndOf="@id/ivService"
+                app:layout_constraintTop_toTopOf="@id/ivService" />
+
+            <TextView
+                android:id="@+id/tvServiceType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Prenatal Check-Up"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:textSize="14sp"
+                android:textColor="@color/brown_text"
+                android:layout_marginStart="8dp"
+                app:layout_constraintStart_toEndOf="@id/ivService"
+                app:layout_constraintTop_toBottomOf="@id/tvServiceLabel"
+                app:layout_constraintBottom_toBottomOf="@id/ivService" />
+
+            <TextView
+                android:id="@+id/tvCompleted"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="COMPLETED"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/card_white"
+                android:background="@drawable/bg_completed"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/ivService"
+                app:layout_constraintBottom_toBottomOf="@id/ivService" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
