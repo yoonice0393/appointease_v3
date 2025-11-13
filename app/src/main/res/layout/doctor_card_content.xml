@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/doctorCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="24dp"
+    android:layout_marginTop="12dp"
+    android:layout_margin="18dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/card_white">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp">
+
+        <!-- Doctor Profile Image -->
+        <ImageView
+            android:id="@+id/doctorImage"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/bg_rounded_gray"
+            android:contentDescription="Doctor's Photo"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_doctor_placeholder"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Doctor Info (Name and Specialty) -->
+
+        <TextView
+            android:id="@+id/doctorName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat_extra_bold"
+            android:text="Dr. John Doe"
+            android:textColor="@color/brown_text"
+            android:layout_margin="10dp"
+            android:textSize="16sp"
+            app:layout_constraintStart_toEndOf="@+id/doctorImage"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/doctorSpecialty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_medium"
+            android:text="OB-GYN"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            app:layout_constraintStart_toEndOf="@+id/doctorImage"
+            app:layout_constraintTop_toBottomOf="@+id/doctorName" />
+
+
+        <!-- Available Badge -->
+        <TextView
+            android:id="@+id/textView33"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/available_badge"
+            android:fontFamily="@font/poppins_semi_bold"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:text="AVAILABLE"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            app:layout_constraintStart_toEndOf="@+id/doctorImage"
+            app:layout_constraintTop_toBottomOf="@+id/doctorSpecialty" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

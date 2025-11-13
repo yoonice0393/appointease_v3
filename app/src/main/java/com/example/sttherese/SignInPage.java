@@ -1,9 +1,11 @@
 package com.example.sttherese;
 
+import com.example.sttherese.patient.activities.Home;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.sttherese.doctor.DoctorHomeActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -11,6 +13,7 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -177,16 +180,16 @@ public class SignInPage extends AppCompatActivity {
                                 editor.apply();
 
                                 // Optional: Fetch additional user data from Firestore
-                                fetchUserDataFromFirestore(userDocId);
+                                fetchUserRoleAndRedirect(userDocId);
 
                                 Toast.makeText(SignInPage.this, "Login successful!", Toast.LENGTH_SHORT).show();
 
                                 // Navigate to Home
-                                Intent intent = new Intent(SignInPage.this, Home.class);
-                                intent.putExtra(USER_DOC_ID_EXTRA, userDocId);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                startActivity(intent);
-                                finish();
+//                                Intent intent = new Intent(SignInPage.this, Home.class);
+//                                intent.putExtra(USER_DOC_ID_EXTRA, userDocId);
+//                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//                                startActivity(intent);
+//                                finish();
                             }
                         } else {
                             // Sign in failed - record failed attempt
@@ -234,10 +237,8 @@ public class SignInPage extends AppCompatActivity {
 
                                 if (minutesPassed < 15) {
                                     long remainingMinutes = 15 - minutesPassed;
-                                    Toast.makeText(this,
-                                            "⚠️ Account temporarily locked due to too many failed attempts.\n" +
-                                                    "Try again in " + remainingMinutes + " minute(s).",
-                                            Toast.LENGTH_LONG).show();
+                                    showCustomDialog(R.drawable.ic_acc_failed,"Account temporarily locked due to too many failed attempts.", "Try again in " + remainingMinutes + " minute(s).");
+
                                     callback.onResult(false);
                                     return;
                                 } else {
@@ -285,14 +286,10 @@ public class SignInPage extends AppCompatActivity {
                             .set(attemptData)
                             .addOnSuccessListener(aVoid -> {
                                 if (finalCurrentAttempts >= 5) {
-                                    Toast.makeText(this,
-                                            "❌ Too many failed attempts!\n" +
-                                                    "Your account has been locked for 15 minutes.",
-                                            Toast.LENGTH_LONG).show();
+                                    showCustomDialog(R.drawable.ic_acc_lock,"Too many failed attempts!", "Your account has been locked for 15 minutes.");
+
                                 } else {
-                                    Toast.makeText(this,
-                                            "⚠️ Login failed. Attempts: " + finalCurrentAttempts + "/5",
-                                            Toast.LENGTH_SHORT).show();
+                                    showCustomDialog(R.drawable.ic_error,"Login failed!", "Attempts: " + finalCurrentAttempts + "/5");
                                 }
                             })
                             .addOnFailureListener(e -> {
@@ -329,25 +326,99 @@ public class SignInPage extends AppCompatActivity {
     /**
      * Fetch additional user data from Firestore
      */
-    private void fetchUserDataFromFirestore(String userId) {
-        db.collection("patients").document(userId)
+    private void fetchUserRoleAndRedirect(String userId) {
+
+        // Use a tag for easy filtering in Logcat
+        final String REDIRECT_TAG = "ROLE_REDIRECT";
+        android.util.Log.d(REDIRECT_TAG, "Attempting to fetch role for Auth UID: " + userId);
+
+        // Query the 'users' collection where the role is stored.
+        db.collection("users").document(userId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        String firstName = documentSnapshot.getString("first_name");
-                        String lastName = documentSnapshot.getString("last_name");
-                        String userRoleType = documentSnapshot.getString("user_role_type");
+                    String userRoleType = "patient"; // Default role if any issue occurs
 
+                    if (documentSnapshot.exists()) {
+                        android.util.Log.d(REDIRECT_TAG, "User document EXISTS in 'users' collection.");
+
+                        // Fetch the role field
+                        String fetchedRole = documentSnapshot.getString("user_role_type");
+
+                        // Check if the role field exists and is not empty
+                        if (fetchedRole != null && !fetchedRole.isEmpty()) {
+                            userRoleType = fetchedRole.toLowerCase(); // Standardize to lowercase for safety
+                            android.util.Log.d(REDIRECT_TAG, "Fetched Role: " + userRoleType);
+                        } else {
+                            android.util.Log.w(REDIRECT_TAG, "user_role_type field is missing or null. Defaulting to patient.");
+                        }
+
+                        // Save the role type to SharedPreferences
                         SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                         SharedPreferences.Editor editor = prefs.edit();
-                        if (firstName != null) editor.putString("first_name", firstName);
-                        if (lastName != null) editor.putString("last_name", lastName);
-                        if (userRoleType != null) editor.putString("user_role_type", userRoleType);
+                        editor.putString("user_role_type", userRoleType);
                         editor.apply();
+
+                    } else {
+                        android.util.Log.e(REDIRECT_TAG, "User document DOES NOT EXIST in 'users' collection for this Auth UID.");
+                        // Keep default role as "patient"
                     }
+
+                    // Determine Navigation
+                    Intent intent;
+
+                    // CRITICAL LOGIC: Compare the final, sanitized role
+                    if ("doctor".equals(userRoleType)) {
+                        intent = new Intent(SignInPage.this, DoctorHomeActivity.class);
+                        android.util.Log.i(REDIRECT_TAG, "Redirecting to DOCTOR HOME.");
+                    } else {
+                        intent = new Intent(SignInPage.this, Home.class);
+                        android.util.Log.i(REDIRECT_TAG, "Redirecting to PATIENT HOME (Role: " + userRoleType + ").");
+                    }
+
+                    // Start Activity and Finish Sign-In
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+
                 })
                 .addOnFailureListener(e -> {
-                    android.util.Log.e("FIRESTORE", "Error fetching user data: " + e.getMessage());
+                    android.util.Log.e(REDIRECT_TAG, "FIRESTORE READ FAILED: " + e.getMessage());
+                    // Fallback: If Firestore fails entirely, assume patient
+                    Intent fallbackIntent = new Intent(SignInPage.this, Home.class);
+                    fallbackIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(fallbackIntent);
+                    finish();
                 });
+    }
+
+    private void showCustomDialog(int iconResId, String title, String message) {
+        // Inflate custom layout
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_custom_status, null);
+
+        ImageView icon = dialogView.findViewById(R.id.dialog_icon);
+        TextView titleText = dialogView.findViewById(R.id.dialog_title);
+        TextView msg = dialogView.findViewById(R.id.dialog_message);
+        Button closeBtn = dialogView.findViewById(R.id.dialog_close_btn);
+
+
+        icon.setImageResource(iconResId);
+        titleText.setText(title);
+        msg.setText(message);
+
+        // Build dialog
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this, R.style.CustomAlertDialog)
+                .setView(dialogView)
+                .create();
+
+        // make corners show properly
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        closeBtn.setOnClickListener(v -> {
+            dialog.dismiss();
+
+        });
+
+        dialog.show();
     }
 }

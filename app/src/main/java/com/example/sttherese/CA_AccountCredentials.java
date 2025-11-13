@@ -46,6 +46,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
 
     // Data from previous screen
     String firstName, middleName, lastName, dob, gender, contact, address;
+    int age;
 
     // Firebase
     FirebaseAuth mAuth;
@@ -84,6 +85,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
         gender = intent.getStringExtra("gender");
         contact = intent.getStringExtra("contact");
         address = intent.getStringExtra("address");
+        age = intent.getIntExtra("age", 0);
 
         // Toggle password visibility
         setupPasswordVisibilityToggle();
@@ -359,13 +361,25 @@ public class CA_AccountCredentials extends AppCompatActivity {
         return db.collection("users").document(userId).set(userData);
     }
 
-    private com.google.android.gms.tasks.Task<DocumentReference> savePatientRecord(String userId) {
-        // Calculate age from DOB
-        int age = calculateAge(dob);
+    private com.google.android.gms.tasks.Task<Void> savePatientRecord(String userId) {
+
+        // --- START: Custom ID Creation ---
+        // 1. Clean and normalize names
+        String cleanFirstName = firstName.toLowerCase().replaceAll("\\s+", "_");
+        String cleanLastName = lastName.toLowerCase().replaceAll("\\s+", "_");
+
+        // 2. Extract the first 6 characters of the userId for a unique suffix
+        // Math.min(userId.length(), 6) ensures we don't crash if userId is unexpectedly short.
+        String uniqueSuffix = userId.substring(0, Math.min(userId.length(), 6));
+
+        // 3. Construct the final custom document ID
+        String customDocId = "pat_" + cleanFirstName + "_" + cleanLastName + "_" + uniqueSuffix;
+        // Example: "pat_john_doe_aB3xY9"
+        // --- END: Custom ID Creation ---
 
         // Create patient document
         Map<String, Object> patientData = new HashMap<>();
-        patientData.put("userId", userId); // Reference to user account
+        patientData.put("userId", userId); // Store the full UID inside the document
         patientData.put("first_name", firstName);
         patientData.put("middle_name", middleName);
         patientData.put("last_name", lastName);
@@ -378,7 +392,11 @@ public class CA_AccountCredentials extends AppCompatActivity {
         patientData.put("updated_at", com.google.firebase.firestore.FieldValue.serverTimestamp());
         patientData.put("deleted_at", null);
 
-        db.collection("patients").add(patientData)
+
+        // Use .document().set() to save the data with the custom ID
+        com.google.android.gms.tasks.Task<Void> saveTask = db.collection("patients")
+                .document(customDocId) // <-- Using the custom ID here
+                .set(patientData)
                 .addOnSuccessListener(documentReference -> {
                     // Success! Everything saved
 //
@@ -391,8 +409,10 @@ public class CA_AccountCredentials extends AppCompatActivity {
                             Toast.LENGTH_LONG).show();
                 });
 
-        return db.collection("patients").add(patientData);
+        return saveTask;
     }
+
+
     private void generateAndSendVerificationCode(String email) {
         String emailKey = email.replace(".", "_");
         String verificationCode = String.format("%06d", (int) (Math.random() * 999999));
@@ -444,30 +464,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
     }
 
 
-    private int calculateAge(String dateOfBirth) {
-        try {
-            String[] parts = dateOfBirth.split("-");
-            int birthYear = Integer.parseInt(parts[0]);
-            int birthMonth = Integer.parseInt(parts[1]);
-            int birthDay = Integer.parseInt(parts[2]);
 
-            Calendar today = Calendar.getInstance();
-            int currentYear = today.get(Calendar.YEAR);
-            int currentMonth = today.get(Calendar.MONTH) + 1; // Month is 0-indexed
-            int currentDay = today.get(Calendar.DAY_OF_MONTH);
-
-            int age = currentYear - birthYear;
-
-            // Adjust if birthday hasn't occurred this year
-            if (currentMonth < birthMonth || (currentMonth == birthMonth && currentDay < birthDay)) {
-                age--;
-            }
-
-            return age;
-        } catch (Exception e) {
-            return 0;
-        }
-    }
 
 //    private void showSuccessDialog() {
 //        AlertDialog.Builder builder = new AlertDialog.Builder(this);

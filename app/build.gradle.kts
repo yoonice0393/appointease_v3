@@ -36,6 +36,8 @@ android {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation ("com.google.firebase:firebase-auth")
+    implementation("com.firebaseui:firebase-ui-firestore:8.0.2")
+
     implementation ("com.google.firebase:firebase-firestore")
     implementation ("com.google.firebase:firebase-database")
     implementation("com.android.volley:volley:1.2.1")

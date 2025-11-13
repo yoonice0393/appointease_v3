@@ -62,5 +62,17 @@
 <!--<item name="android:textColor">@color/brown_text</item>-->
 <!--    </style>-->
 
+    <style name="CustomSpinnerInputLayout" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu">
+        <item name="boxBackgroundColor">@color/card_white</item>
+        <item name="android:popupBackground">@android:color/white</item>
+        <item name="endIconTint">@color/brown_text</item>
+        <item name="boxCornerRadiusTopStart">16dp</item>
+        <item name="endIconDrawable">@drawable/ic_arrow_down</item>
+        <item name="boxCornerRadiusTopEnd">16dp</item>
+        <item name="boxCornerRadiusBottomStart">16dp</item>
+        <item name="boxCornerRadiusBottomEnd">16dp</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
 
+    </style>
 </resources>

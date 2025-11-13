@@ -95,6 +95,37 @@ public class CA_PersonalDetails extends AppCompatActivity {
         datePickerDialog.show();
     }
 
+    private int calculateAge(String dobString) {
+        if (dobString == null || dobString.isEmpty()) {
+            return 0;
+        }
+
+        // Assuming dobString is in "YYYY-MM-DD" format as set in showDatePicker()
+        try {
+            String[] parts = dobString.split("-");
+            int birthYear = Integer.parseInt(parts[0]);
+            int birthMonth = Integer.parseInt(parts[1]);
+            int birthDay = Integer.parseInt(parts[2]);
+
+            Calendar dob = Calendar.getInstance();
+            dob.set(birthYear, birthMonth - 1, birthDay); // Note: Month is 0-indexed
+
+            Calendar today = Calendar.getInstance();
+
+            int age = today.get(Calendar.YEAR) - dob.get(Calendar.YEAR);
+
+            // Adjust age if birthday hasn't occurred this year yet
+            if (today.get(Calendar.DAY_OF_YEAR) < dob.get(Calendar.DAY_OF_YEAR)) {
+                age--;
+            }
+            return age;
+
+        } catch (Exception e) {
+            // Handle potential parsing error (shouldn't happen if format is consistent)
+            return 0;
+        }
+    }
+
     private void validateAndProceed() {
         String firstName = editTextFirstName.getText().toString().trim();
         String middleName = editTextMiddleName.getText().toString().trim();
@@ -133,6 +164,28 @@ public class CA_PersonalDetails extends AppCompatActivity {
             return;
         }
 
+        int age = calculateAge(dob);
+
+        // Check 1: Ensure age is a reasonable value (not 0, which often means an error)
+        if (age <= 0) {
+            Toast.makeText(this, "Invalid date of birth selected.", Toast.LENGTH_LONG).show();
+            editTextDOB.setError("Invalid DOB");
+            editTextDOB.requestFocus();
+            return;
+        }
+
+        // Check 2: Minimum age restriction (e.g., must be 18 to create an account)
+        // If you allow minors to register, change 18 to 0 or adjust this logic.
+        final int MINIMUM_REGISTRATION_AGE = 18;
+
+        if (age < MINIMUM_REGISTRATION_AGE) {
+            String message = "You must be at least " + MINIMUM_REGISTRATION_AGE + " years old to create an account.";
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            editTextDOB.setError("Must be " + MINIMUM_REGISTRATION_AGE + " years old.");
+            editTextDOB.requestFocus();
+            return;
+        }
+
         if (contactNumber.isEmpty()) {
             editTextContactNumber.setError("Contact number is required");
             editTextContactNumber.requestFocus();
@@ -161,6 +214,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
         intent.putExtra("last_name", lastName);
         intent.putExtra("dob", dob);
         intent.putExtra("gender", gender);
+        intent.putExtra("age", age);
         intent.putExtra("contact", contactNumber);
         intent.putExtra("address", address);
         startActivity(intent);

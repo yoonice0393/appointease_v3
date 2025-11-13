@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_beige">#F2E8E2</color>
+
+    <color name="red_primary">#D14A4A</color>
+    <color name="text_hint">#BFBFBF</color>
+    <color name="small_text">#6E6E6E</color>
+    <color name="sm_shadow">#ECECEC</color>
+    <color name="light_grey">#D9D9D9</color>
+    <color name="black_text">#212121</color>
+    <color name="bg_color">#F7F1EE</color>
+
+
+
+    <color name="brown_primary">#6B3A17</color>
+
+    <color name="white_on_primary">#FFFFFF</color>
+
+    <color name="app_background">#F7F1EE</color>
+
+    <color name="card_white">#FFFFFF</color>
+
+    <color name="brown_text">#5A3825</color>
+    <color name="text_secondary">#8C5A3D</color>
+
+    <color name="md_theme_light_primary">@color/brown_primary</color>
+    <color name="md_theme_light_onPrimary">@color/white_on_primary</color>
+<!--    <color name="md_theme_light_primaryContainer">#D9BFA9</color>-->
+    <color name="md_theme_light_background">@color/app_background</color>
+    <color name="md_theme_light_surface">@color/app_background</color>
+
+
+</resources>

@@ -1,4 +1,4 @@
-package com.example.sttherese;
+package com.example.sttherese.patient.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,8 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sttherese.R;
 import com.example.sttherese.adapters.DoctorAdapter;
-import com.example.sttherese.models.Doctor;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.firestore.FirebaseFirestore;

@@ -12,14 +12,17 @@
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
-
-        <!-- Title -->
+        <!-- Close Button -->
         <ImageView
+            android:id="@+id/closeButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_close"
-            android:layout_gravity="end"/>
+            android:layout_gravity="end"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
+        <!-- Title -->
         <TextView
             android:id="@+id/textTitle"
             android:layout_width="wrap_content"
@@ -34,7 +37,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Please make sure to fill every field correctly."
+            android:text="Please make sure to fill every fields correctly."
             android:textColor="@color/text_secondary"
             android:textSize="11sp"
             android:fontFamily="@font/poppins_regular"
@@ -45,19 +48,29 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Appointment Type:"
-            android:textColor="#6B3A17"
+            android:textColor="@color/brown_text"
             android:textSize="13sp"
             android:fontFamily="@font/poppins_semi_bold"/>
 
-        <com.google.android.material.textfield.MaterialAutoCompleteTextView
-            android:id="@+id/spinnerAppointmentType"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Select Appointment Type"
+            style="@style/CustomSpinnerInputLayout"
+            android:layout_marginBottom="24dp">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/spinnerAppointmentType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Appointment Type"
             android:inputType="none"
             android:textSize="13sp"
-            android:layout_marginBottom="24dp"/>
+            android:textColor="@color/text_secondary"
+            android:fontFamily="@font/poppins_regular"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"/> </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Doctor Selection -->
         <TextView
@@ -69,9 +82,11 @@
             android:fontFamily="@font/poppins_semi_bold"/>
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/doctorCard"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
+            android:minHeight="100dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:cardBackgroundColor="@color/card_white">
@@ -80,7 +95,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:padding="16dp">
 
                 <ImageView
                     android:layout_width="50dp"
@@ -145,17 +161,6 @@
             android:alignmentMode="alignMargins"
             android:rowOrderPreserved="false"
             android:columnOrderPreserved="false">
-
-            <!-- Example Time Buttons -->
-            <Button
-                android:text="9:00 am"
-                style="@style/TimeSlotButton"/>
-            <Button
-                android:text="9:30 am"
-                style="@style/TimeSlotButton"/>
-            <Button
-                android:text="10:00 am"
-                style="@style/TimeSlotButton"/>
         </GridLayout>
 
         <!-- Afternoon Slots -->
@@ -173,16 +178,6 @@
             android:layout_height="wrap_content"
             android:columnCount="3"
             android:layout_marginBottom="32dp">
-
-            <Button
-                android:text="1:00 pm"
-                style="@style/TimeSlotButton"/>
-            <Button
-                android:text="1:30 pm"
-                style="@style/TimeSlotButton"/>
-            <Button
-                android:text="2:00 pm"
-                style="@style/TimeSlotButton"/>
         </GridLayout>
 
         <!-- Book Button -->

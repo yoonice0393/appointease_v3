@@ -1,6 +1,5 @@
-package com.example.sttherese;
+package com.example.sttherese.patient.activities;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -19,11 +18,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.sttherese.R;
+import com.example.sttherese.SignInPage;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ChangePassword extends AppCompatActivity {
@@ -272,15 +274,14 @@ public class ChangePassword extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Clean up verification code and show success
-     */
     private void cleanupAndShowSuccess() {
-        // Clean up verification code from Firestore
+        // Convert email to a valid key (same logic)
         String docId = userEmail.replace(".", "_").replace("@", "_at_");
-        db.collection("password_resets")
-                .document(docId)
-                .delete()
+
+        // Reference to Realtime Database
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("password_resets").child(docId);
+
+        ref.removeValue()
                 .addOnSuccessListener(unused -> {
                     showCustomDialog(
                             R.drawable.ic_check,
@@ -311,6 +312,7 @@ public class ChangePassword extends AppCompatActivity {
                     }, 3000);
                 });
     }
+
 
     private void showCustomDialog(int iconResId, String title, String message) {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_custom_status, null);

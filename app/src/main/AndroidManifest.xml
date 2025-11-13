@@ -15,25 +15,49 @@
         android:theme="@style/Theme.StTherese"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".NotificationActivity"
+            android:name=".doctor.AvailabilityScheduling"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.DoctorNotificationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.DoctorProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.DoctorCalendarActivity"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.DoctorHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.DoctorAvailabilityActivity"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.DoctorAppointmentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".doctor.DoctorHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".patient.activities.NotificationActivity"
             android:exported="false" />
         <activity
             android:name=".FindRecord"
             android:exported="false" />
         <activity
-            android:name=".HistoryActivity"
+            android:name=".patient.activities.HistoryActivity"
             android:exported="false" />
         <activity
-            android:name=".AppointmentDetailsActivity"
+            android:name=".patient.activities.AppointmentDetailsActivity"
             android:exported="false" />
         <activity
-            android:name=".Home"
+            android:name=".patient.activities.Home"
             android:exported="false" />
         <activity
-            android:name=".ResetMethodEmail"
+            android:name=".patient.activities.ResetMethodEmail"
             android:exported="false" />
         <activity
-            android:name=".ProfileActivity"
+            android:name=".patient.activities.ProfileActivity"
             android:exported="false" />
         <activity
             android:name=".EmptyDoctors"
@@ -42,10 +66,10 @@
             android:name=".EmptyHomepage"
             android:exported="false" />
         <activity
-            android:name=".CalendarActivity"
+            android:name=".patient.activities.CalendarActivity"
             android:exported="false" />
         <activity
-            android:name=".DoctorsActivity"
+            android:name=".patient.activities.DoctorsActivity"
             android:exported="false" />
         <activity
             android:name=".HomePage"
@@ -63,7 +87,7 @@
             android:name=".CA_PersonalDetails"
             android:exported="false" />
         <activity
-            android:name=".ChangePassword"
+            android:name=".patient.activities.ChangePassword"
             android:exported="false" />
         <activity
             android:name=".SignInPage"

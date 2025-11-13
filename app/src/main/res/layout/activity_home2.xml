@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#F7F1EE">
 
-    <!-- Main Content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -20,7 +19,6 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- Header Section -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -84,49 +82,8 @@
                 </androidx.cardview.widget.CardView>
             </RelativeLayout>
 
-            <!-- Search Bar -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#00FFFFFF">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="4dp"
-                    android:background="@drawable/bg_search_outline_brown">
 
-                    <EditText
-                        android:id="@+id/etSearch"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="Search"
-                        android:textSize="11sp"
-                        android:textColorHint="#D6C2B5"
-                        android:textColor="#5A3825"
-                        android:background="@android:color/transparent"
-                        android:padding="12dp"
-                        android:paddingStart="16dp"
-                        android:inputType="text" />
-
-                    <ImageView
-                        android:id="@+id/btnSearch"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@drawable/ic_search"
-                        android:background="@drawable/bg_circle_red"
-                        android:padding="12dp"
-                        app:tint="#FFFFFF" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Progress Bar -->
             <ProgressBar
                 android:id="@+id/progressBar"
                 android:layout_width="wrap_content"
@@ -134,7 +91,6 @@
                 android:layout_gravity="center"
                 android:visibility="gone" />
 
-            <!-- Appointments Section (Visible when has data) -->
             <LinearLayout
                 android:id="@+id/layoutAppointments"
                 android:layout_width="match_parent"
@@ -142,7 +98,6 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <!-- Upcoming Appointment Header -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -152,14 +107,12 @@
                     android:textColor="@color/brown_text"
                     android:layout_marginBottom="12dp" />
 
-                <!-- Appointments RecyclerView -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvUpcomingAppointments"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp" />
 
-                <!-- Recent Visit Section -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -185,160 +138,204 @@
                         android:fontFamily="@font/poppins_semi_bold" />
                 </RelativeLayout>
 
-                <!-- Recent Visit Card -->
-                <androidx.cardview.widget.CardView
+                <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="#FFFFFF">
+                    android:layout_marginBottom="24dp">
 
-                    <LinearLayout
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/recentVisitCard"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:id="@+id/tvVisitDate"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="September 01, 2025"
-                            android:textSize="15sp"
-                            android:fontFamily="@font/montserrat_extra_bold"
-                            android:textColor="@color/brown_text" />
-
-                        <TextView
-                            android:id="@+id/tvVisitDay"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Wednesday"
-                            android:textSize="10sp"
-                            android:fontFamily="@font/poppins_semi_bold"
-                            android:textColor="@color/text_secondary"
-                            android:layout_marginBottom="14dp" />
-
-                        <View
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="2dp"
+                        app:cardBackgroundColor="#FFFFFF"
+                        android:visibility="gone">
+                        <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="#D9D9D9"
-                            android:layout_marginBottom="14dp" />
+                            android:layout_height="wrap_content"
+                            android:padding="16dp"
+                            android:paddingBottom="140dp">
+
+                            <TextView
+                                android:id="@+id/tvVisitDate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="September 01, 2025"
+                                android:fontFamily="@font/montserrat_extra_bold"
+                                android:textColor="@color/brown_text"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <TextView
+                                android:id="@+id/tvVisitDay"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Wednesday"
+                                android:fontFamily="@font/poppins_semi_bold"
+                                android:textSize="14sp"
+                                android:textColor="#8C5A3D"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/tvVisitDate" />
+
+                            <View
+                                android:id="@+id/divider2"
+                                android:layout_width="0dp"
+                                android:layout_height="1dp"
+                                android:background="#D9D9D9"
+                                android:layout_marginTop="14dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/tvVisitDay" />
+
+                            <ImageView
+                                android:id="@+id/ivService"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:src="@drawable/ic_medical"
+                                android:background="@drawable/bg_circle_gray"
+                                android:padding="8dp"
+                                android:layout_marginTop="16dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/divider2"
+                                android:contentDescription="Service Icon" />
+
+                            <TextView
+                                android:id="@+id/tvServiceLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Last Service"
+                                android:fontFamily="@font/poppins_medium"
+                                android:textSize="12sp"
+                                android:textColor="#508C5A3D"
+                                android:layout_marginStart="8dp"
+                                app:layout_constraintStart_toEndOf="@id/ivService"
+                                app:layout_constraintTop_toTopOf="@id/ivService" />
+
+                            <TextView
+                                android:id="@+id/tvServiceType"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Prenatal Check-Up"
+                                android:fontFamily="@font/poppins_semi_bold"
+                                android:textSize="14sp"
+                                android:textColor="@color/brown_text"
+                                android:layout_marginStart="8dp"
+                                app:layout_constraintStart_toEndOf="@id/ivService"
+                                app:layout_constraintTop_toBottomOf="@id/tvServiceLabel"
+                                app:layout_constraintBottom_toBottomOf="@id/ivService" />
+
+                            <TextView
+                                android:id="@+id/tvCompleted"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="COMPLETED"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/card_white"
+                                android:background="@drawable/bg_completed"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:paddingTop="8dp"
+                                android:paddingBottom="8dp"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="@id/ivService"
+                                app:layout_constraintBottom_toBottomOf="@id/ivService" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/emptyRecentVisitCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="2dp"
+                        app:cardBackgroundColor="#FFFFFF">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:orientation="vertical"
+                            android:padding="16dp"
+                            android:gravity="center">
 
                             <ImageView
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:src="@drawable/ic_medical"
-                                android:background="@drawable/bg_circle_light"
-                                android:padding="8dp" />
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:layout_marginStart="8dp">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Last Service"
-                                    android:textSize="8sp"
-                                    android:fontFamily="@font/poppins_medium"
-                                    android:textColor="#808C5A3D" />
-
-                                <TextView
-                                    android:id="@+id/tvServiceType"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Prenatal Check-Up"
-                                    android:textSize="8sp"
-                                    android:fontFamily="@font/poppins_semi_bold"
-                                    android:textColor="@color/brown_text" />
-                            </LinearLayout>
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@drawable/ic_calendar"
+                                app:tint="@color/text_secondary"
+                                android:layout_marginBottom="8dp"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="COMPLETED"
+                                android:text="No Past Visits Recorded"
+                                android:textSize="14sp"
+                                android:textColor="@color/brown_text"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Complete an appointment to see your visit history."
                                 android:textSize="10sp"
-                                android:textStyle="bold"
-                                android:textColor="#FFFFFF"
-                                android:background="@drawable/bg_completed"
-                                android:paddingHorizontal="16dp"
-                                android:paddingVertical="8dp" />
+                                android:textColor="@color/text_secondary"/>
+
                         </LinearLayout>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    </androidx.cardview.widget.CardView>
+                </FrameLayout>
             </LinearLayout>
 
-            <!-- Empty State (Visible when no data) -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/layoutEmptyState"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:layout_constraintBottom_toTopOf="@+id/tvOurDoctors"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/searchCard">
+                app:cardElevation="1dp">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
                     android:padding="16dp">
 
                     <TextView
                         android:id="@+id/tvNoAppointment"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat_extra_bold"
-                        android:gravity="center"
                         android:text="NO SCHEDULE"
                         android:textColor="@color/brown_text"
-                        android:textSize="25sp"
-                        tools:layout_editor_absoluteX="16dp"
-                        tools:layout_editor_absoluteY="16dp" />
+                        android:textSize="25sp" />
 
                     <TextView
                         android:id="@+id/textView2"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins_medium"
                         android:text="Book a check-up to stay on top of your health!"
-                        android:gravity="center"
                         android:layout_marginTop="5dp"
                         android:textColor="@color/text_secondary"
-                        android:textSize="11sp"
-                        app:layout_constraintTop_toBottomOf="@+id/tvNoAppointment"
-                        tools:layout_editor_absoluteX="16dp" />
+                        android:textSize="11sp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnBookAppointment"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:text="Book Appointment"
                         android:layout_marginTop="18dp"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="@color/red_primary"
-                        app:layout_constraintTop_toBottomOf="@+id/textView2"
-                        tools:layout_editor_absoluteX="16dp" />
-
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                        app:backgroundTint="@color/red_primary" />
+                </LinearLayout>
 
             </androidx.cardview.widget.CardView>
 
-            <!-- Our Doctors Section -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -365,16 +362,12 @@
                     android:fontFamily="@font/poppins_semi_bold" />
             </RelativeLayout>
 
-            <!-- Filter Chips -->
             <HorizontalScrollView
                 android:id="@+id/filterScroll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                android:scrollbars="none"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvOurDoctors">
+                android:scrollbars="none">
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroup"
@@ -418,7 +411,6 @@
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
 
-            <!-- Doctors RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvDoctors"
                 android:layout_width="match_parent"
@@ -428,7 +420,6 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Navigation -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

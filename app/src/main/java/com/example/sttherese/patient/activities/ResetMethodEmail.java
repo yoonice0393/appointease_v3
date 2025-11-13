@@ -1,4 +1,4 @@
-package com.example.sttherese;
+package com.example.sttherese.patient.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,8 +18,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.sttherese.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;

@@ -17,17 +17,13 @@ import androidx.cardview.widget.CardView;
 //import com.android.volley.Request;
 //import com.android.volley.toolbox.StringRequest;
 //import com.android.volley.toolbox.Volley;
+import com.example.sttherese.patient.activities.CalendarActivity;
+import com.example.sttherese.patient.activities.DoctorsActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
-import org.json.JSONObject;
-
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 public class HomePage extends AppCompatActivity {
 
