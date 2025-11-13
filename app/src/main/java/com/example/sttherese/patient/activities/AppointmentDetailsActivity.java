@@ -21,6 +21,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -115,12 +116,12 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
     }
 
     private void fetchAppointmentTypes() {
-        db.collection("appointmentTypes")
+        db.collection("services")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     appointmentTypes.clear();
                     for (QueryDocumentSnapshot document : querySnapshot) {
-                        String type = document.getString("name");
+                        String type = document.getString("service_name");
                         if (type != null) {
                             appointmentTypes.add(type);
                         }
@@ -144,40 +145,194 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
     // New class variable to hold the selected Doctor object
     private Doctor selectedDoctor = null;
 
+
+
+    private String selectedCategorySchedule = null;
+    private List<String> availableDaysForCategory = new ArrayList<>(); // Store all available days
     private void fetchDoctorsByType(String appointmentType) {
-        // 1. Create the Query object
-        doctorsQuery = db.collection("doctors")
-                .whereEqualTo("specialty", appointmentType); // Use "specialty" (fixed from earlier)
+        // 1. Reset everything related to the previous doctor selection
+        selectedDoctorId = null;
+        selectedDoctor = null;
+        doctorsQuery = null;
+        gridMorning.removeAllViews();
+        gridAfternoon.removeAllViews();
+        textSelectedDate.setText("No date selected");
 
-        // 2. Fetch the initial result immediately to auto-select the first doctor
-        //    and update the main card, just like the old logic.
-        doctorsQuery.get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (!querySnapshot.isEmpty()) {
-                        DocumentSnapshot firstDoc = querySnapshot.getDocuments().get(0);
+        // Clear and reset the Doctor Card UI to its default state
+        resetDoctorCardToDefault(); // <-- NEW HELPER METHOD (see below)
 
-                        // Convert to Doctor model
-                        selectedDoctor = firstDoc.toObject(Doctor.class);
+        // Step 1: Get the service document to find assigned_doctor_id
+        db.collection("services")
+                .whereEqualTo("service_name", appointmentType)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(serviceQuerySnapshot -> {
+                    if (!serviceQuerySnapshot.isEmpty()) {
+                        DocumentSnapshot serviceDoc = serviceQuerySnapshot.getDocuments().get(0);
+                        String assignedDoctorId = serviceDoc.getString("assigned_doctor_id"); // e.g., "D001"
+                        String category = serviceDoc.getString("category"); // e.g., "Ob-gyne"
 
-                        // FIX: The red line is here: You must explicitly set the ID
-                        // because toObject() doesn't populate the transient 'id' field.
-                        selectedDoctor.setId(firstDoc.getId());
-
-                        // Assigning selectedDoctorId using the ID from the model
-                        selectedDoctorId = selectedDoctor.getId();
-
-                        updateDoctorCard(firstDoc);
+                        if (assignedDoctorId != null && category != null) {
+                            // Success: Proceed to fetch schedules and doctor details
+                            fetchClinicSchedulesForDoctor(assignedDoctorId, category);
+                        } else {
+                            Toast.makeText(this, "Service configuration incomplete.", Toast.LENGTH_SHORT).show();
+                            // State already reset above, now just exit.
+                        }
                     } else {
-                        // Reset selected doctor if none are found
-                        selectedDoctorId = null;
-                        selectedDoctor = null;
-                        Toast.makeText(this, "No doctors available for this type", Toast.LENGTH_SHORT).show();
-                        // Optional: Reset doctor card to default state here
+                        Toast.makeText(this, "Service not found.", Toast.LENGTH_SHORT).show();
+                        // State already reset above, now just exit.
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to load doctors", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed to load service: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    // State already reset above, now just exit.
                 });
+    }
+    /**
+     * Clears the current doctor's details and shows a default placeholder message.
+     */
+    private void resetDoctorCardToDefault() {
+        // You should ensure you have a layout resource for the default/empty state
+        // Let's assume you have a layout named 'doctor_card_placeholder' or you manually set the TextViews.
+
+        // Manual reset if you don't have a separate placeholder layout:
+        View doctorView = LayoutInflater.from(this).inflate(R.layout.doctor_card_content_empty, null);
+
+        // Assuming these IDs exist in doctor_card_content.xml:
+        ImageView doctorImageView = doctorView.findViewById(R.id.doctorImage);
+        TextView doctorNameText = doctorView.findViewById(R.id.doctorName);
+        TextView doctorSpecialtyText = doctorView.findViewById(R.id.doctorSpecialty);
+
+        // Set placeholder content
+        doctorNameText.setText("No Doctor Available");
+        doctorSpecialtyText.setText("Select an Appointment Type");
+        doctorImageView.setImageResource(R.drawable.ic_doctor_placeholder); // Use your default image
+
+        // Clear and update card view
+        doctorCard.removeAllViews();
+        doctorCard.addView(doctorView);
+    }
+
+    private void fetchClinicSchedulesForDoctor(String doctorId, String category) {
+        // Query all documents that start with doctorId (e.g., D001_MON, D001_TUE, etc.)
+        db.collection("clinic_schedules")
+                .whereEqualTo("doctor_id", doctorId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    availableDaysForCategory.clear();
+
+                    // Build a list of available days from the schedules
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        String dayOfWeek = doc.getString("day_of_week"); // e.g., "Wednesday"
+                        if (dayOfWeek != null) {
+                            availableDaysForCategory.add(dayOfWeek);
+                        }
+                    }
+
+                    // Create a readable schedule string (e.g., "Monday to Saturday" or "Monday, Wednesday, Friday")
+                    selectedCategorySchedule = formatScheduleDays(availableDaysForCategory);
+
+                    // Step 3: Now fetch and display the doctor
+                    fetchDoctorsForSelection(doctorId, category);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to load clinic schedules: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+    private String formatScheduleDays(List<String> days) {
+        if (days.isEmpty()) return "No schedule available";
+
+        // Define day order
+        String[] dayOrder = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
+        // Sort days according to the week order
+        List<String> sortedDays = new ArrayList<>();
+        for (String day : dayOrder) {
+            if (days.contains(day)) {
+                sortedDays.add(day);
+            }
+        }
+
+        // Check if it's consecutive days (Monday to Saturday)
+        if (isConsecutiveDays(sortedDays, dayOrder)) {
+            return sortedDays.get(0) + " to " + sortedDays.get(sortedDays.size() - 1);
+        }
+
+        // Otherwise, return comma-separated list
+        return String.join(", ", sortedDays);
+    }
+    private boolean isConsecutiveDays(List<String> days, String[] dayOrder) {
+        if (days.size() < 2) return false;
+
+        int firstIndex = -1;
+        int lastIndex = -1;
+
+        for (int i = 0; i < dayOrder.length; i++) {
+            if (dayOrder[i].equals(days.get(0))) {
+                firstIndex = i;
+            }
+            if (dayOrder[i].equals(days.get(days.size() - 1))) {
+                lastIndex = i;
+            }
+        }
+
+        // Check if all days between first and last are included
+        if (lastIndex - firstIndex + 1 == days.size()) {
+            for (int i = firstIndex; i <= lastIndex; i++) {
+                if (!days.contains(dayOrder[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    // Rename and modify the function that was fetchAndDisplayDoctor
+    private void fetchDoctorsForSelection(String doctorId, String category) {
+
+        // We don't fetch the single doctor by ID anymore.
+
+        // 1. Set up the query for the Doctor Selection Dialog
+        // This query lists ALL doctors matching the service's category/specialty.
+        doctorsQuery = db.collection("doctors")
+                .whereEqualTo("specialty", category);
+
+        // 2. Clear any previously selected doctor state
+        selectedDoctorId = null;
+        selectedDoctor = null;
+
+        // 3. Immediately update the UI to prompt the user to select
+        promptDoctorSelectionCard(category); // <--- NEW HELPER METHOD
+
+        // Inform the user they can now choose
+        Toast.makeText(this, "Please tap the card to select a doctor.", Toast.LENGTH_LONG).show();
+    }
+    /**
+     * Updates the Doctor Card UI to prompt the user to tap and select a doctor.
+     * @param category The category/specialty the user should choose from.
+     */
+    private void promptDoctorSelectionCard(String category) {
+        // Inflate a temporary view or use your existing doctor_card_content structure
+        View doctorView = LayoutInflater.from(this).inflate(R.layout.doctor_card_content, null);
+
+        // Assuming these IDs exist in doctor_card_content.xml:
+        ImageView doctorImageView = doctorView.findViewById(R.id.doctorImage);
+        TextView doctorNameText = doctorView.findViewById(R.id.doctorName);
+        TextView doctorSpecialtyText = doctorView.findViewById(R.id.doctorSpecialty);
+
+        // Set prompt content
+        doctorNameText.setText("Select Your Doctor");
+        doctorSpecialtyText.setText("Specialty: " + category);
+
+        // Use a relevant icon instead of a doctor image, or your default placeholder
+        doctorImageView.setImageResource(R.drawable.ic_doctor_placeholder);
+
+        // Clear and update card view
+        doctorCard.removeAllViews();
+        doctorCard.addView(doctorView);
     }
 
     private DoctorAdapter doctorAdapter; // Class variable for the adapter
@@ -188,7 +343,6 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        // Use AlertDialog Builder to create a custom dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_doctor_selection, null);
         builder.setView(dialogView);
@@ -199,20 +353,33 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Create the listener implementation
         DoctorAdapter.OnDoctorClickListener listener = doctor -> {
-            // 1. Update selected doctor in the Activity
-            // This line is correct, as 'doctor' is an instance of com.example.sttherese.models.Doctor
+            // Update selected doctor
             selectedDoctor = doctor;
             selectedDoctorId = doctor.getId();
 
-            // 2. Fetch the document snapshot to pass to updateDoctorCard(DocumentSnapshot)
-            //    We need to fetch the document because updateDoctorCard expects a DocumentSnapshot,
-            //    but the listener gives us a Doctor model.
-            db.collection("doctors").document(selectedDoctorId).get()
-                    .addOnSuccessListener(doc -> updateDoctorCard(doc));
+            // IMPORTANT: Re-fetch clinic schedules for the newly selected doctor
+            db.collection("clinic_schedules")
+                    .whereEqualTo("doctor_id", selectedDoctorId)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        availableDaysForCategory.clear();
 
-            // 3. Clear date/time selection since the doctor has changed
+                        for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                            String dayOfWeek = doc.getString("day_of_week");
+                            if (dayOfWeek != null) {
+                                availableDaysForCategory.add(dayOfWeek);
+                            }
+                        }
+
+                        selectedCategorySchedule = formatScheduleDays(availableDaysForCategory);
+
+                        // Update the doctor card
+                        db.collection("doctors").document(selectedDoctorId).get()
+                                .addOnSuccessListener(doc -> updateDoctorCard(doc));
+                    });
+
+            // Clear date/time selection since doctor changed
             selectedDate = null;
             selectedTime = null;
             textSelectedDate.setText("No date selected");
@@ -220,18 +387,19 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
             gridAfternoon.removeAllViews();
 
             Toast.makeText(this, doctor.getName() + " selected.", Toast.LENGTH_SHORT).show();
-
-            // 4. Dismiss the dialog
             alertDialog.dismiss();
         };
 
-        // Initialize the adapter using your existing adapter class and the query
-        doctorAdapter = new DoctorAdapter(this, listener, doctorsQuery);
+        doctorAdapter = new DoctorAdapter(
+                this,
+                listener,
+                doctorsQuery,
+                R.layout.item_doctor_no_button
+        );
         recyclerView.setAdapter(doctorAdapter);
 
         buttonCloseDialog.setOnClickListener(v -> alertDialog.dismiss());
 
-        // Clean up the listener when the dialog is dismissed
         alertDialog.setOnDismissListener(dialog -> {
             if (doctorAdapter != null) {
                 doctorAdapter.removeListener();
@@ -239,37 +407,155 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
         });
 
         if (alertDialog.getWindow() != null) {
-            alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            alertDialog.getWindow().setBackgroundDrawableResource(R.color.bg_color);
         }
 
         alertDialog.show();
     }
-    private boolean isDayAvailable(Calendar selectedCalendar, String scheduleDays) {
-        if (scheduleDays == null || scheduleDays.isEmpty()) {
-            // If schedule is not set, assume doctor is not available for booking
+
+    // The isDayAvailable method stays the same - it already handles the schedule checking correctly
+    private boolean isDayAvailable(Calendar selectedCalendar, String categoryScheduleDays) {
+        if (availableDaysForCategory.isEmpty()) {
             return false;
         }
 
-        // Get day of week: Calendar.SUNDAY=1, Calendar.MONDAY=2, ...
-        int dayOfWeek = selectedCalendar.get(Calendar.DAY_OF_WEEK);
+        // Get the full day name (e.g., "Wednesday")
+        SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
+        String selectedDayFull = dayFormat.format(selectedCalendar.getTime());
 
-        // Convert the Calendar day to a short string (e.g., "Mon", "Sun")
-        SimpleDateFormat dayFormat = new SimpleDateFormat("EEE", Locale.US); // Use Locale.US for consistent English day names
-        String selectedDayShort = dayFormat.format(selectedCalendar.getTime()); // e.g., "Mon"
+        // Check if the selected day is in the list of available days
+        return availableDaysForCategory.contains(selectedDayFull);
+    }
 
-        // Special case for "Monday to Saturday" as seen in your Firestore image
-        if (scheduleDays.toLowerCase(Locale.ROOT).contains("to")) {
-            // Only allow days Monday (2) through Saturday (7)
-            return dayOfWeek >= Calendar.MONDAY && dayOfWeek <= Calendar.SATURDAY;
+    // Inside AppointmentDetailsActivity
+
+    private void blockUnavailableSlots(String doctorId, String date) {
+        List<String> bookedTimes = new ArrayList<>();
+
+        // --- Step A: Check existing appointments (bookings) ---
+        db.collection("appointments")
+                .whereEqualTo("doctorId", doctorId)
+                .whereEqualTo("date", date)
+                .get()
+                .addOnSuccessListener(appointmentSnapshots -> {
+                    for (DocumentSnapshot doc : appointmentSnapshots) {
+                        // We only block slots that are 'pending' or 'confirmed'
+                        String status = doc.getString("status");
+                        if (status != null && (status.equals("pending") || status.equals("confirmed"))) {
+                            String time = doc.getString("time");
+                            if (time != null) {
+                                bookedTimes.add(time);
+                            }
+                        }
+                    }
+
+                    // --- Step B: Check schedule exceptions (leaves/absences) ---
+                    db.collection("schedule_exceptions")
+                            .whereEqualTo("doctor_id", doctorId)
+                            .whereEqualTo("date", date)
+                            .get()
+                            .addOnSuccessListener(exceptionSnapshots -> {
+                                for (DocumentSnapshot doc : exceptionSnapshots) {
+                                    String time = doc.getString("time");
+                                    if (time != null) {
+                                        // If time is set, block that specific slot
+                                        bookedTimes.add(time);
+                                    } else {
+                                        // If time is null, assume the whole day is blocked/on leave
+                                        // In this case, we disable all buttons and show a toast.
+                                        disableAllTimeSlots(true);
+                                        return;
+                                    }
+                                }
+
+                                // --- Step C: Apply Blocks to UI ---
+                                applyBlocksToUI(bookedTimes);
+
+                            })
+                            .addOnFailureListener(e -> {
+                                // Log or handle exception fetch failure
+                                Toast.makeText(this, "Failed to check schedule exceptions.", Toast.LENGTH_SHORT).show();
+                                applyBlocksToUI(bookedTimes); // Proceed with only appointments blocked
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    // Log or handle appointments fetch failure
+                    Toast.makeText(this, "Failed to check existing appointments.", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
+    // Inside AppointmentDetailsActivity
+
+    // Modified applyBlocksToUI method
+    private void applyBlocksToUI(List<String> bookedTimes) {
+        // Helper function for iterating and blocking
+        Runnable blockChecker = () -> {
+            // Iterate through Morning Grid
+            for (int i = 0; i < gridMorning.getChildCount(); i++) {
+                View child = gridMorning.getChildAt(i);
+                if (child instanceof Button) {
+                    Button button = (Button) child;
+                    String time = button.getText().toString();
+
+                    // Retrieve the original time, or use the current text if original time is not tagged
+                    String originalTime = (button.getTag() instanceof String) ? (String)button.getTag() : time;
+
+                    if (bookedTimes.contains(originalTime)) {
+                        button.setEnabled(false);
+                        button.setBackgroundResource(R.drawable.time_slot_unavailable);
+                        button.setText("BOOKED");
+                        button.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+                    }
+                }
+            }
+
+            // Iterate through Afternoon Grid
+            for (int i = 0; i < gridAfternoon.getChildCount(); i++) {
+                View child = gridAfternoon.getChildAt(i);
+                if (child instanceof Button) {
+                    Button button = (Button) child;
+                    String time = button.getText().toString();
+
+                    String originalTime = (button.getTag() instanceof String) ? (String)button.getTag() : time;
+
+                    if (bookedTimes.contains(originalTime)) {
+                        button.setEnabled(false);
+                        button.setBackgroundResource(R.drawable.time_slot_unavailable);
+                        button.setText("BOOKED"); // <--- ADDED TEXT
+                    }
+                }
+            }
+        };
+
+        // Execute the checker
+        blockChecker.run();
+    }
+
+    private void disableAllTimeSlots(boolean showToast) {
+        // Disable all buttons in the morning grid
+        for (int i = 0; i < gridMorning.getChildCount(); i++) {
+            View child = gridMorning.getChildAt(i);
+            if (child instanceof Button) {
+                Button button = (Button) child;
+                button.setEnabled(false);
+                button.setBackgroundResource(R.drawable.time_slot_unavailable);
+            }
         }
 
-        // For comma-separated lists (e.g., "Mon, Wed, Fri")
-        // Note: We check if the doctor's schedule string contains the short day name
-        if (scheduleDays.toLowerCase(Locale.ROOT).contains(selectedDayShort.toLowerCase(Locale.ROOT))) {
-            return true;
+        // Disable all buttons in the afternoon grid
+        for (int i = 0; i < gridAfternoon.getChildCount(); i++) {
+            View child = gridAfternoon.getChildAt(i);
+            if (child instanceof Button) {
+                Button button = (Button) child;
+                button.setEnabled(false);
+                button.setBackgroundResource(R.drawable.time_slot_unavailable);
+            }
         }
 
-        return false;
+        if (showToast) {
+            Toast.makeText(this, "The doctor is on leave or unavailable for the entire day.", Toast.LENGTH_LONG).show();
+        }
     }
     private void updateDoctorCard(DocumentSnapshot doctor) {
         // Inflate doctor card content
@@ -301,13 +587,16 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
             return;
         }
 
+        // Check if the category schedule was found
+        if (selectedCategorySchedule == null) {
+            Toast.makeText(this, "Clinic schedule not defined for this service.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-
-        // Get the doctor's schedule days string
-        String doctorSchedule = selectedDoctor.getScheduleDays();
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
@@ -316,20 +605,34 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
                     selectedCalendar.set(selectedYear, selectedMonth, selectedDay);
 
                     // --- Schedule Check Logic ---
-                    if (!isDayAvailable(selectedCalendar, doctorSchedule)) {
-                        Toast.makeText(this, "Doctor is not available on that day.", Toast.LENGTH_LONG).show();
-                        // Clear any previous date selection if invalid
+                    if (!isDayAvailable(selectedCalendar, selectedCategorySchedule)) {
+                        Toast.makeText(this, "Service is not available on that day based on clinic schedule.", Toast.LENGTH_LONG).show();
+
+                        // 🌟 FIX: Clear all time slots and reset selectedDate/Time
                         textSelectedDate.setText("No date selected");
                         selectedDate = null;
+                        selectedTime = null; // Important to reset time
+                        gridMorning.removeAllViews(); // <--- ADDED
+                        gridAfternoon.removeAllViews(); // <--- ADDED
+                        // 🌟 END FIX
+
                         return;
                     }
                     // --- End Schedule Check Logic ---
 
+                    // If the date IS available, proceed:
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                     selectedDate = sdf.format(selectedCalendar.getTime());
 
                     SimpleDateFormat displayFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
                     textSelectedDate.setText(displayFormat.format(selectedCalendar.getTime()));
+
+                    // Reset selected time when date changes (prevents booking stale time)
+                    selectedTime = null;
+                    if (selectedTimeButton != null) {
+                        selectedTimeButton.setSelected(false);
+                        selectedTimeButton = null;
+                    }
 
                     // Fetch available time slots
                     if (selectedDoctorId != null) {
@@ -349,47 +652,139 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
         gridMorning.removeAllViews();
         gridAfternoon.removeAllViews();
 
-        db.collection("appointments")
-                .document(doctorId)
-                .collection(date)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (querySnapshot.isEmpty()) {
-                        // No slots configured, show default slots
-                        createDefaultTimeSlots();
-                    } else {
-                        // Display slots from Firebase
-                        for (QueryDocumentSnapshot document : querySnapshot) {
-                            String time = document.getString("time");
-                            Boolean available = document.getBoolean("available");
+        // Convert the selected date to a day of the week (e.g., "WED" for Wednesday)
+        String dayOfWeekCode;
+        try {
+            SimpleDateFormat dateDbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(dateDbFormat.parse(date));
 
-                            if (time != null && available != null) {
-                                addTimeSlotButton(time, available);
-                            }
-                        }
+            // Get day of the week abbreviation (e.g., Mon, Tue, Wed...)
+            SimpleDateFormat dayFormat = new SimpleDateFormat("EEE", Locale.US);
+            String dayAbbr = dayFormat.format(calendar.getTime()).toUpperCase(Locale.US); // e.g., "WED"
+
+            // The Firestore document IDs use 'D001_WED', so we need the full ID part
+            dayOfWeekCode = dayAbbr;
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Error processing date.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Construct the schedule document ID, e.g., "D001_WED"
+//        String scheduleDocId = doctorId + "_" + dayOfWeekCode;
+
+        // Construct the schedule document ID, e.g., "D001_WED"
+        Calendar selectedCalendar = Calendar.getInstance();
+        String scheduleDocId;
+        try {
+            SimpleDateFormat dateDbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            selectedCalendar.setTime(dateDbFormat.parse(date));
+            SimpleDateFormat dayFormat = new SimpleDateFormat("EEE", Locale.US);
+            String dayAbbr = dayFormat.format(selectedCalendar.getTime()).toUpperCase(Locale.US);
+            scheduleDocId = doctorId + "_" + dayAbbr;
+        } catch (Exception e) {
+            Toast.makeText(this, "Error processing date for schedule ID.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 1. Fetch the doctor's standard schedule from clinic_schedules
+        db.collection("clinic_schedules")
+                .document(scheduleDocId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String startTimeStr = documentSnapshot.getString("start_time"); // e.g., "9:00"
+                        String endTimeStr = documentSnapshot.getString("end_time");     // e.g., "14:00"
+                        Long slotDurationLong = documentSnapshot.getLong("slot_duration_minutes");
+
+                        int slotDurationMinutes = (slotDurationLong != null) ? slotDurationLong.intValue() : 30; // Default to 30 mins if null
+
+                        // 2. Generate slots based on the schedule
+                        generateTimeSlotsFromSchedule(startTimeStr, endTimeStr, slotDurationMinutes);
+
+                        // 3. Block off slots based on existing appointments and exceptions
+                        blockUnavailableSlots(doctorId, date);
+
+                    } else {
+                        // No specific schedule found for this doctor/day
+                        Toast.makeText(this, "No specific clinic schedule found for this day.", Toast.LENGTH_SHORT).show();
+                        // Fallback to the hardcoded default slots
+                        createDefaultTimeSlots();
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to load time slots", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed to load schedule: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    // Fallback to the hardcoded default slots on failure
                     createDefaultTimeSlots();
                 });
+    }
+
+
+    /**
+     * Generates time slot buttons based on the doctor's daily schedule.
+     * @param startTimeStr The start time (e.g., "9:00").
+     * @param endTimeStr The end time (e.g., "14:00").
+     * @param slotDurationMinutes The duration of each slot in minutes (e.g., 30).
+     */
+    private void generateTimeSlotsFromSchedule(String startTimeStr, String endTimeStr, int slotDurationMinutes) {
+        if (startTimeStr == null || endTimeStr == null) return;
+
+        try {
+            SimpleDateFormat dbTimeFormat = new SimpleDateFormat("H:mm", Locale.getDefault()); // e.g., 9:00, 14:00
+            SimpleDateFormat displayTimeFormat = new SimpleDateFormat("h:mm a", Locale.getDefault()); // e.g., 9:00 am, 2:00 pm
+
+            Calendar currentSlot = Calendar.getInstance();
+            currentSlot.setTime(dbTimeFormat.parse(startTimeStr));
+
+            Calendar endTime = Calendar.getInstance();
+            endTime.setTime(dbTimeFormat.parse(endTimeStr));
+
+            // Ensure we only look at the time component by setting a fixed date/time for comparison
+            currentSlot.set(Calendar.YEAR, 2000);
+            currentSlot.set(Calendar.MONTH, 0);
+            currentSlot.set(Calendar.DAY_OF_MONTH, 1);
+            endTime.set(Calendar.YEAR, 2000);
+            endTime.set(Calendar.MONTH, 0);
+            endTime.set(Calendar.DAY_OF_MONTH, 1);
+
+            // Generate slots until the current time reaches the end time
+            while (currentSlot.before(endTime)) {
+                String timeDisplay = displayTimeFormat.format(currentSlot.getTime());
+
+                // 🌟 FIX: Determine if it's morning based on the 24-hour clock
+                // HOUR_OF_DAY returns 0-23 (0=midnight, 12=noon)
+                boolean isMorning = currentSlot.get(Calendar.HOUR_OF_DAY) < 12; // <--- ADDED
+
+                // Add the button, passing the new flag
+                addTimeSlotButton(timeDisplay, true, isMorning); // <--- MODIFIED
+
+                // Move to the next slot
+                currentSlot.add(Calendar.MINUTE, slotDurationMinutes);
+            }
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Error generating time slots: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            createDefaultTimeSlots(); // Fallback
+        }
     }
 
     private void createDefaultTimeSlots() {
         // Morning slots
         String[] morningSlots = {"9:00 am", "9:30 am", "10:00 am", "10:30 am", "11:00 am", "11:30 am"};
         for (String time : morningSlots) {
-            addTimeSlotButton(time, true);
+            addTimeSlotButton(time, true, true); // <--- ADDED 'true' for morning
         }
 
         // Afternoon slots
         String[] afternoonSlots = {"1:00 pm", "1:30 pm", "2:00 pm", "2:30 pm", "3:00 pm", "3:30 pm", "4:00 pm", "4:30 pm", "5:00 pm"};
         for (String time : afternoonSlots) {
-            addTimeSlotButton(time, true);
+            addTimeSlotButton(time, true, false); // <--- ADDED 'false' for afternoon
         }
     }
 
-    private void addTimeSlotButton(String time, boolean available) {
+    // BEFORE: private void addTimeSlotButton(String time, boolean available) {
+    private void addTimeSlotButton(String time, boolean available, boolean isMorning) { // <--- MODIFIED
         Button timeButton = new Button(this);
         timeButton.setText(time);
         timeButton.setEnabled(available);
@@ -399,6 +794,9 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
             timeButton.setBackgroundResource(R.drawable.time_slot_selector);
         } else {
             timeButton.setBackgroundResource(R.drawable.time_slot_unavailable);
+            timeButton.setText("UNAVAILABLE");
+            timeButton.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+
         }
 
         // Set layout params
@@ -419,8 +817,8 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
             selectedTime = time;
         });
 
-        // Add to appropriate grid
-        if (time.contains("am")) {
+        // Add to appropriate grid using the flag
+        if (isMorning) {
             gridMorning.addView(timeButton);
         } else {
             gridAfternoon.addView(timeButton);

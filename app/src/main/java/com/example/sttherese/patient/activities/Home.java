@@ -193,8 +193,7 @@
                 tvUserName = findViewById(R.id.tvUserName);
                 ivNotification = findViewById(R.id.ivNotification);
                 ivProfile = findViewById(R.id.ivProfile);
-                etSearch = findViewById(R.id.etSearch);
-                btnSearch = findViewById(R.id.btnSearch);
+
 
                 rvUpcomingAppointments = findViewById(R.id.rvUpcomingAppointments);
                 rvDoctors = findViewById(R.id.rvDoctors);
@@ -300,10 +299,7 @@
             }
 
             private void setupClickListeners() {
-                btnSearch.setOnClickListener(v -> {
-                    String query = etSearch.getText().toString().trim();
-                    if (!query.isEmpty()) performSearch(query);
-                });
+
 
                 ivNotification.setOnClickListener(v -> startActivity(new Intent(this, NotificationActivity.class)));
                 ivProfile.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));

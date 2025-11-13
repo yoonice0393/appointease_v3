@@ -44,6 +44,7 @@ dependencies {
     implementation("androidx.multidex:multidex:2.0.1")
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
     implementation("com.github.prolificinteractive:material-calendarview:2.0.1")
+    implementation("com.jakewharton.threetenabp:threetenabp:1.4.0")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("com.github.f0ris.sweetalert:library:1.5.6")
 // For control over item selection of both touch and mouse driven selection

@@ -123,24 +123,24 @@
                         app:chipStrokeWidth="0dp" />
 
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipObGyn"
+                        android:id="@+id/chipObGyne"
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins_semi_bold"
-                        android:text="OB-GYN"
+                        android:text="OB-GYNE"
                         android:textColor="@color/chip_text_selector"
                         android:textSize="12sp"
                         app:chipBackgroundColor="@color/chip_background_selector"
                         app:chipStrokeWidth="0dp" />
 
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipPerinatologist"
+                        android:id="@+id/chipMedical"
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins_semi_bold"
-                        android:text="Perinatologist"
+                        android:text="Medical"
                         android:textColor="@color/chip_text_selector"
                         android:textSize="12sp"
                         app:chipBackgroundColor="@color/chip_background_selector"

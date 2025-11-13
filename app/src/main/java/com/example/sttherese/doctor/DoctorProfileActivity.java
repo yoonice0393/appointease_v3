@@ -33,7 +33,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
     ImageView backBtn;
     MaterialButton logoutBtn;
     TextView dialogTitle, nameHolder, genderHolder, dobHolder, emailHolder, mobileHolder,
-            addressHolder, usernameHolder, passwordHolder, userIdHolder, nameCard, emailCard, addressCard;
+            specialtyHolder, usernameHolder, passwordHolder, userIdHolder, nameCard, emailCard, specialtyCard;
     TextView showInfoLink;
     Button btnYes, btnNo;
     View view;
@@ -85,12 +85,12 @@ public class DoctorProfileActivity extends AppCompatActivity {
         nameHolder = findViewById(R.id.textViewNameHolder);
         nameCard = findViewById(R.id.textViewNameCard);
         emailCard = findViewById(R.id.textViewEmailCard);
-        addressCard = findViewById(R.id.textViewAddressCard);
+        specialtyCard = findViewById(R.id.textViewSpecialty);
         genderHolder = findViewById(R.id.textViewGenderHolder);
         dobHolder = findViewById(R.id.textViewDOBHolder);
         emailHolder = findViewById(R.id.textViewEmailHolder);
         mobileHolder = findViewById(R.id.textViewMobileHolder);
-        addressHolder = findViewById(R.id.textViewAddressHolder);
+        specialtyHolder = findViewById(R.id.textViewSpecialtyHolder);
         usernameHolder = findViewById(R.id.textViewUsernameHolder);
         passwordHolder = findViewById(R.id.textViewPasswordHolder);
         userIdHolder = findViewById(R.id.textViewUserIDHolder);
@@ -231,14 +231,15 @@ public class DoctorProfileActivity extends AppCompatActivity {
                                 // Found the matching patient document
                                 com.google.firebase.firestore.DocumentSnapshot patientSnap = querySnapshot.getDocuments().get(0);
 
-                                String firstName = capitalizeWords(patientSnap.getString("first_name"));
-                                String middleName = patientSnap.getString("middle_name") != null ?
-                                        capitalizeWords(patientSnap.getString("middle_name")) + " " : "";
-                                String lastName = capitalizeWords(patientSnap.getString("last_name"));
-                                String fullName = firstName + " " + middleName + lastName;
 
-                                nameHolder.setText(fullName.trim());
-                                nameCard.setText(fullName.trim());
+//                                String firstName = capitalizeWords(patientSnap.getString("first_name"));
+//                                String middleName = patientSnap.getString("middle_name") != null ?
+//                                        capitalizeWords(patientSnap.getString("middle_name")) + " " : "";
+//                                String lastName = capitalizeWords(patientSnap.getString("last_name"));
+//                                String fullName = firstName + " " + middleName + lastName;
+
+                                nameHolder.setText(patientSnap.getString("name"));
+                                nameCard.setText(patientSnap.getString("name"));
 
                                 genderHolder.setText(capitalizeFirst(patientSnap.getString("gender")));
 
@@ -246,8 +247,8 @@ public class DoctorProfileActivity extends AppCompatActivity {
                                 dobHolder.setText(formatDate(dob));
 
                                 mobileHolder.setText(patientSnap.getString("contact"));
-                                addressHolder.setText(capitalizeWords(patientSnap.getString("address")));
-                                addressCard.setText(capitalizeWords(patientSnap.getString("address")));
+                                specialtyHolder.setText(capitalizeWords(patientSnap.getString("specialty")));
+                                specialtyCard.setText(capitalizeWords(patientSnap.getString("specialty")));
 
                                 if (isInfoVisible) {
                                     usernameHolder.setText(email != null ? email.split("@")[0] : "");
@@ -259,10 +260,10 @@ public class DoctorProfileActivity extends AppCompatActivity {
                                     hideAccountInfo();
                                 }
                             } else {
-                                Toast.makeText(this, "Patient details not found (Query failed).", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Doctor details not found (Query failed).", Toast.LENGTH_SHORT).show();
                             }
                         })
-                        .addOnFailureListener(e -> Toast.makeText(this, "Error querying patient details: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        .addOnFailureListener(e -> Toast.makeText(this, "Error querying doctor details: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             } else {
                 Toast.makeText(this, "User account not found.", Toast.LENGTH_SHORT).show();
             }

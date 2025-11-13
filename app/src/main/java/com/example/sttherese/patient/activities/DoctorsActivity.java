@@ -2,6 +2,9 @@ package com.example.sttherese.patient.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -26,7 +29,7 @@ public class DoctorsActivity extends AppCompatActivity {
     private EditText etSearch;
     private ImageView btnSearch;
     private ChipGroup chipGroup;
-    private Chip chipAll, chipObGyn, chipPerinatologist;
+    private Chip chipAll, chipObGyne, chipMedical;
 
     // Bottom Navigation
     private LinearLayout btnHome, btnDoctor, btnCalendar, btnHistory;
@@ -47,8 +50,19 @@ public class DoctorsActivity extends AppCompatActivity {
         setupSearch();
         setupRecyclerView();
         setupClickListeners();
+
+
         // Load initial doctors
-        fetchDoctors(selectedFilter);
+
+        applyQuery("");
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                applyQuery(s.toString().trim());
+            }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void setupClickListeners() {
@@ -66,8 +80,8 @@ public class DoctorsActivity extends AppCompatActivity {
 
         chipGroup = findViewById(R.id.chipGroup);
         chipAll = findViewById(R.id.chipAll);
-        chipObGyn = findViewById(R.id.chipObGyn);
-        chipPerinatologist = findViewById(R.id.chipPerinatologist);
+        chipObGyne = findViewById(R.id.chipObGyne);
+        chipMedical = findViewById(R.id.chipMedical);
 
 
         btnHome = findViewById(R.id.btnHome);
@@ -89,44 +103,59 @@ public class DoctorsActivity extends AppCompatActivity {
             if (!checkedIds.isEmpty()) {
                 int selectedId = checkedIds.get(0);
                 if (selectedId == R.id.chipAll) selectedFilter = "All";
-                else if (selectedId == R.id.chipObGyn) selectedFilter = "OB-GYN";
-                else if (selectedId == R.id.chipPerinatologist) selectedFilter = "Perinatologist";
+                else if (selectedId == R.id.chipObGyne) selectedFilter = "Ob-gyne";
+                else if (selectedId == R.id.chipMedical) selectedFilter = "Medical";
 
-                fetchDoctors(selectedFilter);
+
+                updateListOnFilter(selectedFilter);
             }
         });
+
     }
 
     private void setupSearch() {
         btnSearch.setOnClickListener(v -> {
             String queryText = etSearch.getText().toString().trim();
-            performSearch(queryText);
+            String capitalizedQuery = capitalizeFirstLetter(queryText);
+
+            applyQuery(capitalizedQuery);
         });
+
+
+    }
+    private String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) {
+            return "";
+        }
+        // Only capitalize the very first character of the whole string
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    private void fetchDoctors(String specialty) {
+    private void updateListOnFilter(String specialty) {
+        String currentQuery = etSearch.getText().toString().trim();
+
+        applyQuery(currentQuery);
+    }
+
+    private void applyQuery(String searchQuery) {
         Query query = db.collection("doctors");
-        if (!specialty.equals("All")) {
-            query = query.whereEqualTo("specialty", specialty);
+
+        // Apply specialty filter first
+        if (!selectedFilter.equals("All")) {
+            query = query.whereEqualTo("specialty", selectedFilter);
+        }
+        Log.d("DoctorsActivity", "Running query with filter=" + selectedFilter + " search=" + searchQuery);
+
+        // Apply search query next
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            query = query.orderBy("name")
+                    .startAt(searchQuery)
+                    .endAt(searchQuery + "\uf8ff");
+        } else {
+            query = query.orderBy("name");
         }
 
-        // Remove previous listener if exists
-        if (doctorAdapter != null) doctorAdapter.removeListener();
 
-        doctorAdapter = new DoctorAdapter(this, doctor -> {
-            Toast.makeText(DoctorsActivity.this,
-                    "Booking appointment with " + doctor.getName(),
-                    Toast.LENGTH_SHORT).show();
-        }, query);
-
-        rvDoctors.setAdapter(doctorAdapter);
-    }
-
-    private void performSearch(String searchQuery) {
-        Query query = db.collection("doctors")
-                .orderBy("name")
-                .startAt(searchQuery)
-                .endAt(searchQuery + "\uf8ff");
 
         if (doctorAdapter != null) doctorAdapter.removeListener();
 

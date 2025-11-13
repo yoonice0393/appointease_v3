@@ -97,7 +97,7 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_marginStart="10dp"
-                        android:background="@drawable/ic_location"
+                        android:background="@drawable/ic_medical"
                         app:layout_constraintStart_toEndOf="@+id/ProfileAvatar"
                         app:layout_constraintTop_toBottomOf="@+id/textViewEmailCard" />
 
@@ -107,7 +107,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins_medium"
-                        android:text="Brgy. Rizal, Makati City"
+                        android:text="Gyenocology"
                         android:textColor="#B3B3B3"
                         android:textSize="10sp"
                         app:layout_constraintStart_toEndOf="@+id/imageView"
@@ -296,28 +296,28 @@
                     app:layout_constraintTop_toBottomOf="@+id/textViewEmailHolder" />
 
                 <TextView
-                    android:id="@+id/textViewAddress"
+                    android:id="@+id/textViewSpecialty"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_marginStart="68dp"
                     android:fontFamily="@font/poppins_medium"
-                    android:text="Address"
+                    android:text="Specialty"
                     android:textColor="@color/brown_text"
                     android:textSize="11sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewMobile" />
 
                 <TextView
-                    android:id="@+id/textViewAddressHolder"
+                    android:id="@+id/textViewSpecialtyHolder"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:fontFamily="@font/poppins_medium"
-                    android:text="Brgy. Rizal, Makati City"
+                    android:text="Gyenocology"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
-                    app:layout_constraintStart_toEndOf="@+id/textViewAddress"
+                    app:layout_constraintStart_toEndOf="@+id/textViewSpecialty"
                     app:layout_constraintTop_toBottomOf="@+id/textViewMobileHolder" />
 
                 <View
@@ -328,7 +328,7 @@
                     android:background="#80D6C2B5"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewAddressHolder" />
+                    app:layout_constraintTop_toBottomOf="@+id/textViewSpecialtyHolder" />
 
                 <TextView
                     android:id="@+id/textViewAccountInfo"

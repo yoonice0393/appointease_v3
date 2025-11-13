@@ -30,8 +30,8 @@ public class DoctorHomeActivity extends AppCompatActivity {
     private static final String TAG = "DoctorHomePage";
 
     private TextView tvGreeting, tvUserName;
-    private ImageView ivNotification, ivProfile, btnSearch, btnAdd;
-    private EditText etSearch;
+    private ImageView ivNotification, ivProfile,  btnAdd;
+
     private RecyclerView rvUpcomingAppointments;
 
     private LinearLayout layoutDataContent, btnHome, btnAppointment, btnCalendar, btnHistory;
@@ -83,8 +83,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
         tvUserName = findViewById(R.id.tvUserName);
         ivNotification = findViewById(R.id.ivNotification);
         ivProfile = findViewById(R.id.ivProfile);
-        etSearch = findViewById(R.id.etSearch);
-        btnSearch = findViewById(R.id.btnSearch);
+
 
         rvUpcomingAppointments = findViewById(R.id.rvUpcomingAppointments);
         layoutDataContent = findViewById(R.id.layoutDataContent);
