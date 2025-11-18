@@ -55,7 +55,7 @@
 
             // Filter Chips
             private ChipGroup chipGroup;
-            private Chip chipAll, chipObGyn, chipPerinatologist;
+            private Chip chipAll, chipObGyne, chipMedical;
             private TextView tvViewAll;
 
             // Bottom Navigation
@@ -111,6 +111,11 @@
 
                 btnAdd.setOnClickListener(v -> {
                     Intent intent = new Intent(Home.this, AppointmentDetailsActivity.class);
+                    startActivity(intent);
+                });
+
+                tvViewAllVisits.setOnClickListener(v -> {
+                    Intent intent = new Intent(Home.this, HistoryActivity.class);
                     startActivity(intent);
                 });
 
@@ -207,8 +212,8 @@
 
                 chipGroup = findViewById(R.id.chipGroup);
                 chipAll = findViewById(R.id.chipAll);
-                chipObGyn = findViewById(R.id.chipObGyn);
-                chipPerinatologist = findViewById(R.id.chipPerinatologist);
+                chipObGyne = findViewById(R.id.chipObGyne);
+                chipMedical = findViewById(R.id.chipMedical);
                 tvViewAll = findViewById(R.id.tvViewAll);
 
                 btnHome = findViewById(R.id.btnHome);
@@ -310,8 +315,8 @@
                     if (!checkedIds.isEmpty()) {
                         int selectedId = checkedIds.get(0);
                         if (selectedId == R.id.chipAll) fetchDoctors("All");
-                        else if (selectedId == R.id.chipObGyn) fetchDoctors("OB-GYN");
-                        else if (selectedId == R.id.chipPerinatologist) fetchDoctors("Perinatologist");
+                        else if (selectedId == R.id.chipObGyne) fetchDoctors("Ob-gyne");
+                        else if (selectedId == R.id.chipMedical) fetchDoctors("Medical");
                     }
                 });
 

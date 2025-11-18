@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">St.Therese</string>
+
+    <string-array name="exception_types_array">
+        <item>Modified</item>
+        <item>Added</item>
+    </string-array>
+
 </resources>

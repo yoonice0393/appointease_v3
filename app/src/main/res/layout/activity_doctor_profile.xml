@@ -103,7 +103,7 @@
 
 
                     <TextView
-                        android:id="@+id/textViewAddressCard"
+                        android:id="@+id/textViewSpecialtyCard"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins_medium"

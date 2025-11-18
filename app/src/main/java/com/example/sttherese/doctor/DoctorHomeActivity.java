@@ -127,7 +127,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
                 startActivity(new Intent(this, DoctorHistoryActivity.class)));
 
         btnAdd.setOnClickListener(v ->
-                Toast.makeText(this, "Add New (soon)", Toast.LENGTH_SHORT).show());
+                startActivity(new Intent(this, AvailabilityScheduling.class)));
     }
 
     private void fetchDoctorProfile() {

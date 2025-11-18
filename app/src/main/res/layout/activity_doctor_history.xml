@@ -6,8 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/bg_color">
 
-
-
     <!-- Main Content -->
     <ScrollView
         android:id="@+id/scrollView2"
@@ -22,7 +20,76 @@
             android:layout_height="wrap_content"
             android:padding="24dp">
 
+            <!-- Filter Chips at Top -->
+            <HorizontalScrollView
+                android:id="@+id/hsvStatusFilters"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginBottom="16dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupStatusFilters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipAll"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#FFFFFF"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:checked="true"
+                        android:text="All"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/chip_background_selector"
+                        app:chipStrokeWidth="0dp"/>
+
+
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipCompleted"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:text="Completed"
+                        android:textColor="@color/chip_text_selector"
+                        app:chipBackgroundColor="@color/chip_background_selector"
+                        app:chipStrokeWidth="0dp"/>
+
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipPending"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:text="Pending"
+                        android:textColor="@color/chip_text_selector"
+                        app:chipBackgroundColor="@color/chip_background_selector"
+                        app:chipStrokeWidth="0dp"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipCanceled"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:text="Canceled"
+                        android:textColor="@color/chip_text_selector"
+                        app:chipBackgroundColor="@color/chip_background_selector"
+                        app:chipStrokeWidth="0dp"/>
+
+
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+
+            <!-- Empty State Card -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardEmptyHistory"
                 android:layout_width="match_parent"
@@ -30,7 +97,9 @@
                 app:cardBackgroundColor="@color/card_white"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toBottomOf="@+id/hsvStatusFilters"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -66,23 +135,21 @@
 
             </androidx.cardview.widget.CardView>
 
+            <!-- RecyclerView for History -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvHistoryAppointments"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/hsvStatusFilters"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 tools:listitem="@layout/history_card" />
 
-
-
-
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
-
+    <!-- Bottom Navigation -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -113,8 +180,6 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_home"
                     app:tint="#5A3825" />
-
-
             </LinearLayout>
 
             <LinearLayout
@@ -131,8 +196,6 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_list"
                     app:tint="#5A3825" />
-
-
             </LinearLayout>
 
             <ImageView
@@ -159,9 +222,6 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_calendar"
                     app:tint="#5A3825" />
-
-
-
             </LinearLayout>
 
             <LinearLayout
@@ -190,6 +250,5 @@
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

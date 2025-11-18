@@ -117,7 +117,7 @@ public class CA_Confirmation extends AppCompatActivity {
                     } else {
                         docRef.update("verified", true)
                                 .addOnSuccessListener(aVoid -> {
-                                    showDialog(R.drawable.ic_check, "Verified!", "Code verified successfully!");
+                                    showDialog(R.drawable.ic_check, "Success!", "Your account has been verified.");
                                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                                         Intent intent = new Intent(CA_Confirmation.this, SignInPage.class);
                                         intent.putExtra("email", email);

@@ -109,7 +109,7 @@ public class FindRecord extends AppCompatActivity {
                         }
 
                         if (!found) {
-                            Toast.makeText(FindRecord.this, "No matching record found", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(FindRecord.this, "No matching record found. Please contact the clinic.", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         // Handle the case where the query failed

@@ -77,13 +77,13 @@
             app:layout_constraintBottom_toBottomOf="@id/ivClockCard" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnBookAppointment"
+            android:id="@+id/btnViewSchedule"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:fontFamily="@font/poppins_semi_bold"
-            android:text="Book Now"
+            android:text="View Shedule"
             android:textColor="@color/card_white"
             android:textSize="14sp"
             app:backgroundTint="@color/red_primary"

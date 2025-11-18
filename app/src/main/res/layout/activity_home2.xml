@@ -388,10 +388,10 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice" />
 
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipObGyn"
+                        android:id="@+id/chipObGyne"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="OB-GYN"
+                        android:text="OB-GYNE"
                         android:fontFamily="@font/poppins_semi_bold"
                         android:textColor="@color/chip_text_selector"
                         app:chipBackgroundColor="@color/chip_background_selector"
@@ -399,10 +399,10 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice" />
 
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipPerinatologist"
+                        android:id="@+id/chipMedical"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Perinatologist"
+                        android:text="Medical"
                         android:fontFamily="@font/poppins_semi_bold"
                         android:textColor="@color/chip_text_selector"
                         app:chipBackgroundColor="@color/chip_background_selector"

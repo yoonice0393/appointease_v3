@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.sttherese.R;
 import com.example.sttherese.models.Doctor;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
@@ -46,8 +47,8 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
         this.itemLayoutId = layoutId;
         listenToQuery();
     }
+
     public DoctorAdapter(Context context, OnDoctorClickListener listener, Query query) {
-        // Call the main 4-argument constructor, passing the default layout ID
         this(context, listener, query, R.layout.item_doctor);
     }
 
@@ -62,7 +63,7 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
                 if (snapshots != null) {
                     for (QueryDocumentSnapshot doc : snapshots) {
                         Doctor doctor = doc.toObject(Doctor.class);
-                        doctor.setId(doc.getId()); // Set Firestore document ID
+                        doctor.setId(doc.getId());
                         doctors.add(doctor);
                     }
                     notifyDataSetChanged();
@@ -87,7 +88,6 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
         View view = LayoutInflater.from(context).inflate(itemLayoutId, parent, false);
         return new ViewHolder(view);
     }
@@ -95,14 +95,14 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Doctor doctor = doctors.get(position);
+
         holder.tvDoctorName.setText(doctor.getName());
         holder.tvDoctorSpecialty.setText(doctor.getSpecialty());
 
-        // 1. Reset text while loading
-        holder.tvDoctorScheduleTime.setText("Loading Schedule...");
-
-        // 2. Fetch and display the schedule time
-        fetchAndDisplaySchedule(doctor.getId(), holder.tvDoctorScheduleTime); // <-- NEW CALL
+        if (holder.tvDoctorScheduleTime != null) {
+            holder.tvDoctorScheduleTime.setText("Loading Schedule...");
+            fetchAndDisplaySchedule(doctor.getId(), holder.tvDoctorScheduleTime);
+        }
 
         Glide.with(context)
                 .load(doctor.getAvatarUrl())
@@ -110,15 +110,28 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
                 .circleCrop()
                 .into(holder.ivDoctorAvatar);
 
-        holder.itemView.setOnClickListener(v -> listener.onDoctorClick(doctor));
+        // ✅ FIX: Check if button exists. If yes, use button click; if no, use card click
+        if (holder.btnViewSchedule != null) {
+            // Layout WITH button - only button is clickable
+            holder.itemView.setOnClickListener(null);
+            holder.btnViewSchedule.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onDoctorClick(doctor);
+                }
+            });
+        } else {
+            // Layout WITHOUT button - entire card is clickable (for selection dialog)
+            holder.itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onDoctorClick(doctor);
+                }
+            });
+        }
     }
 
     private void fetchAndDisplaySchedule(String doctorId, TextView textView) {
-        // Get today's day abbreviation (e.g., "THU")
         SimpleDateFormat dayFormat = new SimpleDateFormat("EEE", Locale.US);
         String todayAbbr = dayFormat.format(Calendar.getInstance().getTime()).toUpperCase(Locale.US);
-
-        // Construct the schedule document ID (e.g., "D001_THU")
         String scheduleDocId = doctorId + "_" + todayAbbr;
 
         db.collection("clinic_schedules")
@@ -126,10 +139,8 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        String startTime = documentSnapshot.getString("start_time"); // e.g., "9:00"
-                        String endTime = documentSnapshot.getString("end_time");     // e.g., "14:00"
-
-                        // Convert to a user-friendly format (e.g., 9:00 AM - 2:00 PM)
+                        String startTime = documentSnapshot.getString("start_time");
+                        String endTime = documentSnapshot.getString("end_time");
                         String displayTime = formatTimeRange(startTime, endTime);
                         textView.setText("Today: " + displayTime);
                     } else {
@@ -138,13 +149,9 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
                 })
                 .addOnFailureListener(e -> {
                     textView.setText("Schedule Error");
-                    // Log.e("DoctorAdapter", "Failed to fetch schedule for " + doctorId, e); // Good practice to log
                 });
     }
 
-    /**
-     * Converts "H:mm" time strings (e.g., 9:00, 14:00) into "h:mm a" format (e.g., 9:00 AM, 2:00 PM).
-     */
     private String formatTimeRange(String startTimeStr, String endTimeStr) {
         if (startTimeStr == null || endTimeStr == null) return "N/A";
 
@@ -168,6 +175,7 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        MaterialButton btnViewSchedule;
         TextView tvDoctorName, tvDoctorSpecialty;
         TextView tvDoctorScheduleTime;
         ImageView ivDoctorAvatar;
@@ -177,6 +185,7 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
             tvDoctorName = itemView.findViewById(R.id.tvDoctorNameCard);
             tvDoctorSpecialty = itemView.findViewById(R.id.tvDoctorSpecialtyCard);
             ivDoctorAvatar = itemView.findViewById(R.id.ivDoctorImage);
+            btnViewSchedule = itemView.findViewById(R.id.btnViewSchedule);
             tvDoctorScheduleTime = itemView.findViewById(R.id.tvDoctorScheduleTime);
         }
     }

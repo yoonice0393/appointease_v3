@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="#F7F1EE">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header with Doctor Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                app:srcCompat="@drawable/ic_doctor"
+                android:contentDescription="Doctor icon"
+                app:tint="@color/brown_text" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvDoctorNameHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dr. John Doe"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/montserrat_extra_bold"
+                    android:textColor="@color/brown_text" />
+
+                <TextView
+                    android:id="@+id/tvDoctorSpecialtyHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="General Practitioner"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:textColor="@color/text_secondary" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="Available slots for the next 14 days"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:textColor="@color/text_secondary" />
+
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/closeButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                app:srcCompat="@drawable/ic_close"
+                android:contentDescription="Close dialog"
+                android:padding="4dp"
+                app:tint="@color/brown_text"
+                android:scaleType="centerInside" />
+        </LinearLayout>
+
+
+
+        <!-- RecyclerView for schedule items -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/scheduleRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false" />
+
+        <!-- Empty state -->
+        <LinearLayout
+            android:id="@+id/emptyStateView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingTop="40dp"
+            android:paddingBottom="40dp"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:srcCompat="@drawable/ic_calendar"
+                android:contentDescription="No schedule"
+                android:layout_marginBottom="16dp"
+                app:tint="@color/text_secondary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Available Slots"
+                android:textSize="16sp"
+                android:fontFamily="@font/montserrat_extra_bold"
+                android:textColor="@color/brown_text"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No schedule available for the next 14 days."
+                android:textSize="13sp"
+                android:fontFamily="@font/poppins_medium"
+                android:textColor="@color/text_secondary"
+                android:gravity="center" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

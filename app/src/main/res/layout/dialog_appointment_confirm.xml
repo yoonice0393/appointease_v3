@@ -36,7 +36,7 @@
             android:id="@+id/confirmAppointmentType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Gynaecology"
+            android:text="Gynecology"
             android:textColor="@color/brown_text"
             android:textSize="28sp"
             android:fontFamily="@font/montserrat_extra_bold"

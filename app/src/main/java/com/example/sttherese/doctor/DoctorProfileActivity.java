@@ -85,7 +85,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
         nameHolder = findViewById(R.id.textViewNameHolder);
         nameCard = findViewById(R.id.textViewNameCard);
         emailCard = findViewById(R.id.textViewEmailCard);
-        specialtyCard = findViewById(R.id.textViewSpecialty);
+        specialtyCard = findViewById(R.id.textViewSpecialtyCard);
         genderHolder = findViewById(R.id.textViewGenderHolder);
         dobHolder = findViewById(R.id.textViewDOBHolder);
         emailHolder = findViewById(R.id.textViewEmailHolder);
@@ -97,7 +97,9 @@ public class DoctorProfileActivity extends AppCompatActivity {
         showInfoLink = findViewById(R.id.textViewShowInfo);
         backBtn = findViewById(R.id.buttonBack);
         logoutBtn = findViewById(R.id.buttonLogout);
-    } private void showLogoutDialog() {
+    }
+
+    private void showLogoutDialog() {
         view = getLayoutInflater().inflate(R.layout.dialog_yes_no, null);
         dialogTitle = view.findViewById(R.id.dialog_title);
         btnYes = view.findViewById(R.id.btn_yes);
@@ -223,7 +225,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
                 // 2. Fetch the 'patients' document by querying the 'userId' field
                 // You are searching for the document where the field "userId" equals the Auth UID
                 db.collection("doctors")
-                        .whereEqualTo("userId", authUid) // Find the patient document linked to this Auth UID
+                        .whereEqualTo("user_id", authUid) // Find the patient document linked to this Auth UID
                         .limit(1)
                         .get()
                         .addOnSuccessListener(querySnapshot -> {

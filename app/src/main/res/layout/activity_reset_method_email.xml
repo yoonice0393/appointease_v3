@@ -77,31 +77,33 @@
     </LinearLayout>
 
                 <!-- Resend Code -->
-    <TextView
-        android:id="@+id/textResendCode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="50dp"
-        android:fontFamily="@font/poppins_regular"
-        android:text="Resend Code"
-        android:textColor="@color/text_secondary"
-        android:textSize="11sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layoutCodeInputs" />
 
     <TextView
         android:id="@+id/textTimer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginEnd="60dp"
         android:text=""
         android:textColor="@color/text_secondary"
         android:textSize="14sp"
+
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textResendCode" />
+        app:layout_constraintTop_toBottomOf="@+id/layoutCodeInputs" />
+
+    <TextView
+        android:id="@+id/textResendCode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="50dp"
+        android:fontFamily="@font/poppins_regular"
+        android:text="Resend Code"
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textTimer" />
+
+
 
                 <!-- Confirm Button -->
     <com.google.android.material.button.MaterialButton

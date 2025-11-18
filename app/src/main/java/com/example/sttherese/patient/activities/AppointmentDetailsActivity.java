@@ -176,7 +176,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
                             // Success: Proceed to fetch schedules and doctor details
                             fetchClinicSchedulesForDoctor(assignedDoctorId, category);
                         } else {
-                            Toast.makeText(this, "Service configuration incomplete.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "No Doctor Available in this service.", Toast.LENGTH_SHORT).show();
                             // State already reset above, now just exit.
                         }
                     } else {
@@ -215,30 +215,65 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
     }
 
     private void fetchClinicSchedulesForDoctor(String doctorId, String category) {
-        // Query all documents that start with doctorId (e.g., D001_MON, D001_TUE, etc.)
+        // Query all schedule documents that start with the doctor ID
         db.collection("clinic_schedules")
-                .whereEqualTo("doctor_id", doctorId)
+                .orderBy(com.google.firebase.firestore.FieldPath.documentId())
+                .startAt(doctorId)
+                .endAt(doctorId + "\uf8ff")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     availableDaysForCategory.clear();
 
+                    if (querySnapshot.isEmpty()) {
+                        Toast.makeText(this, "No clinic schedules found for this doctor.", Toast.LENGTH_SHORT).show();
+                        // Still allow doctor selection, but warn user
+                        fetchDoctorsForSelection(doctorId, category);
+                        return;
+                    }
+
                     // Build a list of available days from the schedules
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        String dayOfWeek = doc.getString("day_of_week"); // e.g., "Wednesday"
-                        if (dayOfWeek != null) {
-                            availableDaysForCategory.add(dayOfWeek);
+                        // Extract day from document ID (e.g., "D001_MON" -> need to convert MON to Monday)
+                        String docId = doc.getId();
+                        String[] parts = docId.split("_");
+
+                        if (parts.length >= 2) {
+                            String dayAbbr = parts[1]; // e.g., "MON", "TUE", "WED"
+                            String dayOfWeek = convertDayAbbrToFull(dayAbbr);
+
+                            if (dayOfWeek != null && !availableDaysForCategory.contains(dayOfWeek)) {
+                                availableDaysForCategory.add(dayOfWeek);
+                            }
                         }
                     }
 
-                    // Create a readable schedule string (e.g., "Monday to Saturday" or "Monday, Wednesday, Friday")
+                    // Create a readable schedule string
                     selectedCategorySchedule = formatScheduleDays(availableDaysForCategory);
 
-                    // Step 3: Now fetch and display the doctor
+                    // Now fetch and display the doctor
                     fetchDoctorsForSelection(doctorId, category);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to load clinic schedules: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    // Still allow proceeding even if schedule fetch fails
+                    fetchDoctorsForSelection(doctorId, category);
                 });
+    }
+
+
+    private String convertDayAbbrToFull(String dayAbbr) {
+        if (dayAbbr == null) return null;
+
+        switch (dayAbbr.toUpperCase()) {
+            case "MON": return "Monday";
+            case "TUE": return "Tuesday";
+            case "WED": return "Wednesday";
+            case "THU": return "Thursday";
+            case "FRI": return "Friday";
+            case "SAT": return "Saturday";
+            case "SUN": return "Sunday";
+            default: return null;
+        }
     }
     private String formatScheduleDays(List<String> days) {
         if (days.isEmpty()) return "No schedule available";

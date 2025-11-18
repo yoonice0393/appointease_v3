@@ -81,17 +81,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/searchCard" />
 
-            <TextView
-                android:id="@+id/tvViewAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/poppins_medium"
-                android:text="View All"
-                android:textColor="@color/red_primary"
-                android:textSize="14sp"
-                app:layout_constraintBottom_toBottomOf="@id/tvOurDoctors"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tvOurDoctors" />
 
             <!-- Filter Chips -->
             <HorizontalScrollView
@@ -108,43 +97,19 @@
                     android:id="@+id/chipGroup"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:singleSelection="true">
+                    app:singleSelection="true"
+                    app:chipSpacingHorizontal="8dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipAll"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_semi_bold"
-                        android:text="All"
-                        android:textColor="@color/chip_text_selector"
-                        android:textSize="12sp"
-                        app:chipBackgroundColor="@color/chip_background_selector"
-                        app:chipStrokeWidth="0dp" />
+                        android:text="All Doctors"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:checked="true" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipObGyne"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_semi_bold"
-                        android:text="OB-GYNE"
-                        android:textColor="@color/chip_text_selector"
-                        android:textSize="12sp"
-                        app:chipBackgroundColor="@color/chip_background_selector"
-                        app:chipStrokeWidth="0dp" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipMedical"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_semi_bold"
-                        android:text="Medical"
-                        android:textColor="@color/chip_text_selector"
-                        android:textSize="12sp"
-                        app:chipBackgroundColor="@color/chip_background_selector"
-                        app:chipStrokeWidth="0dp" />
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
 

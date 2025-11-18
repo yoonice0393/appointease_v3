@@ -3,16 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="16dp"
+    android:layout_marginBottom="12dp"
     app:cardBackgroundColor="#FFFFFF"
-    app:cardCornerRadius="16dp"
+    app:cardCornerRadius="12dp"
     app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="12dp">
 
         <!-- Date Row -->
         <LinearLayout
@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="8dp">
 
             <ImageView
                 android:layout_width="20dp"
@@ -47,18 +47,19 @@
                 android:textSize="11sp"
                 android:fontFamily="@font/poppins_regular"
                 android:background="@drawable/bg_input_field"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 android:focusable="false"
                 android:clickable="true"
                 android:textColor="@color/brown_text"/>
         </LinearLayout>
 
-        <!-- Time Row -->
+        <!-- Time Row: Start & End -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
             <ImageView
                 android:layout_width="20dp"
@@ -76,21 +77,39 @@
                 android:fontFamily="@font/poppins_semi_bold"
                 android:textSize="12sp"/>
 
+            <!-- Start time -->
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etTime"
+                android:id="@+id/etStartTime"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
-                android:layout_weight="1.5"
-                android:hint="Set a time"
+                android:layout_weight="1"
+                android:hint="Start time"
                 android:textSize="11sp"
                 android:fontFamily="@font/poppins_regular"
                 android:background="@drawable/bg_input_field"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 android:focusable="false"
                 android:clickable="true"
                 android:textColor="@color/brown_text"
                 android:layout_marginEnd="8dp"/>
 
+            <!-- End time -->
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etEndTime"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:hint="End time"
+                android:textSize="11sp"
+                android:fontFamily="@font/poppins_regular"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="12dp"
+                android:focusable="false"
+                android:clickable="true"
+                android:textColor="@color/brown_text"
+                android:layout_marginEnd="8dp"/>
+
+            <!-- All Day button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAllDay"
                 android:layout_width="wrap_content"
@@ -102,8 +121,32 @@
                 android:textSize="11sp"
                 app:cornerRadius="20dp"
                 app:backgroundTint="#7D5C50"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 style="@style/Widget.MaterialComponents.Button"/>
+        </LinearLayout>
+
+        <!-- Exception Spinner (placed below time as requested - Option A) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Exception Type:"
+                android:textColor="@color/brown_text"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:textSize="12sp"
+                android:layout_marginEnd="12dp"/>
+
+            <Spinner
+                android:id="@+id/spinnerException"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:spinnerMode="dropdown"/>
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

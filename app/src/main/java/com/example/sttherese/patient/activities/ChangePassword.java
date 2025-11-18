@@ -95,7 +95,7 @@ public class ChangePassword extends AppCompatActivity {
             }
 
             if (getPasswordStrength(newPass) < 1) {
-                Toast.makeText(this, "Password is too weak. Use at least 8 characters",
+                Toast.makeText(this, "Password is too weak. Use at least 6 characters",
                         Toast.LENGTH_SHORT).show();
                 return;
             }

@@ -81,12 +81,12 @@
                 app:layout_constraintBottom_toBottomOf="@id/ivClockCard" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnBookNow"
+                android:id="@+id/btnViewSchedule"
                 android:layout_width="200dp"
                 android:layout_height="42dp"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/poppins_semi_bold"
-                android:text="Book Now"
+                android:text="View Schedule"
                 app:backgroundTint="@color/red_primary"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.733"
