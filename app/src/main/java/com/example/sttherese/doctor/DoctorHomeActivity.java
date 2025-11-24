@@ -29,7 +29,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
 
     private static final String TAG = "DoctorHomePage";
 
-    private TextView tvGreeting, tvUserName;
+    private TextView tvGreeting, tvUserName, tvViewAll;
     private ImageView ivNotification, ivProfile,  btnAdd;
 
     private RecyclerView rvUpcomingAppointments;
@@ -92,6 +92,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
 
         tvAppointmentCount = findViewById(R.id.tvAppointmentCount);
         tvPatientCount = findViewById(R.id.tvPatientCount);
+        tvViewAll=findViewById(R.id.tvViewAllAppointments);
 
         btnHome = findViewById(R.id.btnHome);
         btnAppointment = findViewById(R.id.btnAppointment);
@@ -128,10 +129,12 @@ public class DoctorHomeActivity extends AppCompatActivity {
 
         btnAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AvailabilityScheduling.class)));
+        tvViewAll.setOnClickListener(v ->
+                startActivity(new Intent(this, DoctorAppointmentActivity.class)));
     }
 
     private void fetchDoctorProfile() {
-        // userDocId is the Firebase Auth UID (e.g., BL9v5...2CD3)
+        // userDocId is the Firebase Auth UID
         if (userDocId == null) return;
 
         // 1. Query the 'doctors' collection where 'user_id' equals the logged-in Auth UID

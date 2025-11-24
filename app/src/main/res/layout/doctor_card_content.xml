@@ -57,22 +57,22 @@
             app:layout_constraintTop_toBottomOf="@+id/doctorName" />
 
 
-        <!-- Available Badge -->
-        <TextView
-            android:id="@+id/textView33"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:background="@drawable/available_badge"
-            android:fontFamily="@font/poppins_semi_bold"
-            android:gravity="center"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="6dp"
-            android:text="AVAILABLE"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            app:layout_constraintStart_toEndOf="@+id/doctorImage"
-            app:layout_constraintTop_toBottomOf="@+id/doctorSpecialty" />
+<!--        &lt;!&ndash; Available Badge &ndash;&gt;-->
+<!--        <TextView-->
+<!--            android:id="@+id/textView33"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="10dp"-->
+<!--            android:background="@drawable/available_badge"-->
+<!--            android:fontFamily="@font/poppins_semi_bold"-->
+<!--            android:gravity="center"-->
+<!--            android:paddingHorizontal="12dp"-->
+<!--            android:paddingVertical="6dp"-->
+<!--            android:text="AVAILABLE"-->
+<!--            android:textColor="#FFFFFF"-->
+<!--            android:textSize="12sp"-->
+<!--            app:layout_constraintStart_toEndOf="@+id/doctorImage"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/doctorSpecialty" />-->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

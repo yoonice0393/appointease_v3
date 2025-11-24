@@ -33,7 +33,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
     ImageView backBtn;
     MaterialButton logoutBtn;
     TextView dialogTitle, nameHolder, genderHolder, dobHolder, emailHolder, mobileHolder,
-            specialtyHolder, usernameHolder, passwordHolder, userIdHolder, nameCard, emailCard, specialtyCard;
+            specialtyHolder, usernameHolder, doctorIdHolder, nameCard, emailCard, specialtyCard;
     TextView showInfoLink;
     Button btnYes, btnNo;
     View view;
@@ -92,8 +92,8 @@ public class DoctorProfileActivity extends AppCompatActivity {
         mobileHolder = findViewById(R.id.textViewMobileHolder);
         specialtyHolder = findViewById(R.id.textViewSpecialtyHolder);
         usernameHolder = findViewById(R.id.textViewUsernameHolder);
-        passwordHolder = findViewById(R.id.textViewPasswordHolder);
-        userIdHolder = findViewById(R.id.textViewUserIDHolder);
+//        passwordHolder = findViewById(R.id.textViewPasswordHolder);
+        doctorIdHolder = findViewById(R.id.textViewDoctorIDHolder);
         showInfoLink = findViewById(R.id.textViewShowInfo);
         backBtn = findViewById(R.id.buttonBack);
         logoutBtn = findViewById(R.id.buttonLogout);
@@ -196,8 +196,8 @@ public class DoctorProfileActivity extends AppCompatActivity {
 
     private void hideAccountInfo() {
         usernameHolder.setText("******");
-        passwordHolder.setText("**********");
-        if (userIdHolder != null) userIdHolder.setText("*****");
+//        passwordHolder.setText("**********");
+        if (doctorIdHolder != null) doctorIdHolder.setText("*****");
         showInfoLink.setText("Show Information");
         isInfoVisible = false;
     }
@@ -233,6 +233,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
                                 // Found the matching patient document
                                 com.google.firebase.firestore.DocumentSnapshot patientSnap = querySnapshot.getDocuments().get(0);
 
+                                String doctorId = patientSnap.getId();
 
 //                                String firstName = capitalizeWords(patientSnap.getString("first_name"));
 //                                String middleName = patientSnap.getString("middle_name") != null ?
@@ -254,15 +255,14 @@ public class DoctorProfileActivity extends AppCompatActivity {
 
                                 if (isInfoVisible) {
                                     usernameHolder.setText(email != null ? email.split("@")[0] : "");
-                                    // NOTE: The 'password' field is not typically stored in Firestore
-                                    // You should remove this line if it's not needed:
-                                    passwordHolder.setText(userSnap.getString("password"));
-                                    if (userIdHolder != null) userIdHolder.setText(authUid);
+                                    if (doctorIdHolder != null) {
+                                        doctorIdHolder.setText(doctorId);
+                                    }
                                 } else {
                                     hideAccountInfo();
                                 }
                             } else {
-                                Toast.makeText(this, "Doctor details not found (Query failed).", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Doctor details not found.", Toast.LENGTH_SHORT).show();
                             }
                         })
                         .addOnFailureListener(e -> Toast.makeText(this, "Error querying doctor details: " + e.getMessage(), Toast.LENGTH_SHORT).show());

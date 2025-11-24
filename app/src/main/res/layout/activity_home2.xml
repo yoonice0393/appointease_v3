@@ -127,15 +127,15 @@
                         android:fontFamily="@font/poppins_semi_bold"
                         android:textColor="@color/brown_text" />
 
-                    <TextView
-                        android:id="@+id/tvViewAllVisits"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:text="View All"
-                        android:textSize="12sp"
-                        android:textColor="#D14A4A"
-                        android:fontFamily="@font/poppins_semi_bold" />
+<!--                    <TextView-->
+<!--                        android:id="@+id/tvViewAllVisits"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_alignParentEnd="true"-->
+<!--                        android:text="View All"-->
+<!--                        android:textSize="12sp"-->
+<!--                        android:textColor="#D14A4A"-->
+<!--                        android:fontFamily="@font/poppins_semi_bold" />-->
                 </RelativeLayout>
 
                 <FrameLayout
@@ -357,7 +357,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:text="View All"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textColor="#D14A4A"
                     android:fontFamily="@font/poppins_semi_bold" />
             </RelativeLayout>

@@ -16,7 +16,7 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/tvServiceTypeHistory"
+            android:id="@+id/tvServiceType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/montserrat_extra_bold"
@@ -35,7 +35,7 @@
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvServiceTypeHistory" />
+            app:layout_constraintTop_toBottomOf="@+id/tvServiceType" />
 
         <TextView
             android:id="@+id/tvDoctorNameHistory"
@@ -49,20 +49,22 @@
             app:layout_constraintTop_toBottomOf="@+id/tvDateHistory" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/button"
-            android:layout_width="150dp"
-            android:layout_height="50dp"
+            android:id="@+id/btnStatusHistory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="120dp"
             android:fontFamily="@font/poppins_semi_bold"
             android:text="COMPLETED"
             android:textAlignment="center"
             android:textAllCaps="false"
             android:textColor="@color/card_white"
-            android:textSize="16sp"
+            android:textSize="14sp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             app:backgroundTint="#80D6C2B5"
             app:cornerRadius="24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

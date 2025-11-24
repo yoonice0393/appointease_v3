@@ -1,7 +1,12 @@
 package com.example.sttherese.patient.activities;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -14,7 +19,6 @@ import com.example.sttherese.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.DayViewDecorator;
 import com.prolificinteractive.materialcalendarview.DayViewFacade;
@@ -28,12 +32,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-
 public class CalendarActivity extends AppCompatActivity {
 
     private MaterialCalendarView calendarView;
-    private TextView doctorName, appointmentDate, appointmentTime;
-    // Bottom Navigation
+    private TextView tvDoctorName, tvDoctorSpecialty, tvAppointmentDate, tvAppointmentTime, tvAppointmentType;
     private LinearLayout btnHome, btnDoctor, btnCalendar, btnHistory;
     private ImageView btnAdd;
     private FirebaseAuth mAuth;
@@ -44,31 +46,22 @@ public class CalendarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
 
-        calendarView = findViewById(R.id.calendarView);
-        doctorName = findViewById(R.id.tvDoctorName);
-        appointmentDate = findViewById(R.id.tvAppointmentDate);
-        appointmentTime = findViewById(R.id.tvAppointmentTime);
-
-        mAuth = FirebaseAuth.getInstance(); // <-- NEW
-        db = FirebaseFirestore.getInstance(); // <-- NEW
-
-        // Set listener for date selection
-        calendarView.setOnDateChangedListener((widget, date, selected) -> {
-            // You can add logic here to fetch appointments for the selected date
-            String selectedDate = date.getDay() + " " + date.getMonth() + " " + date.getYear();
-        });
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         initializeViews();
         setupClickListeners();
-
-        fetchAllUpcomingAppointments(); // ✅ This will show dots on calendar
-
+        fetchAllUpcomingAppointments();
     }
 
     private void initializeViews() {
-
-
-
+        calendarView = findViewById(R.id.calendarView);
+        tvDoctorName = findViewById(R.id.tvDoctorName);
+        tvDoctorSpecialty = findViewById(R.id.tvDoctorSpecialty);
+        tvAppointmentDate = findViewById(R.id.tvAppointmentDate);
+        tvAppointmentTime = findViewById(R.id.tvAppointmentTime);
+        tvAppointmentType = findViewById(R.id.tvAppointmentType);
+//        btnNavigate = findViewById(R.id.btnNavigate);
 
         // Bottom Navigation
         btnHome = findViewById(R.id.btnHome);
@@ -76,49 +69,39 @@ public class CalendarActivity extends AppCompatActivity {
         btnCalendar = findViewById(R.id.btnCalendar);
         btnHistory = findViewById(R.id.btnHistory);
         btnAdd = findViewById(R.id.btnAdd);
-    }
-    private void setupClickListeners() {
 
-        // Bottom Navigation
+        // Set listener for date selection
+        calendarView.setOnDateChangedListener((widget, date, selected) -> {
+            loadAppointmentsForDate(date);
+        });
+    }
+
+    private void setupClickListeners() {
         btnHome.setOnClickListener(v -> {
-            showToast("Home");
             startActivity(new Intent(CalendarActivity.this, Home.class));
-            // Already on home page
         });
 
         btnDoctor.setOnClickListener(v -> {
-            showToast("Doctors");
-            // Navigate to DoctorsActivity
             startActivity(new Intent(CalendarActivity.this, DoctorsActivity.class));
         });
 
         btnAdd.setOnClickListener(v -> {
-            showToast("Add New Appointment");
-            // Navigate to AddAppointmentActivity
-            // startActivity(new Intent(HomePage.this, AddAppointmentActivity.class));
+            startActivity(new Intent(CalendarActivity.this, BookingAppointmentActivity.class));
+            // Navigate to AddAppointmentActivity when ready
         });
 
         btnCalendar.setOnClickListener(v -> {
             showToast("Already at Calendar");
-            // Navigate to CalendarActivity
-//            startActivity(new Intent(CalendarActivity.this, CalendarActivity.class));
         });
 
         btnHistory.setOnClickListener(v -> {
-            showToast("History");
-            // Show menu dialog or navigate to MenuActivity
             startActivity(new Intent(CalendarActivity.this, HistoryActivity.class));
         });
-    }
-
-    private org.threeten.bp.LocalDate convertToLocalDate(java.util.Date date) {
-        if (date == null) return null;
-
-        // Convert Date to Instant, then to ZoneId, then to LocalDate
-        return org.threeten.bp.Instant
-                .ofEpochMilli(date.getTime())
-                .atZone(org.threeten.bp.ZoneId.systemDefault())
-                .toLocalDate();
+//
+//        btnNavigate.setOnClickListener(v -> {
+//            // Navigate to appointment details or doctor profile
+//            showToast("View Appointment Details");
+//        });
     }
 
     private void fetchAllUpcomingAppointments() {
@@ -129,76 +112,69 @@ public class CalendarActivity extends AppCompatActivity {
             return;
         }
 
+        android.util.Log.d("PatientCalendar", "Loading appointments for userId: " + userId);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
         db.collection("appointments")
                 .whereEqualTo("userId", userId)
                 .whereIn("status", List.of("pending", "confirmed"))
-                .orderBy("date", Query.Direction.ASCENDING)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                    SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd h:mm a", Locale.getDefault());
+                    android.util.Log.d("PatientCalendar", "Found " + querySnapshot.size() + " appointments");
 
                     HashSet<CalendarDay> appointmentDates = new HashSet<>();
-
                     long now = new Date().getTime();
                     long smallestFutureDifference = Long.MAX_VALUE;
                     DocumentSnapshot upcomingAppointmentDoc = null;
 
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        String dateStr = doc.getString("date"); // e.g., "2025-12-25"
-                        String timeStr = doc.getString("time"); // e.g., "9:00 am"
+                        String dateStr = doc.getString("date");
+                        String timeStr = doc.getString("time");
 
                         if (dateStr == null || timeStr == null) continue;
 
                         try {
                             Date dateOnly = dateFormat.parse(dateStr);
-
-                            // 1. Logic for Calendar Decoration
                             org.threeten.bp.LocalDate localDate = convertToLocalDate(dateOnly);
                             appointmentDates.add(CalendarDay.from(localDate));
 
-                            // 2. Logic for Finding Latest Upcoming Appointment
+                            // Find next upcoming appointment (time in 24-hour format)
                             Date appointmentDateTime = dateTimeFormat.parse(dateStr + " " + timeStr);
                             long appointmentTimeMillis = appointmentDateTime.getTime();
 
                             if (appointmentTimeMillis >= now) {
                                 long timeDifference = appointmentTimeMillis - now;
-
                                 if (timeDifference < smallestFutureDifference) {
                                     smallestFutureDifference = timeDifference;
                                     upcomingAppointmentDoc = doc;
                                 }
                             }
                         } catch (Exception e) {
-
+                            android.util.Log.e("PatientCalendar", "Error parsing date/time", e);
                             e.printStackTrace();
                         }
                     }
 
-                    // A. Apply Decorators to Calendar
+                    // Apply red dots to calendar for appointment dates
                     int dotColor = ContextCompat.getColor(CalendarActivity.this, R.color.red_primary);
                     calendarView.addDecorator(new EventDecorator(dotColor, appointmentDates));
 
-                    // B. Display and Highlight the Latest Upcoming Appointment
+                    // Display upcoming appointment
                     if (upcomingAppointmentDoc != null) {
-                        // Display in the Upcoming Card
                         displayAppointment(upcomingAppointmentDoc);
 
-                        // Highlight the date on the calendar
+                        // Highlight and scroll to the date
                         String latestDateStr = upcomingAppointmentDoc.getString("date");
                         if (latestDateStr != null) {
                             try {
                                 Date latestDate = dateFormat.parse(latestDateStr);
                                 org.threeten.bp.LocalDate localDate = convertToLocalDate(latestDate);
                                 CalendarDay latestCalendarDay = CalendarDay.from(localDate);
-
-                                // Select the date and scroll the calendar view to it
                                 calendarView.setSelectedDate(latestCalendarDay);
                                 calendarView.setCurrentDate(latestCalendarDay);
-
                             } catch (Exception e) {
-                                // Date parsing failed
                                 e.printStackTrace();
                             }
                         }
@@ -207,14 +183,213 @@ public class CalendarActivity extends AppCompatActivity {
                     }
                 })
                 .addOnFailureListener(e -> {
+                    android.util.Log.e("PatientCalendar", "Failed to load appointments", e);
                     Toast.makeText(this, "Failed to load appointments.", Toast.LENGTH_SHORT).show();
                     displayNoAppointment();
                 });
     }
 
+    private void loadAppointmentsForDate(CalendarDay date) {
+        String userId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
+        if (userId == null) return;
+
+        // 1. Date string format for Firestore query (e.g., "2025-01-17")
+        String dateStr = String.format(Locale.getDefault(), "%04d-%02d-%02d",
+                date.getYear(), date.getMonth(), date.getDay());
+
+        // 2. Date string format for the Dialog Header (e.g., "January 17, 2025")
+        String displayHeaderDate = dateStr; // Initialize with raw string as fallback
+        try {
+            SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            // Use the format that matches your dialog image: "Month Day, Year"
+            SimpleDateFormat headerFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
+            displayHeaderDate = headerFormat.format(dbFormat.parse(dateStr));
+        } catch (Exception e) {
+            // If parsing fails, displayHeaderDate remains the raw dateStr
+            android.util.Log.e("CalendarActivity", "Error formatting header date", e);
+        }
+
+        String finalDisplayHeaderDate = displayHeaderDate;
+        db.collection("appointments")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("date", dateStr)
+                .whereIn("status", List.of("pending", "confirmed"))
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<AppointmentDetail> appointments = new java.util.ArrayList<>();
+
+                    if (!querySnapshot.isEmpty()) {
+                        for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                            String time = doc.getString("time");
+                            String appointmentType = doc.getString("appointmentType");
+                            String doctorName = doc.getString("doctorName");
+
+                            // Format time from 24-hour to 12-hour
+                            String displayTime = time;
+                            try {
+                                SimpleDateFormat input = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                                SimpleDateFormat output = new SimpleDateFormat("h:mm a", Locale.getDefault());
+                                displayTime = output.format(input.parse(time));
+                            } catch (Exception e) {
+                                android.util.Log.e("CalendarActivity", "Error formatting appointment time", e);
+                            }
+
+                            AppointmentDetail detail = new AppointmentDetail(
+                                    displayTime,
+                                    appointmentType != null ? appointmentType : "Appointment",
+                                    doctorName != null ?  doctorName : "Doctor N/A"
+                            );
+                            appointments.add(detail);
+                        }
+                    }
+
+                    showPatientAppointmentsDialog(finalDisplayHeaderDate, appointments);
+
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                });
+    }
+
+    public static class AppointmentDetail {
+        String time;
+        String type;
+        String doctor;
+
+        public AppointmentDetail(String time, String type, String doctor) {
+            this.time = time;
+            this.type = type;
+            this.doctor = doctor;
+        }
+    }
+    private void showPatientAppointmentsDialog(String dateStr, List<AppointmentDetail> appointments) {
+        // 1. Create the custom dialog
+        final Dialog dialog = new Dialog(this);
+        // Ensure you are using the new XML file name for the dialog
+        dialog.setContentView(R.layout.dialog_patient_appointments);
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        // Remove default dialog padding/insets
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        // 2. Find views
+        TextView dialogDate = dialog.findViewById(R.id.dialogDate); // The "January 17, 2025" text
+        LinearLayout appointmentsContainer = dialog.findViewById(R.id.appointmentsContainer); // The dynamic list
+        Button btnClose = dialog.findViewById(R.id.btnClose);
+
+        // 3. Populate data
+        // Assuming dateStr is already in the format "Month Day, Year" like "January 17, 2025"
+        dialogDate.setText(dateStr);
+
+        // Clear existing views just in case (optional)
+        appointmentsContainer.removeAllViews();
+
+        // Use LayoutInflater to create views from the appointment_card.xml
+        LayoutInflater inflater = LayoutInflater.from(this);
+
+        if (appointments != null && !appointments.isEmpty()) {
+            for (AppointmentDetail appointment : appointments) {
+                // Inflate the individual appointment card layout (see XML section below)
+                View appointmentCardView = inflater.inflate(R.layout.card_patient_appointments, appointmentsContainer, false);
+
+                TextView tvTime = appointmentCardView.findViewById(R.id.tvAppointmentTime);
+                TextView tvType = appointmentCardView.findViewById(R.id.tvAppointmentType);
+                TextView tvDoctor = appointmentCardView.findViewById(R.id.tvDoctorName);
+
+                tvTime.setText(appointment.time);
+                tvType.setText(appointment.type);
+                tvDoctor.setText(appointment.doctor);
+
+                // Add the inflated card to the container
+                appointmentsContainer.addView(appointmentCardView);
+            }
+        } else {
+            // Handle case where there are no appointments (e.g., show a placeholder)
+            TextView noAppointmentsText = new TextView(this);
+            noAppointmentsText.setText("You have no confirmed appointments for this date.");
+            noAppointmentsText.setPadding(32, 32, 32, 32);
+            // ... set text color and gravity
+            appointmentsContainer.addView(noAppointmentsText);
+        }
+
+        // 4. Set click listener for the close button
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        // 5. Show the dialog
+        dialog.show();
+    }
+
+    private void displayAppointment(DocumentSnapshot appointmentDoc) {
+        String docName = appointmentDoc.getString("doctorName");
+        String dateStr = appointmentDoc.getString("date");
+        String timeStr = appointmentDoc.getString("time");
+        String appointmentType = appointmentDoc.getString("appointmentType");
+        String doctorId = appointmentDoc.getString("doctorId");
+
+        // Format date
+        String formattedDate = dateStr;
+        try {
+            SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            SimpleDateFormat displayFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
+            formattedDate = displayFormat.format(dbFormat.parse(dateStr));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Format time from 24-hour to 12-hour
+        String formattedTime = timeStr;
+        try {
+            SimpleDateFormat input = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            SimpleDateFormat output = new SimpleDateFormat("h:mm a", Locale.getDefault());
+            formattedTime = output.format(input.parse(timeStr));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        tvDoctorName.setText(docName != null ? docName : "N/A");
+        tvAppointmentType.setText(appointmentType != null ? appointmentType : "Appointment");
+        tvAppointmentDate.setText(formattedDate);
+        tvAppointmentTime.setText(formattedTime);
+
+        // Load doctor specialty from doctors collection
+        if (doctorId != null) {
+            loadDoctorSpecialty(doctorId);
+        } else {
+            tvDoctorSpecialty.setText("Specialist");
+        }
+    }
+
+    private void loadDoctorSpecialty(String doctorId) {
+        db.collection("doctors").document(doctorId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String specialty = documentSnapshot.getString("specialty");
+                        tvDoctorSpecialty.setText(specialty != null ? specialty : "Specialist");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    tvDoctorSpecialty.setText("Specialist");
+                });
+    }
+
+    private void displayNoAppointment() {
+        tvDoctorName.setText("No Upcoming Appointments");
+        tvDoctorSpecialty.setText("Check back later!");
+        tvAppointmentType.setText("");
+        tvAppointmentDate.setText("");
+        tvAppointmentTime.setText("");
+    }
+
+    private org.threeten.bp.LocalDate convertToLocalDate(Date date) {
+        if (date == null) return null;
+        return org.threeten.bp.Instant
+                .ofEpochMilli(date.getTime())
+                .atZone(org.threeten.bp.ZoneId.systemDefault())
+                .toLocalDate();
+    }
 
     private class EventDecorator implements DayViewDecorator {
-
         private final int color;
         private final HashSet<CalendarDay> dates;
 
@@ -230,100 +405,8 @@ public class CalendarActivity extends AppCompatActivity {
 
         @Override
         public void decorate(DayViewFacade view) {
-            // Use a 5-pixel dot span to mark the date
-            view.addSpan(new DotSpan(5, color));
+            view.addSpan(new DotSpan(8, color));
         }
-    }
-
-    private void fetchLatestUpcomingAppointment() {
-        String userId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
-
-        if (userId == null) {
-            Toast.makeText(this, "User not logged in.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // 1. Get today's date in milliseconds
-        long now = new Date().getTime();
-
-        db.collection("appointments")
-                .whereEqualTo("userId", userId) // Filter by current user
-                .whereIn("status", List.of("pending", "confirmed")) // Only show active appointments
-                // Firestore can only order by one field after a range/inequality filter (which we will simulate)
-                // We'll rely on the client-side filtering for time and status for accuracy.
-                // For simplicity and to use Firestore indexes efficiently, we'll order by date.
-                .orderBy("date", Query.Direction.ASCENDING)
-                .limit(20) // Limit the initial fetch size
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd h:mm a", Locale.getDefault());
-                    long smallestFutureDifference = Long.MAX_VALUE;
-                    DocumentSnapshot upcomingAppointment = null;
-
-                    // 2. Iterate and find the truly NEXT appointment (considering both date and time)
-                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        String dateStr = doc.getString("date"); // Format: yyyy-MM-dd
-                        String timeStr = doc.getString("time"); // Format: h:mm a (e.g., 9:00 am)
-
-                        if (dateStr == null || timeStr == null) continue;
-
-                        try {
-                            Date appointmentDateTime = dateFormat.parse(dateStr + " " + timeStr);
-                            long appointmentTimeMillis = appointmentDateTime.getTime();
-
-                            // Check if the appointment is in the future
-                            if (appointmentTimeMillis >= now) {
-                                long timeDifference = appointmentTimeMillis - now;
-
-                                // Check if this appointment is closer than the smallest found so far
-                                if (timeDifference < smallestFutureDifference) {
-                                    smallestFutureDifference = timeDifference;
-                                    upcomingAppointment = doc;
-                                }
-                            }
-                        } catch (Exception e) {
-                            // Handle parsing error
-                        }
-                    }
-
-                    // 3. Display the result
-                    if (upcomingAppointment != null) {
-                        displayAppointment(upcomingAppointment);
-                    } else {
-                        displayNoAppointment();
-                    }
-
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to load appointments.", Toast.LENGTH_SHORT).show();
-                    displayNoAppointment();
-                });
-    }
-    private void displayAppointment(DocumentSnapshot appointmentDoc) {
-        String docName = appointmentDoc.getString("doctorName");
-        String dateStr = appointmentDoc.getString("date");
-        String timeStr = appointmentDoc.getString("time");
-
-        // Optional: Format the date for better display
-        String formattedDate = dateStr;
-        try {
-            SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            SimpleDateFormat displayFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
-            formattedDate = displayFormat.format(dbFormat.parse(dateStr));
-        } catch (Exception e) {
-            // Use raw date if parsing fails
-        }
-
-        doctorName.setText(docName != null ? docName : "N/A");
-        appointmentDate.setText(formattedDate);
-        appointmentTime.setText(timeStr != null ? timeStr : "N/A");
-    }
-
-    private void displayNoAppointment() {
-        doctorName.setText("No Upcoming Appointments");
-        appointmentDate.setText("Check back later!");
-        appointmentTime.setText("");
     }
 
     private void showToast(String message) {

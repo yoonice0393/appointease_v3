@@ -6,6 +6,8 @@ package com.example.sttherese.adapters;
  */
 public interface OnItemCountChangeListener {
 
+    void onLoadMore();
+
     /**
      * Called by the adapter whenever the data set changes.
      * @param count The current number of items in the adapter.

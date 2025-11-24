@@ -5,6 +5,7 @@
         import android.os.Bundle;
         import android.util.Log;
         import android.view.View;
+        import android.view.ViewGroup;
         import android.widget.EditText;
         import android.widget.ImageView;
         import android.widget.LinearLayout;
@@ -21,6 +22,8 @@
         import com.example.sttherese.SignInPage;
         import com.example.sttherese.adapters.AppointmentAdapter;
         import com.example.sttherese.adapters.DoctorAdapter;
+        import com.example.sttherese.adapters.ScheduleSlotAdapter;
+        import com.example.sttherese.models.ScheduleSlot;
         import com.google.android.material.button.MaterialButton;
         import com.google.android.material.chip.Chip;
         import com.google.android.material.chip.ChipGroup;
@@ -29,8 +32,14 @@
         import com.google.firebase.firestore.Query;
 
         import java.text.SimpleDateFormat;
+        import java.util.ArrayList;
+        import java.util.Arrays;
         import java.util.Calendar;
+        import java.util.Date;
+        import java.util.HashMap;
+        import java.util.List;
         import java.util.Locale;
+        import java.util.Map;
 
         public class Home extends AppCompatActivity {
 
@@ -56,7 +65,7 @@
             // Filter Chips
             private ChipGroup chipGroup;
             private Chip chipAll, chipObGyne, chipMedical;
-            private TextView tvViewAll;
+//            private TextView tvViewAll;
 
             // Bottom Navigation
             private LinearLayout btnHome, btnDoctor, btnCalendar, btnHistory;
@@ -67,7 +76,7 @@
 
             private String userDocId;
             // Recent Visit Views
-            private TextView tvVisitDate, tvVisitDay, tvServiceType, tvViewAllVisits;
+            private TextView tvVisitDate, tvVisitDay, tvServiceType, tvViewAll;
             // You need a layout for the recent visit card to show/hide it
             private CardView recentVisitCard;
             private CardView emptyRecentVisitCard;
@@ -105,19 +114,19 @@
 
 
                 btnBookAppointment.setOnClickListener(v -> {
-                    Intent intent = new Intent(Home.this, AppointmentDetailsActivity.class);
+                    Intent intent = new Intent(Home.this, BookingAppointmentActivity.class);
                     startActivity(intent);
                 });
 
                 btnAdd.setOnClickListener(v -> {
-                    Intent intent = new Intent(Home.this, AppointmentDetailsActivity.class);
+                    Intent intent = new Intent(Home.this, BookingAppointmentActivity.class);
                     startActivity(intent);
                 });
 
-                tvViewAllVisits.setOnClickListener(v -> {
-                    Intent intent = new Intent(Home.this, HistoryActivity.class);
-                    startActivity(intent);
-                });
+//                tvViewAllVisits.setOnClickListener(v -> {
+//                    Intent intent = new Intent(Home.this, HistoryActivity.class);
+//                    startActivity(intent);
+//                });
 
 
             }
@@ -225,7 +234,7 @@
                 tvVisitDate = findViewById(R.id.tvVisitDate);
                 tvVisitDay = findViewById(R.id.tvVisitDay);
                 tvServiceType = findViewById(R.id.tvServiceType);
-                tvViewAllVisits = findViewById(R.id.tvViewAllVisits);
+//                tvViewAllVisits = findViewById(R.id.tvViewAllVisits);
                 recentVisitCard = findViewById(R.id.recentVisitCard); // Assuming you add this ID to the XML
                 emptyRecentVisitCard = findViewById(R.id.emptyRecentVisitCard);
 
@@ -331,6 +340,220 @@
                     btnBookAppointment.setOnClickListener(v -> Toast.makeText(this, "Book Appointment", Toast.LENGTH_SHORT).show());
                 }
             }
+            private void showScheduleDialog(String doctorId, String doctorName) {
+                android.app.Dialog dialog = new android.app.Dialog(this);
+                dialog.setContentView(R.layout.dialog_doctor_schedule);
+                dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                dialog.setCancelable(true);
+                if (dialog.getWindow() != null) {
+                    dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+                }
+
+                RecyclerView recyclerView = dialog.findViewById(R.id.scheduleRecyclerView);
+                LinearLayout emptyStateView = dialog.findViewById(R.id.emptyStateView);
+
+                TextView tvHeader = dialog.findViewById(R.id.tvDoctorNameHeader);
+                TextView tvDoctorSpecialtyHeader = dialog.findViewById(R.id.tvDoctorSpecialtyHeader);
+                ImageView closeBtnX = dialog.findViewById(R.id.closeButton);
+
+                tvHeader.setText(doctorName);
+
+                // Fetch doctor's specialty from Firestore
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                db.collection("doctors")
+                        .document(doctorId)
+                        .get()
+                        .addOnSuccessListener(documentSnapshot -> {
+                            if (documentSnapshot.exists()) {
+                                String specialty = documentSnapshot.getString("specialty");
+                                if (specialty != null && !specialty.isEmpty()) {
+                                    tvDoctorSpecialtyHeader.setText(specialty);
+                                } else {
+                                    tvDoctorSpecialtyHeader.setText("General Practitioner");
+                                }
+                            } else {
+                                tvDoctorSpecialtyHeader.setText("General Practitioner");
+                                Log.w("ScheduleDialog", "Doctor document not found for ID: " + doctorId);
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("ScheduleDialog", "Error fetching doctor specialty: ", e);
+                            tvDoctorSpecialtyHeader.setText("General Practitioner");
+                        });
+
+                closeBtnX.setOnClickListener(v -> dialog.dismiss());
+
+                List<ScheduleSlot> scheduleList = new ArrayList<>();
+                ScheduleSlotAdapter adapter = new ScheduleSlotAdapter(this, scheduleList, slot -> {
+                    Toast.makeText(this, "Proceeding to book a slot on " + slot.getDate() +
+                            " between " + slot.getStartTime() + " and " + slot.getEndTime(), Toast.LENGTH_LONG).show();
+                    // TODO: Start your booking confirmation activity/fragment here, passing date and doctorId
+                    dialog.dismiss();
+                });
+
+                recyclerView.setLayoutManager(new LinearLayoutManager(this));
+                recyclerView.setAdapter(adapter);
+
+                loadScheduleData(doctorId, scheduleList, adapter, emptyStateView, recyclerView);
+
+                dialog.show();
+            }
+            private void loadScheduleData(String doctorId, List<ScheduleSlot> scheduleList,
+                                          ScheduleSlotAdapter adapter, LinearLayout emptyStateView,
+                                          RecyclerView recyclerView) {
+
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                // Step 1: Fetch fixed weekly schedules for the doctor
+                // 🛑 CRITICAL FIX: Use the correct field name 'doctorID' for clinic_schedules
+                db.collection("clinic_schedules")
+                        .whereEqualTo("doctor_id", doctorId)
+                        .get()
+                        .addOnSuccessListener(fixedSchedulesSnapshot -> {
+
+                            Map<String, DocumentSnapshot> fixedSchedules = new HashMap<>();
+                            Log.d("ScheduleDebug", "Fixed Schedules loaded: " + fixedSchedulesSnapshot.size());
+
+                            for (DocumentSnapshot doc : fixedSchedulesSnapshot.getDocuments()) {
+                                String dayOfWeek = doc.getString("day_of_week");
+                                if (dayOfWeek != null) {
+                                    fixedSchedules.put(dayOfWeek.toLowerCase(Locale.ROOT), doc);
+                                }
+                            }
+
+                            // Step 2: Fetch schedule exceptions and existing appointments
+                            // Note: 'doctor_id' is correct for exceptions
+                            db.collection("schedule_exceptions")
+                                    .whereEqualTo("doctor_id", doctorId)
+                                    .whereGreaterThanOrEqualTo("date", getCurrentDateString())
+                                    .get()
+                                    .addOnSuccessListener(exceptionsSnapshot -> {
+
+                                        // Note: 'doctorId' is correct for appointments
+                                        db.collection("appointments")
+                                                .whereEqualTo("doctorId", doctorId)
+                                                .whereGreaterThanOrEqualTo("date", getCurrentDateString())
+                                                .whereIn("status", Arrays.asList("pending", "confirmed"))
+                                                .get()
+                                                .addOnSuccessListener(appointmentsSnapshot -> {
+
+                                                    // Only needed if you wanted to mark a day as partially booked.
+                                                    // For this daily view, we won't use bookedSlots to filter out individual time slots.
+
+                                                    // Generate schedule for the next 14 days
+                                                    generateDailySlots(fixedSchedules, exceptionsSnapshot.getDocuments(), scheduleList);
+
+                                                    Log.d("ScheduleDebug", "Generated daily entries: " + scheduleList.size());
+
+                                                    adapter.notifyDataSetChanged();
+
+                                                    // 5. Display results
+                                                    if (scheduleList.isEmpty()) {
+                                                        emptyStateView.setVisibility(View.VISIBLE);
+                                                        recyclerView.setVisibility(View.GONE);
+                                                    } else {
+                                                        emptyStateView.setVisibility(View.GONE);
+                                                        recyclerView.setVisibility(View.VISIBLE);
+                                                    }
+                                                });
+                                    });
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("ScheduleDialog", "Error loading schedule data: ", e);
+                            Toast.makeText(Home.this, "Failed to load schedule.", Toast.LENGTH_SHORT).show();
+                            emptyStateView.setVisibility(View.VISIBLE);
+                            recyclerView.setVisibility(View.GONE);
+                        });
+            }
+
+            private void generateDailySlots(Map<String, DocumentSnapshot> fixedSchedules,
+                                            List<DocumentSnapshot> exceptions,
+                                            List<ScheduleSlot> resultList) {
+
+                resultList.clear();
+
+                Calendar calendar = Calendar.getInstance();
+                SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.ENGLISH); // Full day name (Monday)
+                SimpleDateFormat shortDayFormat = new SimpleDateFormat("EEE", Locale.ENGLISH); // MON, TUE
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ROOT);
+
+                // Date format for display (e.g., Nov 17, 2025)
+                SimpleDateFormat displayDateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+                // Map exceptions for quick lookup: date -> DocumentSnapshot
+                Map<String, DocumentSnapshot> exceptionMap = new HashMap<>();
+                for (DocumentSnapshot doc : exceptions) {
+                    String date = doc.getString("date");
+                    if (date != null) exceptionMap.put(date, doc);
+                }
+
+                // Iterate over the next 14 days
+                for (int i = 0; i < 14; i++) {
+                    String dateString = dateFormat.format(calendar.getTime());
+                    String displayDate = displayDateFormat.format(calendar.getTime());
+                    String dayNameFull = dayFormat.format(calendar.getTime());
+                    String dayNameShort = shortDayFormat.format(calendar.getTime());
+                    String dayOfWeek = dayNameFull.toLowerCase(Locale.ROOT);
+
+                    // 1. Check for All-Day Exception
+                    if (exceptionMap.containsKey(dateString)) {
+                        DocumentSnapshot exceptionDoc = exceptionMap.get(dateString);
+                        if (Boolean.TRUE.equals(exceptionDoc.getBoolean("is_all_day"))) {
+                            calendar.add(Calendar.DAY_OF_YEAR, 1);
+                            continue; // Skip this date
+                        }
+                    }
+
+                    // 2. Check Fixed Schedule
+                    if (fixedSchedules.containsKey(dayOfWeek)) {
+                        DocumentSnapshot scheduleDoc = fixedSchedules.get(dayOfWeek);
+
+                        String startTimeStr = scheduleDoc.getString("start_time");
+                        String endTimeStr = scheduleDoc.getString("end_time");
+
+                        if (startTimeStr == null || endTimeStr == null) {
+                            calendar.add(Calendar.DAY_OF_YEAR, 1);
+                            continue;
+                        }
+
+                        // Convert times to readable 12-hour format
+                        String displayStartTime = formatTime(startTimeStr);
+                        String displayEndTime = formatTime(endTimeStr);
+
+                        // 3. Apply Partial-Day Exception Logic (simplified: we ignore it for a full-day view)
+                        // If you need to show "9:00 AM - 12:00 PM, then 2:00 PM - 5:00 PM", you must create TWO ScheduleSlot objects.
+
+                        // 4. Create single Daily Schedule Slot
+                        ScheduleSlot dailySlot = new ScheduleSlot();
+                        dailySlot.setDate(displayDate);
+                        dailySlot.setDay(dayNameFull);
+                        dailySlot.setDayShort(dayNameShort.toUpperCase(Locale.ROOT));
+                        dailySlot.setStartTime(displayStartTime);
+                        dailySlot.setEndTime(displayEndTime);
+                        dailySlot.setStatus("Available"); // Status is always available for the day
+
+                        resultList.add(dailySlot);
+                    }
+
+                    calendar.add(Calendar.DAY_OF_YEAR, 1);
+                }
+            }
+
+            private String formatTime(String timeStr) {
+                if (timeStr == null) return "N/A";
+                try {
+                    SimpleDateFormat dbFormat = new SimpleDateFormat("H:mm", Locale.ROOT);
+                    SimpleDateFormat displayFormat = new SimpleDateFormat("h:mm a", Locale.ROOT);
+                    Date date = dbFormat.parse(timeStr);
+                    return displayFormat.format(date);
+                } catch (Exception e) {
+                    Log.e("ScheduleHelper", "Failed to parse time string: " + timeStr, e);
+                    return timeStr;
+                }
+            }
+
+            private String getCurrentDateString() {
+                return new SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(new Date());
+            }
 
             private void fetchUserName() {
                 // userDocId is the Firebase Auth UID (e.g., xvNf...60e2)
@@ -384,7 +607,7 @@
                 }
                 doctorAdapter.removeListener(); // Remove previous listener
                 doctorAdapter = new DoctorAdapter(this, doctor -> {
-                    Toast.makeText(Home.this, "Booking with " + doctor.getName(), Toast.LENGTH_SHORT).show();
+                    showScheduleDialog(doctor.getId(), doctor.getName());
                 }, query);
                 rvDoctors.setAdapter(doctorAdapter);
             }

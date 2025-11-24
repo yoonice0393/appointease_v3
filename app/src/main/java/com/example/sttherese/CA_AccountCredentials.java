@@ -328,7 +328,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
                 });
     }
 
-    // 💡 New helper method to handle cleanup
+    // helper method to handle cleanup
     private void handleSignUpFailure(String errorMessage) {
         buttonSignUp.setEnabled(true);
         buttonSignUp.setText("Sign Up");

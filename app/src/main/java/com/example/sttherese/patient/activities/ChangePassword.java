@@ -40,7 +40,7 @@ public class ChangePassword extends AppCompatActivity {
     private FirebaseFirestore db;
     private String userEmail;
     private boolean isVerified;
-    private String verificationCode; // Store the 6-digit code passed from previous activity
+    private String verificationCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,30 +56,20 @@ public class ChangePassword extends AppCompatActivity {
         textPasswordMatch = findViewById(R.id.textPasswordMatch);
         buttonReset = findViewById(R.id.buttonReset);
 
-        // Get data from intent
         userEmail = getIntent().getStringExtra("email");
         isVerified = getIntent().getBooleanExtra("verified", false);
-        // CRITICAL FIX: Retrieve the 6-digit code passed from ResetMethodEmail
         verificationCode = getIntent().getStringExtra("code");
 
-        // Security check
-        // Check for verification status AND the presence of the code
         if (userEmail == null || !isVerified || verificationCode == null) {
             Toast.makeText(this, "Unauthorized access or missing verification.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Toggle password visibility
         setupPasswordVisibilityToggle();
-
-        // Add strength checker
         editTextNewPassword.addTextChangedListener(passwordStrengthWatcher);
-
-        // Add password match checker
         editTextConfirmPassword.addTextChangedListener(confirmPasswordWatcher);
 
-        // Reset password button
         buttonReset.setOnClickListener(v -> {
             String newPass = editTextNewPassword.getText().toString().trim();
             String confirmPass = editTextConfirmPassword.getText().toString().trim();
@@ -103,7 +93,6 @@ public class ChangePassword extends AppCompatActivity {
             buttonReset.setEnabled(false);
             buttonReset.setText("Updating password...");
 
-            // Use the verification code to authenticate and then update the password
             updatePasswordWithVerification(newPass);
         });
     }
@@ -223,98 +212,99 @@ public class ChangePassword extends AppCompatActivity {
         if (password.matches("(?=.*[A-Z])(?=.*[a-z]).+")) score++;
         if (password.matches("(?=.*[0-9])(?=.*[!@#$%^&*(),.?\":{}|<>]).+")) score++;
 
-        if (score <= 1) return 0; // Weak
-        else if (score == 2) return 1; // Medium
-        else return 2; // Strong
+        if (score <= 1) return 0;
+        else if (score == 2) return 1;
+        else return 2;
     }
 
-    /**
-     * FIXED METHOD: Uses the 6-digit code (which is the temporary Auth password)
-     * to sign in and update the password.
-     */
     private void updatePasswordWithVerification(String newPassword) {
-        buttonReset.setEnabled(false);
-        buttonReset.setText("Authenticating...");
-
-        // Step 1: Create credentials using the user's email and the 6-digit code (the temporary Auth password)
         AuthCredential credential = EmailAuthProvider.getCredential(userEmail, verificationCode);
 
-        // Step 2: Sign in the user using the temporary credentials
         mAuth.signInWithCredential(credential)
                 .addOnSuccessListener(authResult -> {
-                    // Sign-in successful. We are now authenticated.
-                    buttonReset.setText("Updating password...");
                     FirebaseUser user = authResult.getUser();
 
-                    // Step 3: Update the password directly
                     user.updatePassword(newPassword)
                             .addOnSuccessListener(aVoid -> {
+                                // Password updated successfully, now cleanup
                                 cleanupAndShowSuccess();
                             })
                             .addOnFailureListener(e -> {
-                                buttonReset.setEnabled(true);
-                                buttonReset.setText("Reset Password");
+                                resetButton();
                                 showCustomDialog(
                                         R.drawable.ic_error,
                                         "Password Update Failed",
-                                        "Error updating password after authentication: " + e.getMessage()
+                                        "Error updating password: " + e.getMessage(),
+                                        false
                                 );
                             });
                 })
                 .addOnFailureListener(e -> {
-                    // Sign-in failed. This means the PHP script failed to set the temporary password correctly
-                    // OR the temporary password/email pair is incorrect.
-                    buttonReset.setEnabled(true);
-                    buttonReset.setText("Reset Password");
+                    resetButton();
                     showCustomDialog(
                             R.drawable.ic_error,
                             "Verification Failed",
-                            "Could not authenticate with the code. Please try the reset process again. Error: " + e.getMessage()
+                            "Could not authenticate with the code. Please try again. Error: " + e.getMessage(),
+                            false
                     );
                 });
     }
 
     private void cleanupAndShowSuccess() {
-        // Convert email to a valid key (same logic)
         String docId = userEmail.replace(".", "_").replace("@", "_at_");
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("password_resets")
+                .child(docId);
 
-        // Reference to Realtime Database
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("password_resets").child(docId);
+        // Set a timeout for the cleanup operation
+        Handler timeoutHandler = new Handler(Looper.getMainLooper());
+        Runnable timeoutRunnable = () -> {
+            // If cleanup takes too long (>10 seconds), show success anyway
+            resetButton();
+            showCustomDialog(
+                    R.drawable.ic_check,
+                    "Success!",
+                    "Your password has been updated successfully!",
+                    true
+            );
+        };
+
+        // Start 10-second timeout
+        timeoutHandler.postDelayed(timeoutRunnable, 10000);
 
         ref.removeValue()
-                .addOnSuccessListener(unused -> {
-                    showCustomDialog(
-                            R.drawable.ic_check,
-                            "Success!",
-                            "Your password has been updated successfully!"
-                    );
+                .addOnCompleteListener(task -> {
+                    // Cancel the timeout since operation completed
+                    timeoutHandler.removeCallbacks(timeoutRunnable);
 
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        Intent intent = new Intent(ChangePassword.this, SignInPage.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    }, 3000);
-                })
-                .addOnFailureListener(e -> {
-                    // Still show success even if cleanup fails
-                    showCustomDialog(
-                            R.drawable.ic_check,
-                            "Success!",
-                            "Your password has been updated! (Cleanup failed: " + e.getMessage() + ")"
-                    );
+                    // Reset button state
+                    resetButton();
 
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        Intent intent = new Intent(ChangePassword.this, SignInPage.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    }, 3000);
+                    if (task.isSuccessful()) {
+                        showCustomDialog(
+                                R.drawable.ic_check,
+                                "Success!",
+                                "Your password has been updated successfully!",
+                                true
+                        );
+                    } else {
+                        // Cleanup failed, but password was changed
+                        showCustomDialog(
+                                R.drawable.ic_check,
+                                "Success!",
+                                "Your password has been updated successfully!",
+                                true
+                        );
+                    }
                 });
     }
 
+    private void resetButton() {
+        buttonReset.setEnabled(true);
+        buttonReset.setText("Reset Password");
+    }
 
-    private void showCustomDialog(int iconResId, String title, String message) {
+    private void showCustomDialog(int iconResId, String title, String message, boolean isSuccess) {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_custom_status, null);
 
         ImageView icon = dialogView.findViewById(R.id.dialog_icon);
@@ -329,13 +319,22 @@ public class ChangePassword extends AppCompatActivity {
         androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(
                 this, R.style.CustomAlertDialog)
                 .setView(dialogView)
+                .setCancelable(false)
                 .create();
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
 
-        closeBtn.setOnClickListener(v -> dialog.dismiss());
+        closeBtn.setOnClickListener(v -> {
+            dialog.dismiss();
+            if (isSuccess) {
+                Intent intent = new Intent(ChangePassword.this, SignInPage.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         dialog.show();
     }

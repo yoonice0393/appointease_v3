@@ -13,6 +13,13 @@
     <color name="grey_booked">#6E6E6E</color>
 
 
+    <!-- Green for regular schedule -->
+    <color name="green_primary">#4CAF50</color>
+    <color name="green_light">#E8F5E9</color>
+
+    <!-- Orange for schedule exceptions -->
+    <color name="orange_primary">#FF9800</color>
+    <color name="orange_light">#FFF3E0</color>
 
 
 

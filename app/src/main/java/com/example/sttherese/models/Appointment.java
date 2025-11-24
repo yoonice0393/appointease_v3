@@ -11,6 +11,13 @@ public class Appointment {
     private String patientAvatar;
     private String service;
 
+    // ---  FOR PATIENT DETAILS ---
+    private String patientBirthday;
+    private String patientAge;
+    private String patientAddress;
+    private String patientContact;
+
+
     // Firestore fields (from appointments collection)
     private String doctorId;        // Maps to "doctorId" in Firestore
     private String userId;          // Maps to "userId" in Firestore
@@ -74,6 +81,19 @@ public class Appointment {
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
+
+    public String getPatientBirthday() { return patientBirthday; }
+    public void setPatientBirthday(String patientBirthday) { this.patientBirthday = patientBirthday; }
+
+    public String getPatientAge() { return patientAge; }
+    public void setPatientAge(String patientAge) { this.patientAge = patientAge; }
+
+    public String getPatientAddress() { return patientAddress; }
+    public void setPatientAddress(String patientAddress) { this.patientAddress = patientAddress; }
+
+    public String getPatientContact() { return patientContact; }
+    public void setPatientContact(String patientContact) { this.patientContact = patientContact; }
+
 
     public String getAppointmentType() { return appointmentType; }
     public void setAppointmentType(String appointmentType) {

@@ -26,7 +26,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 public class DoctorHistoryActivity extends AppCompatActivity implements OnItemCountChangeListener {
-
     private static final String TAG = "DoctorHistoryActivity";
     private FirebaseFirestore db;
     private String userDocId; // This holds the Doctor's Document ID
@@ -226,6 +225,12 @@ public class DoctorHistoryActivity extends AppCompatActivity implements OnItemCo
 
         // Re-query with new filter
         setupHistoryList();
+    }
+
+    @Override
+    public void onLoadMore() {
+        Log.d(TAG, "onLoadMore triggered by adapter. Calling loadMoreHistory().");
+        loadMoreHistory();
     }
 
     @Override

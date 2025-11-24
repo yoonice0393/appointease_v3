@@ -31,13 +31,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation ("com.google.firebase:firebase-auth")
     implementation("com.firebaseui:firebase-ui-firestore:8.0.2")
-
+    implementation("com.google.code.gson:gson:2.10.1")
     implementation ("com.google.firebase:firebase-firestore")
     implementation ("com.google.firebase:firebase-database")
     implementation("com.android.volley:volley:1.2.1")
@@ -56,6 +59,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.database)
     implementation(libs.volley)
+    implementation(libs.navigation.fragment)
+    implementation(libs.navigation.ui)
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
 //    implementation("com.applandeo:material-calendar-view:1.9.2")
     implementation(libs.appcompat)

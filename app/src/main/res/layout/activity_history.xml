@@ -20,63 +20,93 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
+        <HorizontalScrollView
+            android:id="@+id/hsvStatusFilters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-<!--        <HorizontalScrollView-->
-<!--            android:id="@+id/hsvStatusFilters"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:scrollbars="none"-->
-<!--            android:layout_marginBottom="16dp"-->
-<!--            app:layout_constraintTop_toTopOf="parent"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintEnd_toEndOf="parent">-->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupStatusFilters"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="8dp"
+                app:singleSelection="true">
 
-<!--            <com.google.android.material.chip.ChipGroup-->
-<!--                android:id="@+id/chipGroupStatusFilters"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                app:singleSelection="true">-->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAll"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:textColor="@color/chip_text_selector_alt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipBackgroundColor="@color/chip_background_selector_alt"
+                    android:text="All"
+                    android:checked="true"
+                    app:chipStrokeWidth="1.5dp"
+                    app:chipStrokeColor="#50333333"/>
 
-<!--                <com.google.android.material.chip.Chip-->
-<!--                    android:id="@+id/chipAll"-->
-<!--                    style="@style/Widget.MaterialComponents.Chip.Filter"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:checked="true"-->
-<!--                    android:text="All" />-->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipPending"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:textColor="@color/chip_text_selector_alt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pending"
+                    app:chipBackgroundColor="@color/chip_background_selector_alt"
 
-<!--                <com.google.android.material.chip.Chip-->
-<!--                    android:id="@+id/chipCompleted"-->
-<!--                    style="@style/Widget.MaterialComponents.Chip.Filter"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:text="Completed" />-->
+                    app:chipStrokeWidth="1.5dp"
+                    app:chipStrokeColor="#50333333"/>
 
-<!--                <com.google.android.material.chip.Chip-->
-<!--                    android:id="@+id/chipPending"-->
-<!--                    style="@style/Widget.MaterialComponents.Chip.Filter"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:text="Pending" />-->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipConfirmed"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:textColor="@color/chip_text_selector_alt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Confirmed"
+                    app:chipBackgroundColor="@color/chip_background_selector_alt"
+                    app:chipStrokeWidth="1.5dp"
+                    app:chipStrokeColor="#50333333"/>
 
-<!--                <com.google.android.material.chip.Chip-->
-<!--                    android:id="@+id/chipCanceled"-->
-<!--                    style="@style/Widget.MaterialComponents.Chip.Filter"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:text="Canceled" />-->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipCompleted"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:textColor="@color/chip_text_selector_alt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Completed"
+                    app:chipBackgroundColor="@color/chip_background_selector_alt"
+                    app:chipStrokeWidth="1.5dp"
+                    app:chipStrokeColor="#50333333"/>
 
-<!--            </com.google.android.material.chip.ChipGroup>-->
-<!--        </HorizontalScrollView>-->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipCancelled"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:textColor="@color/chip_text_selector_alt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cancelled"
+                    app:chipBackgroundColor="@color/chip_background_selector_alt"
+                    app:chipStrokeWidth="1.5dp"
+                    app:chipStrokeColor="#50333333"/>
+
+            </com.google.android.material.chip.ChipGroup>
+        </HorizontalScrollView>
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardEmptyHistory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardBackgroundColor="@color/card_white"
+            android:visibility="gone"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/hsvStatusFilters"
+            tools:layout_editor_absoluteX="24dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -87,23 +117,25 @@
                     android:id="@+id/tvNoHistoryTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
                     android:fontFamily="@font/montserrat_extra_bold"
                     android:gravity="center"
                     android:text="NO HISTORY"
                     android:textColor="@color/brown_text"
-                    android:textSize="25sp"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textSize="20sp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:layout_editor_absoluteX="25dp" />
 
                 <TextView
+                    android:id="@+id/tvNoHistoryMessage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
                     android:fontFamily="@font/poppins_medium"
+                    android:gravity="center"
                     android:text="You don't have any past visit in the center currently."
                     android:textColor="@color/text_secondary"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -117,7 +149,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/hsvStatusFilters"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             tools:listitem="@layout/history_card" />

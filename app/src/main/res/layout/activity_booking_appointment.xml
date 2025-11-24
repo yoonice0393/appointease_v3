@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7F1EE"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Close Button -->
+        <ImageView
+            android:id="@+id/closeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_close"
+            android:layout_gravity="end"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/textTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SET APPOINTMENT"
+            android:textColor="@color/brown_text"
+            android:textSize="22sp"
+            android:fontFamily="@font/montserrat_extra_bold"
+            android:layout_marginBottom="4dp"/>
+
+        <!-- Subtitle -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Please make sure to fill every fields correctly."
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:fontFamily="@font/poppins_medium"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Appointment Type -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Appointment Type:"
+            android:textColor="@color/brown_text"
+            android:textSize="13sp"
+            android:fontFamily="@font/poppins_bold"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/CustomSpinnerInputLayout"
+            android:layout_marginBottom="24dp">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/spinnerAppointmentType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Appointment Type"
+            android:inputType="none"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:fontFamily="@font/poppins_regular"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"/> </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Doctor Selection -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Doctor:"
+            android:textColor="@color/brown_text"
+            android:textSize="13sp"
+            android:fontFamily="@font/poppins_bold"/>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/doctorCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:minHeight="100dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/card_white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_add"
+                    app:tint="@color/brown_text" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Choose Doctor"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/poppins_medium"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Date Picker -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginBottom="24dp">
+
+            <Button
+                android:id="@+id/buttonPickDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Choose Date"
+                android:backgroundTint="@color/brown_text"
+                android:textColor="#FFFFFF"
+                android:fontFamily="@font/poppins_semi_bold"/>
+
+            <TextView
+                android:id="@+id/textSelectedDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No date selected"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="8dp"
+                android:textSize="13sp"
+                android:fontFamily="@font/poppins_medium"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
+
+        <!-- Morning Slots -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Morning Slots:"
+            android:textColor="@color/brown_text"
+            android:textSize="12sp"
+            android:fontFamily="@font/poppins_bold"/>
+
+        <GridLayout
+            android:id="@+id/gridMorning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:rowCount="2"
+            android:alignmentMode="alignBounds"
+            android:useDefaultMargins="false"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp">
+        </GridLayout>
+
+        <!-- Afternoon Slots -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Afternoon Slots:"
+            android:textColor="@color/brown_text"
+            android:textSize="12sp"
+            android:fontFamily="@font/poppins_bold"/>
+
+        <GridLayout
+            android:id="@+id/gridAfternoon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:layout_marginBottom="32dp">
+        </GridLayout>
+
+        <!-- Book Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonBook"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Book Appointment"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:fontFamily="@font/poppins_semi_bold"
+            android:textSize="12sp"
+            app:cornerRadius="20dp"
+            app:backgroundTint="@color/red_primary"/>
+    </LinearLayout>
+</ScrollView>

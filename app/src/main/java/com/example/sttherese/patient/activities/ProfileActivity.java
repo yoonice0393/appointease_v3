@@ -28,7 +28,7 @@ public class ProfileActivity extends AppCompatActivity {
     ImageView backBtn;
     MaterialButton logoutBtn;
     TextView dialogTitle, nameHolder, genderHolder, dobHolder, emailHolder, mobileHolder,
-            addressHolder, usernameHolder, passwordHolder, userIdHolder, nameCard, emailCard, addressCard;
+            addressHolder, usernameHolder, patientIdHolder, nameCard, emailCard, addressCard;
     TextView showInfoLink;
     Button btnYes, btnNo;
     View view;
@@ -57,8 +57,8 @@ public class ProfileActivity extends AppCompatActivity {
         mobileHolder = findViewById(R.id.textViewMobileHolder);
         addressHolder = findViewById(R.id.textViewAddressHolder);
         usernameHolder = findViewById(R.id.textViewUsernameHolder);
-        passwordHolder = findViewById(R.id.textViewPasswordHolder);
-        userIdHolder = findViewById(R.id.textViewUserIDHolder);
+//        passwordHolder = findViewById(R.id.textViewPasswordHolder);
+        patientIdHolder = findViewById(R.id.textViewPatientIdHolder);
         showInfoLink = findViewById(R.id.textViewShowInfo);
         backBtn = findViewById(R.id.buttonBack);
         logoutBtn = findViewById(R.id.buttonLogout);
@@ -185,8 +185,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void hideAccountInfo() {
         usernameHolder.setText("******");
-        passwordHolder.setText("**********");
-        if (userIdHolder != null) userIdHolder.setText("*****");
+//        passwordHolder.setText("**********");
+        if (patientIdHolder != null) patientIdHolder.setText("*****");
         showInfoLink.setText("Show Information");
         isInfoVisible = false;
     }
@@ -203,7 +203,7 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        // 1. Fetch from 'users' collection using the Auth UID as the document ID (This is fine)
+        // 1. Fetch from 'users' collection using the Auth UID as the document ID
         db.collection("users").document(authUid).get().addOnSuccessListener(userSnap -> {
             if (userSnap.exists()) {
                 String email = userSnap.getString("email");
@@ -212,7 +212,6 @@ public class ProfileActivity extends AppCompatActivity {
                 emailCard.setText(email != null ? email : "N/A");
 
                 // 2. Fetch the 'patients' document by querying the 'userId' field
-                // You are searching for the document where the field "userId" equals the Auth UID
                 db.collection("patients")
                         .whereEqualTo("userId", authUid) // Find the patient document linked to this Auth UID
                         .limit(1)
@@ -221,6 +220,11 @@ public class ProfileActivity extends AppCompatActivity {
                             if (!querySnapshot.isEmpty()) {
                                 // Found the matching patient document
                                 com.google.firebase.firestore.DocumentSnapshot patientSnap = querySnapshot.getDocuments().get(0);
+
+                                // Extract the document ID (the custom patientId)
+                                String patientId = patientSnap.getId();
+
+                                // --- Patient Details Extraction ---
 
                                 String firstName = capitalizeWords(patientSnap.getString("first_name"));
                                 String middleName = patientSnap.getString("middle_name") != null ?
@@ -242,10 +246,13 @@ public class ProfileActivity extends AppCompatActivity {
 
                                 if (isInfoVisible) {
                                     usernameHolder.setText(email != null ? email.split("@")[0] : "");
-                                    // NOTE: The 'password' field is not typically stored in Firestore
-                                    // You should remove this line if it's not needed:
-                                    passwordHolder.setText(userSnap.getString("password"));
-                                    if (userIdHolder != null) userIdHolder.setText(authUid);
+
+                                    // Display the custom patient ID
+                                    if (patientIdHolder != null) {
+                                        patientIdHolder.setText(patientId);
+                                    }
+
+
                                 } else {
                                     hideAccountInfo();
                                 }

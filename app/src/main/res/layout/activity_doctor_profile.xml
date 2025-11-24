@@ -226,11 +226,11 @@
                     android:id="@+id/divider"
                     android:layout_width="0dp"
                     android:layout_height="1dp"
-                    android:layout_marginTop="5dp"
+                    android:layout_marginTop="10dp"
                     android:background="#80D6C2B5"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewDOBHolder" />
+                    app:layout_constraintTop_toBottomOf="@+id/textViewSpecialty" />
 
                 <TextView
                     android:id="@+id/textViewContactInfo"
@@ -301,34 +301,36 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_marginStart="68dp"
+                    android:layout_marginTop="94dp"
                     android:fontFamily="@font/poppins_medium"
                     android:text="Specialty"
                     android:textColor="@color/brown_text"
                     android:textSize="11sp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewMobile" />
+                    app:layout_constraintTop_toBottomOf="@+id/textViewDOB" />
 
                 <TextView
                     android:id="@+id/textViewSpecialtyHolder"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
+                    android:layout_marginTop="94dp"
                     android:fontFamily="@font/poppins_medium"
                     android:text="Gyenocology"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
                     app:layout_constraintStart_toEndOf="@+id/textViewSpecialty"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewMobileHolder" />
+                    app:layout_constraintTop_toBottomOf="@+id/textViewDOBHolder" />
 
                 <View
                     android:id="@+id/divider2"
                     android:layout_width="0dp"
                     android:layout_height="1dp"
-                    android:layout_marginTop="5dp"
                     android:background="#80D6C2B5"
+                    android:layout_marginTop="10dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewSpecialtyHolder" />
+                    app:layout_constraintTop_toBottomOf="@+id/textViewMobile" />
 
                 <TextView
                     android:id="@+id/textViewAccountInfo"
@@ -379,30 +381,30 @@
                     app:layout_constraintStart_toEndOf="@+id/textViewUsername"
                     app:layout_constraintTop_toBottomOf="@+id/textViewAccountInfo" />
 
-                <TextView
-                    android:id="@+id/textViewPassword"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:layout_marginStart="68dp"
-                    android:fontFamily="@font/poppins_medium"
-                    android:text="Password:"
-                    android:textColor="@color/brown_text"
-                    android:textSize="11sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewUsername" />
+<!--                <TextView-->
+<!--                    android:id="@+id/textViewPassword"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_margin="10dp"-->
+<!--                    android:layout_marginStart="68dp"-->
+<!--                    android:fontFamily="@font/poppins_medium"-->
+<!--                    android:text="Password:"-->
+<!--                    android:textColor="@color/brown_text"-->
+<!--                    android:textSize="11sp"-->
+<!--                    app:layout_constraintStart_toStartOf="parent"-->
+<!--                    app:layout_constraintTop_toBottomOf="@+id/textViewUsername" />-->
 
-                <TextView
-                    android:id="@+id/textViewPasswordHolder"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:fontFamily="@font/poppins_medium"
-                    android:text="Clarkie0977"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="11sp"
-                    app:layout_constraintStart_toEndOf="@+id/textViewPassword"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewUsernameHolder" />
+<!--                <TextView-->
+<!--                    android:id="@+id/textViewPasswordHolder"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_margin="10dp"-->
+<!--                    android:fontFamily="@font/poppins_medium"-->
+<!--                    android:text="Clarkie0977"-->
+<!--                    android:textColor="@color/text_secondary"-->
+<!--                    android:textSize="11sp"-->
+<!--                    app:layout_constraintStart_toEndOf="@+id/textViewPassword"-->
+<!--                    app:layout_constraintTop_toBottomOf="@+id/textViewUsernameHolder" />-->
 
                 <TextView
                     android:id="@+id/textViewUserID"
@@ -410,24 +412,26 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_marginStart="68dp"
+                    android:layout_marginTop="29dp"
                     android:fontFamily="@font/poppins_medium"
-                    android:text="User ID:"
+                    android:text="Doctor ID:"
                     android:textColor="@color/brown_text"
                     android:textSize="11sp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewPassword" />
+                    app:layout_constraintTop_toBottomOf="@+id/textViewUsername" />
 
                 <TextView
-                    android:id="@+id/textViewUserIDHolder"
+                    android:id="@+id/textViewDoctorIDHolder"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
+                    android:layout_marginTop="29dp"
                     android:fontFamily="@font/poppins_medium"
                     android:text="P09765"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
                     app:layout_constraintStart_toEndOf="@+id/textViewUserID"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewPasswordHolder" />
+                    app:layout_constraintTop_toBottomOf="@+id/textViewUsernameHolder" />
 
 
             </androidx.constraintlayout.widget.ConstraintLayout>

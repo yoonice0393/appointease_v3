@@ -379,30 +379,30 @@
                     app:layout_constraintStart_toEndOf="@+id/textViewUsername"
                     app:layout_constraintTop_toBottomOf="@+id/textViewAccountInfo" />
 
-                <TextView
-                    android:id="@+id/textViewPassword"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:layout_marginStart="68dp"
-                    android:fontFamily="@font/poppins_medium"
-                    android:text="Password:"
-                    android:textColor="@color/brown_text"
-                    android:textSize="11sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewUsername" />
+<!--                <TextView-->
+<!--                    android:id="@+id/textViewPassword"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_margin="10dp"-->
+<!--                    android:layout_marginStart="68dp"-->
+<!--                    android:fontFamily="@font/poppins_medium"-->
+<!--                    android:text="Password:"-->
+<!--                    android:textColor="@color/brown_text"-->
+<!--                    android:textSize="11sp"-->
+<!--                    app:layout_constraintStart_toStartOf="parent"-->
+<!--                    app:layout_constraintTop_toBottomOf="@+id/textViewUsername" />-->
 
-                <TextView
-                    android:id="@+id/textViewPasswordHolder"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:fontFamily="@font/poppins_medium"
-                    android:text="Clarkie0977"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="11sp"
-                    app:layout_constraintStart_toEndOf="@+id/textViewPassword"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewUsernameHolder" />
+<!--                <TextView-->
+<!--                    android:id="@+id/textViewPasswordHolder"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_margin="10dp"-->
+<!--                    android:fontFamily="@font/poppins_medium"-->
+<!--                    android:text="Clarkie0977"-->
+<!--                    android:textColor="@color/text_secondary"-->
+<!--                    android:textSize="11sp"-->
+<!--                    app:layout_constraintStart_toEndOf="@+id/textViewPassword"-->
+<!--                    app:layout_constraintTop_toBottomOf="@+id/textViewUsernameHolder" />-->
 
                 <TextView
                     android:id="@+id/textViewUserID"
@@ -410,24 +410,26 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_marginStart="68dp"
+                    android:layout_marginTop="29dp"
                     android:fontFamily="@font/poppins_medium"
-                    android:text="User ID:"
+                    android:text="Patient ID:"
                     android:textColor="@color/brown_text"
                     android:textSize="11sp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewPassword" />
+                    app:layout_constraintTop_toBottomOf="@+id/textViewUsername" />
 
                 <TextView
-                    android:id="@+id/textViewUserIDHolder"
+                    android:id="@+id/textViewPatientIdHolder"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
+                    android:layout_marginTop="29dp"
                     android:fontFamily="@font/poppins_medium"
                     android:text="P09765"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp"
                     app:layout_constraintStart_toEndOf="@+id/textViewUserID"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewPasswordHolder" />
+                    app:layout_constraintTop_toBottomOf="@+id/textViewUsernameHolder" />
 
 
             </androidx.constraintlayout.widget.ConstraintLayout>

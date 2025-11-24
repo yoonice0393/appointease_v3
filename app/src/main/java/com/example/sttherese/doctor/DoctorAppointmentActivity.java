@@ -24,6 +24,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -98,7 +99,7 @@ public class DoctorAppointmentActivity extends AppCompatActivity
                 startActivity(new Intent(this, DoctorHistoryActivity.class)));
 
         btnAdd.setOnClickListener(v ->
-                Toast.makeText(this, "Add New Appointment/Patient", Toast.LENGTH_SHORT).show());
+                startActivity(new Intent(this, AvailabilityScheduling.class)));
 
         // Chip Group Listener - Fixed to handle deselection properly
         chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
@@ -209,12 +210,18 @@ public class DoctorAppointmentActivity extends AppCompatActivity
 
     @Override
     public void onItemClick(Appointment appointment) {
-        Toast.makeText(this, "Appointment for " + appointment.getPatientName() + " clicked.",
-                Toast.LENGTH_SHORT).show();
-        // TODO: Navigate to detail screen
-        // Intent intent = new Intent(this, DoctorAppointmentDetailActivity.class);
-        // intent.putExtra("appointment_id", appointment.getId());
-        // startActivity(intent);
+        // 1. Create an Intent for the details activity
+        Intent intent = new Intent(this, AppointmentDetailsActivity.class);
+
+        // 2. Convert the Appointment object to a JSON string
+        // This is a reliable way to pass complex objects between activities.
+        String appointmentJson = new Gson().toJson(appointment);
+
+        // 3. Put the JSON string into the Intent
+        intent.putExtra("appointment_json", appointmentJson);
+
+        // 4. Start the new activity
+        startActivity(intent);
     }
 
     @Override

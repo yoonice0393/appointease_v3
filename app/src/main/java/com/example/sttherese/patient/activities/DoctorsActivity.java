@@ -7,7 +7,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -15,7 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -90,7 +88,7 @@ public class DoctorsActivity extends AppCompatActivity {
          btnCalendar.setOnClickListener(v -> startActivity(new Intent(this, CalendarActivity.class)));
          btnHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
         btnDoctor.setOnClickListener(v -> Toast.makeText(this, "Already on Doctors", Toast.LENGTH_SHORT).show());
-        btnAdd.setOnClickListener(v -> startActivity(new Intent(this, AppointmentDetailsActivity.class)));
+        btnAdd.setOnClickListener(v -> startActivity(new Intent(this, BookingAppointmentActivity.class)));
     }
 
     private void initializeViews() {
@@ -157,18 +155,18 @@ public class DoctorsActivity extends AppCompatActivity {
      * Creates and configures a single specialty Chip.
      */
     private Chip createSpecialtyChip(String specialty) {
-        Chip chip = new Chip(this);
+        // Inflate the chip from the dedicated layout resource
+        Chip chip = (Chip) getLayoutInflater().inflate(R.layout.chip_specialty_item, chipGroup, false);
+
         chip.setText(specialty);
         chip.setTag(specialty);
-        chip.setCheckable(true);
-        chip.setClickable(true);
 
-        // Optional: Customize chip style using themes or attributes
-        // Example: If you have a custom chip style:
-        // chip.setChipDrawable(ChipDrawable.createFromAttributes(this, null, 0, R.style.CustomChipStyle));
-
-        chip.setTextColor(ContextCompat.getColorStateList(this, R.color.chip_background_selector));
-        // You'll need to define colors like R.color.chip_text_color and R.color.chip_background_color in colors.xml
+        // Assign a unique ID (Still needed for the setOnCheckedStateChangeListener)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            chip.setId(View.generateViewId());
+        } else {
+            chip.setId(specialty.hashCode());
+        }
 
         return chip;
     }
@@ -241,6 +239,10 @@ public class DoctorsActivity extends AppCompatActivity {
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.setCancelable(true);
 
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
         RecyclerView recyclerView = dialog.findViewById(R.id.scheduleRecyclerView);
         LinearLayout emptyStateView = dialog.findViewById(R.id.emptyStateView);
 
@@ -300,8 +302,7 @@ public class DoctorsActivity extends AppCompatActivity {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Step 1: Fetch fixed weekly schedules for the doctor
-        // 🛑 CRITICAL FIX: Use the correct field name 'doctorID' for clinic_schedules
+        // Fetch fixed weekly schedules for the doctor
         db.collection("clinic_schedules")
                 .whereEqualTo("doctor_id", doctorId)
                 .get()
@@ -317,15 +318,15 @@ public class DoctorsActivity extends AppCompatActivity {
                         }
                     }
 
-                    // Step 2: Fetch schedule exceptions and existing appointments
-                    // Note: 'doctor_id' is correct for exceptions
+                    // Fetch schedule exceptions and existing appointments
+
                     db.collection("schedule_exceptions")
                             .whereEqualTo("doctor_id", doctorId)
                             .whereGreaterThanOrEqualTo("date", getCurrentDateString())
                             .get()
                             .addOnSuccessListener(exceptionsSnapshot -> {
 
-                                // Note: 'doctorId' is correct for appointments
+
                                 db.collection("appointments")
                                         .whereEqualTo("doctorId", doctorId)
                                         .whereGreaterThanOrEqualTo("date", getCurrentDateString())
@@ -333,8 +334,7 @@ public class DoctorsActivity extends AppCompatActivity {
                                         .get()
                                         .addOnSuccessListener(appointmentsSnapshot -> {
 
-                                            // Only needed if you wanted to mark a day as partially booked.
-                                            // For this daily view, we won't use bookedSlots to filter out individual time slots.
+
 
                                             // Generate schedule for the next 14 days
                                             generateDailySlots(fixedSchedules, exceptionsSnapshot.getDocuments(), scheduleList);
