@@ -50,6 +50,8 @@ dependencies {
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.0")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("com.github.f0ris.sweetalert:library:1.5.6")
+    implementation("androidx.core:core-splashscreen:1.0.1")
+// Or the latest version
 // For control over item selection of both touch and mouse driven selection
     implementation("androidx.recyclerview:recyclerview-selection:1.2.0")
     implementation ("com.github.bumptech.glide:glide:4.16.0")

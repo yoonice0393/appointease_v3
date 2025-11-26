@@ -20,6 +20,7 @@
     <!-- Orange for schedule exceptions -->
     <color name="orange_primary">#FF9800</color>
     <color name="orange_light">#FFF3E0</color>
+    <color name="gray_button_color">#A9A9A9</color>
 
 
 

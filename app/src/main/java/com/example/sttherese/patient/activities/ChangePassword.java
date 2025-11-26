@@ -1,6 +1,7 @@
 package com.example.sttherese.patient.activities;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.sttherese.R;
 import com.example.sttherese.SignInPage;
@@ -93,6 +95,12 @@ public class ChangePassword extends AppCompatActivity {
             buttonReset.setEnabled(false);
             buttonReset.setText("Updating password...");
 
+            // Get the gray color resource
+            int grayColor = ContextCompat.getColor(this, R.color.gray_button_color);
+
+            // Change the background tint to gray
+            buttonReset.setBackgroundTintList(ColorStateList.valueOf(grayColor));
+
             updatePasswordWithVerification(newPass);
         });
     }
@@ -128,19 +136,19 @@ public class ChangePassword extends AppCompatActivity {
             passwordVisible = !passwordVisible;
             if (passwordVisible) {
                 editText.setTransformationMethod(null);
-                editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_slash, 0);
+                editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye, 0);
             } else {
                 editText.setTransformationMethod(new PasswordTransformationMethod());
-                editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye, 0);
+                editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_slash, 0);
             }
         } else {
             confirmPasswordVisible = !confirmPasswordVisible;
             if (confirmPasswordVisible) {
                 editText.setTransformationMethod(null);
-                editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_slash, 0);
+                editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye, 0);
             } else {
                 editText.setTransformationMethod(new PasswordTransformationMethod());
-                editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye, 0);
+                editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_slash, 0);
             }
         }
         editText.setSelection(editText.getText().length());
@@ -163,15 +171,15 @@ public class ChangePassword extends AppCompatActivity {
             switch (strength) {
                 case 0:
                     passwordStrengthText.setText("Weak Password");
-                    passwordStrengthText.setTextColor(Color.RED);
+                    passwordStrengthText.setTextColor(Color.parseColor("#FC022D"));
                     break;
                 case 1:
                     passwordStrengthText.setText("Medium Password");
-                    passwordStrengthText.setTextColor(Color.parseColor("#FFA500"));
+                    passwordStrengthText.setTextColor(Color.parseColor("#FCC202"));
                     break;
                 case 2:
                     passwordStrengthText.setText("Strong Password");
-                    passwordStrengthText.setTextColor(Color.GREEN);
+                    passwordStrengthText.setTextColor(Color.parseColor("#4CAF50"));
                     break;
             }
         }
@@ -194,11 +202,11 @@ public class ChangePassword extends AppCompatActivity {
             } else if (!password.equals(confirm)) {
                 textPasswordMatch.setVisibility(View.VISIBLE);
                 textPasswordMatch.setText("Passwords do not match");
-                textPasswordMatch.setTextColor(Color.RED);
+                textPasswordMatch.setTextColor(Color.parseColor("#FC022D"));
             } else {
                 textPasswordMatch.setVisibility(View.VISIBLE);
                 textPasswordMatch.setText("Passwords match");
-                textPasswordMatch.setTextColor(Color.GREEN);
+                textPasswordMatch.setTextColor(Color.parseColor("#4CAF50"));
             }
         }
 
@@ -233,8 +241,8 @@ public class ChangePassword extends AppCompatActivity {
                                 resetButton();
                                 showCustomDialog(
                                         R.drawable.ic_error,
+                                        "Error",
                                         "Password Update Failed",
-                                        "Error updating password: " + e.getMessage(),
                                         false
                                 );
                             });
@@ -299,10 +307,22 @@ public class ChangePassword extends AppCompatActivity {
                 });
     }
 
+    // ...
+
+
     private void resetButton() {
         buttonReset.setEnabled(true);
-        buttonReset.setText("Reset Password");
+        buttonReset.setText("Reset Password"); // Or "Update Password"
+
+        // Assuming your original color in XML was set to @color/red_primary
+        int originalColor = ContextCompat.getColor(this, R.color.red_primary);
+
+        // Restore the original background tint
+        buttonReset.setBackgroundTintList(ColorStateList.valueOf(originalColor));
     }
+
+
+
 
     private void showCustomDialog(int iconResId, String title, String message, boolean isSuccess) {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_custom_status, null);

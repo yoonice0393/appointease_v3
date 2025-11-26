@@ -1,125 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/card_white">
-
-
-
-
-                <!-- Title -->
-    <TextView
-        android:id="@+id/textVerificationTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:fontFamily="@font/montserrat_extra_bold"
-        android:text="Verification"
-        android:textColor="@color/brown_text"
-        android:textSize="25sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-                <!-- Subtitle -->
-    <TextView
-        android:id="@+id/textView16"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/poppins_regular"
-        android:text="Please enter the 6-digit code we sent to your email."
-        android:textAlignment="center"
-        android:layout_margin="10dp"
-        android:textColor="@color/text_secondary"
-        android:textSize="11sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textVerificationTitle" />
-
-                <!-- Code Input Fields -->
-    <LinearLayout
-        android:id="@+id/layoutCodeInputs"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:layout_margin="20dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView16">
-
-        <EditText
-            android:id="@+id/codeDigit1"
-            style="@style/CodeInputStyle" />
-
-        <EditText
-            android:id="@+id/codeDigit2"
-            style="@style/CodeInputStyle" />
-
-        <EditText
-            android:id="@+id/codeDigit3"
-            style="@style/CodeInputStyle" />
-
-        <EditText
-            android:id="@+id/codeDigit4"
-            style="@style/CodeInputStyle" />
-
-        <EditText
-            android:id="@+id/codeDigit5"
-            style="@style/CodeInputStyle" />
-
-        <EditText
-            android:id="@+id/codeDigit6"
-            style="@style/CodeInputStyle" />
-
-
-    </LinearLayout>
-
-                <!-- Resend Code -->
-
-    <TextView
-        android:id="@+id/textTimer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text=""
-        android:textColor="@color/text_secondary"
-        android:textSize="14sp"
-
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layoutCodeInputs" />
-
-    <TextView
-        android:id="@+id/textResendCode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginEnd="50dp"
-        android:fontFamily="@font/poppins_regular"
-        android:text="Resend Code"
-        android:textColor="@color/text_secondary"
-        android:textSize="11sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textTimer" />
-
-
-
-                <!-- Confirm Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonConfirm"
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_margin="40dp"
-        android:fontFamily="@font/poppins_semi_bold"
-        android:text="Confirm"
-        android:textAllCaps="false"
-        android:textColor="@color/card_white"
-        android:textSize="12sp"
-        app:backgroundTint="@color/red_primary"
-        app:cornerRadius="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textResendCode" />
+        android:layout_height="match_parent"
+        android:background="@color/card_white">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+                    <!-- Title -->
+        <TextView
+            android:id="@+id/textVerificationTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:fontFamily="@font/montserrat_extra_bold"
+            android:text="Verification"
+            android:textColor="@color/brown_text"
+            android:textSize="25sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+                    <!-- Subtitle -->
+        <TextView
+            android:id="@+id/textView16"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_regular"
+            android:text="Please enter the 6-digit code we sent to your email."
+            android:textAlignment="center"
+            android:layout_margin="10dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textVerificationTitle" />
+
+                    <!-- Code Input Fields -->
+        <LinearLayout
+            android:id="@+id/layoutCodeInputs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_margin="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView16">
+
+            <EditText
+                android:id="@+id/codeDigit1"
+                style="@style/CodeInputStyle" />
+
+            <EditText
+                android:id="@+id/codeDigit2"
+                style="@style/CodeInputStyle" />
+
+            <EditText
+                android:id="@+id/codeDigit3"
+                style="@style/CodeInputStyle" />
+
+            <EditText
+                android:id="@+id/codeDigit4"
+                style="@style/CodeInputStyle" />
+
+            <EditText
+                android:id="@+id/codeDigit5"
+                style="@style/CodeInputStyle" />
+
+            <EditText
+                android:id="@+id/codeDigit6"
+                style="@style/CodeInputStyle" />
+
+
+        </LinearLayout>
+
+                    <!-- Resend Code -->
+        <TextView
+            android:id="@+id/textError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:fontFamily="@font/poppins_regular"
+            android:text="Wrong Code. Please try again"
+            android:layout_marginEnd="50dp"
+            android:layout_marginTop="10dp"
+            android:textColor="#FC022D"
+            android:visibility="gone"
+            android:textSize="11sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutCodeInputs" />
+
+        <TextView
+            android:id="@+id/textResendCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="50dp"
+            android:fontFamily="@font/poppins_regular"
+            android:text="Resend Code"
+            android:textColor="@color/brown_text"
+            android:textSize="11sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textError" />
+        <TextView
+            android:id="@+id/textResendTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_semi_bold"
+            android:text="Resend in 60s"
+            android:visibility="gone"
+            android:layout_marginEnd="50dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textResendCode" />
+
+
+                    <!-- Confirm Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonConfirm"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_margin="40dp"
+            android:fontFamily="@font/poppins_semi_bold"
+            android:text="Confirm"
+            android:textAllCaps="false"
+            android:textColor="@color/card_white"
+            android:textSize="12sp"
+            app:backgroundTint="@color/red_primary"
+            app:cornerRadius="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textResendCode" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>

@@ -16,7 +16,7 @@
             android:orientation="vertical"
             android:paddingBottom="40dp">
 
-            <!-- Curved Header Container -->
+
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="200dp">
@@ -27,20 +27,21 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/curved_header_background" />
 
-                <!-- <CHANGE> Added top padding and margin to position close button correctly -->
                 <ImageView
                     android:id="@+id/closeButton"
-                    android:layout_width="40dp"
+                    android:layout_width="34dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_close_white"
-
                     android:layout_gravity="end|top"
+                    android:background="@drawable/bg_circle_red"
                     android:layout_margin="16dp"
+                    android:padding="5dp"
+                    android:contentDescription="Close"
                     android:scaleType="centerInside"
-                    android:contentDescription="Close" />
+                    android:src="@drawable/ic_close_white" />
 
                 <!-- Title -->
                 <TextView
+                    android:id="@+id/tvPatientName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal|top"
@@ -88,7 +89,8 @@
                             app:tint="@color/brown_text" />
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:id="@+id/tvDate"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="January 02, 2026"
@@ -113,7 +115,8 @@
                             app:tint="@color/brown_text" />
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:id="@+id/tvTime"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="9:30 AM"
@@ -146,6 +149,7 @@
                             app:tint="@color/brown_text" />
 
                         <TextView
+                            android:id="@+id/tvSpecialty"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
@@ -182,6 +186,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:orientation="vertical">
@@ -204,6 +210,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
                         android:layout_weight="1"
+                        android:textSize="12sp"
                         android:text="November 09, 2025"
                         android:fontFamily="@font/montserrat_semi_bold"
                         android:textColor="@color/text_secondary" />
@@ -229,6 +236,7 @@
                         android:layout_marginStart="5dp"
                         android:layout_weight="1"
                         android:text="22"
+                        android:textSize="12dp"
                         android:fontFamily="@font/montserrat_semi_bold"
                         android:textColor="@color/text_secondary" />
                 </LinearLayout>
@@ -284,6 +292,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tvMedicalHistory"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -297,6 +306,7 @@
 
 
         </LinearLayout>
+
     </ScrollView>
 
     <!-- <CHANGE> Profile image positioned absolutely on top to overlap header -->

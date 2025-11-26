@@ -23,7 +23,7 @@
 
                 <!-- Title -->
     <TextView
-        android:id="@+id/textViewWelcome"
+        android:id="@+id/textViewCreateAccount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/montserrat_extra_bold"
@@ -34,6 +34,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonBack" />
+
+        <TextView
+            android:id="@+id/textViewWelcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_medium"
+            android:text="Personal Details"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewCreateAccount" />
 
                 <!-- First Name Label -->
     <TextView
@@ -310,7 +322,7 @@
         android:layout_height="50dp"
         android:fontFamily="@font/poppins_semi_bold"
         android:layout_margin="40dp"
-        android:text="Continue"
+        android:text="Create Account"
         android:textAllCaps="false"
         android:textColor="@color/card_white"
         android:textSize="12sp"

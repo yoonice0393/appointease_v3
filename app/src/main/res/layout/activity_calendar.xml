@@ -24,7 +24,7 @@
                 android:id="@+id/calendarCard"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="10dp"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
@@ -41,7 +41,8 @@
                     app:mcv_headerTextAppearance="@style/CalendarHeaderText"
                     app:mcv_selectionColor="@color/red_primary"
                     app:mcv_showOtherDates="all"
-                    app:mcv_weekDayTextAppearance="@style/CalendarWeekText" />
+                    app:mcv_weekDayTextAppearance="@style/CalendarWeekText"
+                    app:mcv_tileSize="40dp"/>
             </androidx.cardview.widget.CardView>
 
             <!-- Upcoming Appointment Card -->
@@ -60,7 +61,7 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="0dp">
+                    android:paddingBottom="10dp">
 
                     <FrameLayout
                         android:id="@+id/header"
@@ -137,7 +138,7 @@
                         android:fontFamily="@font/poppins_medium"
                         android:text="OB-GYN"
                         android:textColor="@color/text_secondary"
-                        android:textSize="13sp"
+                        android:textSize="12sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@id/ivDoctorAvatar"
                         app:layout_constraintTop_toBottomOf="@id/tvDoctorName" />
@@ -174,8 +175,10 @@
                         android:id="@+id/divider2"
                         android:layout_width="0dp"
                         android:layout_height="1dp"
-                        android:layout_marginTop="14dp"
-                        android:background="#D9D9D9"
+                        android:layout_marginTop="16dp"
+                        android:background="#D6C2B5"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/ivDoctorAvatar" />
@@ -290,7 +293,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="10dp"
                 android:padding="16dp"
                 android:text="Please arrive 30 minutes before your appointment time"
                 android:textColor="@color/brown_text"

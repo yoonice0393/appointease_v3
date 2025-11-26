@@ -18,6 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.sttherese.R;
 import com.example.sttherese.SignInPage;
+import com.example.sttherese.Terms_Conditions;
+import com.example.sttherese.patient.activities.PasswordEntryBottomSheet;
 import com.example.sttherese.patient.activities.ProfileActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -31,7 +33,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
 
 
     ImageView backBtn;
-    MaterialButton logoutBtn;
+    MaterialButton logoutBtn, termsBtn;
     TextView dialogTitle, nameHolder, genderHolder, dobHolder, emailHolder, mobileHolder,
             specialtyHolder, usernameHolder, doctorIdHolder, nameCard, emailCard, specialtyCard;
     TextView showInfoLink;
@@ -78,6 +80,10 @@ public class DoctorProfileActivity extends AppCompatActivity {
         backBtn.setOnClickListener(v -> onBackPressed());
 
         logoutBtn.setOnClickListener(v -> showLogoutDialog());
+        termsBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(DoctorProfileActivity.this, Terms_Conditions.class);
+            startActivity(intent);
+        });
 
     }
 
@@ -96,6 +102,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
         doctorIdHolder = findViewById(R.id.textViewDoctorIDHolder);
         showInfoLink = findViewById(R.id.textViewShowInfo);
         backBtn = findViewById(R.id.buttonBack);
+        termsBtn = findViewById(R.id.buttonTerms);
         logoutBtn = findViewById(R.id.buttonLogout);
     }
 
@@ -129,70 +136,22 @@ public class DoctorProfileActivity extends AppCompatActivity {
     }
 
     private void showPasswordDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_password_verification, null);
-        builder.setView(dialogView);
+        // 1. Create the new Bottom Sheet Fragment
+        com.example.sttherese.patient.activities.PasswordEntryBottomSheet bottomSheet = new com.example.sttherese.patient.activities.PasswordEntryBottomSheet();
 
-        AlertDialog dialog = builder.create();
-        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-
-        EditText passwordInput = dialogView.findViewById(R.id.editTextPassword);
-        ImageView togglePassword = dialogView.findViewById(R.id.imageViewTogglePassword);
-        MaterialButton proceedBtn = dialogView.findViewById(R.id.buttonProceed);
-
-        togglePassword.setOnClickListener(v -> {
-            if (passwordInput.getTransformationMethod() instanceof PasswordTransformationMethod) {
-                passwordInput.setTransformationMethod(null);
-                togglePassword.setImageResource(R.drawable.ic_eye);
-            } else {
-                passwordInput.setTransformationMethod(new PasswordTransformationMethod());
-                togglePassword.setImageResource(R.drawable.ic_eye_slash);
-            }
-            passwordInput.setSelection(passwordInput.getText().length());
-        });
-
-        proceedBtn.setOnClickListener(v -> {
-            String password = passwordInput.getText().toString().trim();
-            if (password.isEmpty()) {
-                Toast.makeText(this, "Please enter your password", Toast.LENGTH_SHORT).show();
-            } else {
-                verifyPassword(password, dialog);
+        // 2. Set the listener to handle success callback
+        bottomSheet.setPasswordVerificationListener(new PasswordEntryBottomSheet.PasswordVerificationListener() {
+            @Override
+            public void onVerificationSuccess() {
+                // This method is called from the BottomSheet on successful verification
+                showAccountInfo();
             }
         });
 
-        dialog.show();
+        // 3. Show the bottom sheet using FragmentManager
+        bottomSheet.show(getSupportFragmentManager(), "PasswordEntryBottomSheet");
     }
 
-    private void verifyPassword(String password, AlertDialog dialog) {
-        // 1. Get current user and their email
-        com.google.firebase.auth.FirebaseAuth mAuth = com.google.firebase.auth.FirebaseAuth.getInstance();
-        com.google.firebase.auth.FirebaseUser user = mAuth.getCurrentUser();
-
-        if (user == null || user.getEmail() == null) {
-            Toast.makeText(this, "Authentication error. Please log in again.", Toast.LENGTH_LONG).show();
-            dialog.dismiss();
-            return;
-        }
-
-        String email = user.getEmail();
-
-        // 2. Use Firebase Auth to re-authenticate the user
-        com.google.firebase.auth.AuthCredential credential =
-                com.google.firebase.auth.EmailAuthProvider.getCredential(email, password);
-
-        user.reauthenticate(credential)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        dialog.dismiss();
-                        showAccountInfo();
-                        Toast.makeText(this, "Access granted", Toast.LENGTH_SHORT).show();
-                    } else {
-                        // This handles incorrect passwords
-                        Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
-                        android.util.Log.e("Auth", "Re-authentication failed: " + task.getException().getMessage());
-                    }
-                });
-    }
 
     private void hideAccountInfo() {
         usernameHolder.setText("******");

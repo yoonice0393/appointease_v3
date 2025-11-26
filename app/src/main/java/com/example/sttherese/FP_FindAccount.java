@@ -8,7 +8,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
+import com.android.volley.RetryPolicy;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.sttherese.patient.activities.ResetMethodEmail;
@@ -26,7 +28,7 @@ public class FP_FindAccount extends AppCompatActivity {
     MaterialButton buttonContinue;
     ImageView backBtn;
 
-    // Your InfinityFree API endpoint
+  
     private static final String API_URL = "https://sttherese-api.onrender.com/send_password_reset_code.php";
 
     @Override
@@ -66,7 +68,7 @@ public class FP_FindAccount extends AppCompatActivity {
                 Request.Method.POST,
                 API_URL,
                 response -> {
-                    // The response is a String, parse it into a JSONObject
+
                     try {
                         JSONObject jsonResponse = new JSONObject(response);
                         boolean success = jsonResponse.getBoolean("success");
@@ -86,7 +88,7 @@ public class FP_FindAccount extends AppCompatActivity {
                         Toast.makeText(this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                     buttonContinue.setEnabled(true);
-                    buttonContinue.setText("Continue");
+                    buttonContinue.setText("Send Code");
                 },
                 error -> {
                     String msg = "Network error";
@@ -106,25 +108,34 @@ public class FP_FindAccount extends AppCompatActivity {
 
                         } catch (Exception e) {
                             e.printStackTrace();
+                            Toast.makeText(this, "Response format error. Check server logs.", Toast.LENGTH_LONG).show();
                         }
                     }
                     Toast.makeText(this, "Error: " + msg, Toast.LENGTH_LONG).show();
                     buttonContinue.setEnabled(true);
-                    buttonContinue.setText("Continue");
+                    buttonContinue.setText("Send Code");
                 }
         ) {
             @Override
             protected Map<String, String> getParams() {
                 // This method creates the application/x-www-form-urlencoded body for $_POST
                 Map<String, String> params = new HashMap<>();
-                params.put("email", email); // <-- The critical parameter name
+                params.put("email", email);
+                // Also add the 'action' parameter expected by the PHP router
+                params.put("action", "request_reset");
                 return params;
             }
 
-            // IMPORTANT: Remove getBodyContentType() and getHeaders() if you had them here,
-            // unless you need custom non-Content-Type headers like Authorization.
-            // Volley sets Content-Type to application/x-www-form-urlencoded when getParams is overridden.
         };
+
+        // 🎯 FIX: Increase timeout to handle server cold start
+        int socketTimeout = 30000; // 30 seconds
+        RetryPolicy policy = new DefaultRetryPolicy(
+                socketTimeout,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        );
+        request.setRetryPolicy(policy);
 
         Volley.newRequestQueue(this).add(request);
     }

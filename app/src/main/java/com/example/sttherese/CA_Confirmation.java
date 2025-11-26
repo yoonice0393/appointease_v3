@@ -2,6 +2,7 @@ package com.example.sttherese;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
@@ -20,6 +21,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -29,8 +31,12 @@ public class CA_Confirmation extends AppCompatActivity {
     MaterialButton buttonConfirm;
     TextView resendLink;
     String email;
+    TextView textResendTimer;
+    TextView textError;
 
     FirebaseFirestore db;
+    CountDownTimer resendTimer;
+    final long TIMER_DURATION_MS = 60000; // 60 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +50,9 @@ public class CA_Confirmation extends AppCompatActivity {
         d5 = findViewById(R.id.codeDigit5);
         d6 = findViewById(R.id.codeDigit6);
         buttonConfirm = findViewById(R.id.buttonConfirm);
+        textError = findViewById(R.id.textError);
+        textError.setVisibility(View.INVISIBLE);
+        textResendTimer = findViewById(R.id.textResendTimer);
         resendLink = findViewById(R.id.textResendCode);
 
         email = getIntent().getStringExtra("email");
@@ -56,6 +65,7 @@ public class CA_Confirmation extends AppCompatActivity {
         }
 
         setupCodeInputs();
+        startResendTimer();
 
         buttonConfirm.setOnClickListener(v -> verifyCode());
         resendLink.setOnClickListener(v -> resendCode());
@@ -99,7 +109,8 @@ public class CA_Confirmation extends AppCompatActivity {
         }
 
         buttonConfirm.setEnabled(false);
-        buttonConfirm.setText("Verifying...");
+//        buttonConfirm.setText("Verifying...");
+        textError.setVisibility(View.GONE);
 
         String emailKey = email.replace(".", "_"); // use safe Firestore ID
         DocumentReference docRef = db.collection("email_verifications").document(emailKey);
@@ -113,12 +124,15 @@ public class CA_Confirmation extends AppCompatActivity {
                     Long expiresAt = document.getLong("expiresAt");
 
                     if (expiresAt != null && now > expiresAt) {
-                        showDialog(R.drawable.ic_error, "Expired Code", "Your verification code has expired. Please resend.");
+                        showOnScreenError("Code Expired. Please try again.");
+                        clearCode();
+                        resendLink.setEnabled(true);
                     } else {
                         docRef.update("verified", true)
                                 .addOnSuccessListener(aVoid -> {
-                                    showDialog(R.drawable.ic_check, "Success!", "Your account has been verified.");
+                                    showDialog(R.drawable.ic_check, "Success!", "You successfully created your account..");
                                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                        if (resendTimer != null) resendTimer.cancel();
                                         Intent intent = new Intent(CA_Confirmation.this, SignInPage.class);
                                         intent.putExtra("email", email);
                                         startActivity(intent);
@@ -128,16 +142,20 @@ public class CA_Confirmation extends AppCompatActivity {
                     }
                 }
                 else {
-                    showDialog(R.drawable.ic_error, "Incorrect Code", "Please try again.");
+                    showOnScreenError("Wrong Code. Please try again.");
+
                     clearCode();
+
                 }
             } else {
-                showDialog(R.drawable.ic_error, "Error", "No verification record found.");
+                android.util.Log.e("CODE_ERROR", "No verification record found.");
+
+//                showDialog(R.drawable.ic_error, "Error", "No verification record found.");
             }
             buttonConfirm.setEnabled(true);
             buttonConfirm.setText("Confirm");
         }).addOnFailureListener(e -> {
-            showDialog(R.drawable.ic_error, "Error", "Failed to fetch code: " + e.getMessage());
+//            showDialog(R.drawable.ic_error, "Error", "Failed to fetch code: " + e.getMessage());
             buttonConfirm.setEnabled(true);
             buttonConfirm.setText("Confirm");
         });
@@ -145,6 +163,7 @@ public class CA_Confirmation extends AppCompatActivity {
 
     private void resendCode() {
         resendLink.setEnabled(false);
+        textError.setVisibility(View.GONE); // Hide error on resend attempt
 
         String emailKey = email.replace(".", "_");
         String newCode = String.format("%06d", (int) (Math.random() * 999999));
@@ -152,16 +171,15 @@ public class CA_Confirmation extends AppCompatActivity {
 
         Map<String, Object> codeData = new HashMap<>();
         codeData.put("code", newCode);
-        codeData.put("expiresAt", newExpiryTime); // ✅ ADDED: Update expiry time!
+        codeData.put("expiresAt", newExpiryTime);
 
         db.collection("email_verifications").document(emailKey)
                 .set(codeData)
                 .addOnSuccessListener(unused -> {
-                    StringRequest request = new StringRequest(Request.Method.POST, "https://st-therese-api.ct.ws/send_verification_code.php",
+                    StringRequest request = new StringRequest(Request.Method.POST, "https://sttherese-api.onrender.com/send_verification_code.php",
                             response -> {
                                 Toast.makeText(this, "New verification code sent!", Toast.LENGTH_LONG).show();
-                                resendLink.setEnabled(true);
-                                // Clear code inputs for better UX
+                                startResendTimer();
                                 clearCode();
                             },
                             error -> {
@@ -179,8 +197,7 @@ public class CA_Confirmation extends AppCompatActivity {
                     };
 
                     // Volley is not initialized here, assuming you add it or use another pattern
-                    // For this to work, you need to use the same Volley setup as in CA_AccountCredentials.java
-                    Volley.newRequestQueue(this).add(request); // 💡 Ensure Volley is available here
+                    Volley.newRequestQueue(this).add(request);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to update code record: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -188,6 +205,45 @@ public class CA_Confirmation extends AppCompatActivity {
                 });
     }
 
+    private void startResendTimer() {
+        // Cancel existing timer if active
+        if (resendTimer != null) {
+            resendTimer.cancel();
+        }
+
+        // 1. Disable the resend link
+        resendLink.setEnabled(false);
+        resendLink.setTextColor(getResources().getColor(R.color.text_secondary)); // Optional: change color
+
+        // 2. Show the countdown TextView
+        textResendTimer.setVisibility(View.VISIBLE);
+
+        // 3. Create and start the timer
+        resendTimer = new CountDownTimer(TIMER_DURATION_MS, 1000) { // 60s, ticks every 1s
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long seconds = millisUntilFinished / 1000;
+                textResendTimer.setText(String.format(Locale.getDefault(), "Resend in %ds", seconds));
+            }
+
+            @Override
+            public void onFinish() {
+                // 4. When finished, hide countdown and re-enable link
+                textResendTimer.setVisibility(View.GONE);
+                resendLink.setEnabled(true);
+                resendLink.setTextColor(getResources().getColor(R.color.red_primary)); // Set back to primary color
+                resendLink.setText("Resend Code"); // Reset link text
+            }
+        }.start();
+    }
+    private void showOnScreenError(String message) {
+        textError.setText(message);
+        textError.setVisibility(View.VISIBLE);
+        // Ensure the timer is still running if the error occurs before it finishes
+        if (resendTimer != null) {
+            textResendTimer.setVisibility(View.VISIBLE);
+        }
+    }
     private void clearCode() {
         d1.setText(""); d2.setText(""); d3.setText("");
         d4.setText(""); d5.setText(""); d6.setText("");
@@ -207,5 +263,13 @@ public class CA_Confirmation extends AppCompatActivity {
 
         dialogView.findViewById(R.id.dialog_close_btn).setOnClickListener(v -> dialog.dismiss());
         dialog.show();
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Crucial: Cancel the timer to prevent memory leaks when the activity is destroyed
+        if (resendTimer != null) {
+            resendTimer.cancel();
+        }
     }
 }

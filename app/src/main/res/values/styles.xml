@@ -14,7 +14,7 @@
     </style>
 
     <style name="CustomEditTextStyle">
-        <item name="android:textColor">@color/brown_text</item>
+        <item name="android:textColor">@color/black_text</item>
         <item name="android:textColorHint">@color/text_hint</item>
         <item name="android:fontFamily">@font/poppins_regular</item>
         <item name="android:textSize">11sp</item>
@@ -35,7 +35,7 @@
 
     <!-- For day numbers -->
     <style name="CalendarDateText" parent="TextAppearance.AppCompat.Small">
-        <item name="android:textColor">@color/brown_text</item>
+        <item name="android:textColor">@color/text_secondary</item>
         <item name="android:textSize">11sp</item>
         <item name="android:fontFamily">@font/poppins_regular</item>
     </style>

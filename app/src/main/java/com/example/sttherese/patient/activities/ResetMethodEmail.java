@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.sttherese.R;
 import com.google.firebase.database.DataSnapshot;
@@ -30,6 +32,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class ResetMethodEmail extends AppCompatActivity {
@@ -38,12 +41,12 @@ public class ResetMethodEmail extends AppCompatActivity {
 
     EditText[] codeFields = new EditText[6];
     Button buttonConfirm;
-    TextView textResendCode, textTimer;
+    TextView textResendCode, textTimer, textError; // textTimer is mapped to textResendTimer in XML
 
-    DatabaseReference database; // Changed from Firestore to Realtime Database
+    DatabaseReference database;
     String email;
     CountDownTimer countDownTimer;
-    boolean canResend = false;
+    final long TIMER_DURATION_MS = 60000; // 60 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +62,10 @@ public class ResetMethodEmail extends AppCompatActivity {
         codeFields[5] = findViewById(R.id.codeDigit6);
         buttonConfirm = findViewById(R.id.buttonConfirm);
         textResendCode = findViewById(R.id.textResendCode);
-        textTimer = findViewById(R.id.textTimer);
+        textTimer = findViewById(R.id.textResendTimer);
+        textError = findViewById(R.id.textError);
+        textError.setVisibility(View.GONE);
+
 
         // Initialize Firebase Realtime Database
         database = FirebaseDatabase.getInstance("https://appointease-7aa63-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("password_resets");
@@ -76,61 +82,37 @@ public class ResetMethodEmail extends AppCompatActivity {
 
         buttonConfirm.setOnClickListener(v -> verifyCode());
 
-        textResendCode.setOnClickListener(v -> {
-            if (canResend) {
-                resendCode();
-            } else {
-                Toast.makeText(this, "Please wait before resending", Toast.LENGTH_SHORT).show();
-            }
-        });
+        textResendCode.setOnClickListener(v -> resendCode());
     }
 
     private void verifyCode() {
         String enteredCode = getFullCode();
 
         if (enteredCode.length() != 6) {
-            Toast.makeText(this, "Please enter the full 6-digit code", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please enter all 6 digits", Toast.LENGTH_SHORT).show();
             return;
         }
 
         buttonConfirm.setEnabled(false);
+        textError.setVisibility(View.GONE);
 
         // Sanitize email for database key
         String docId = email.replace(".", "_").replace("@", "_at_");
 
         Log.d(TAG, "Verifying code for email: " + email);
-        Log.d(TAG, "Database path: password_resets/" + docId);
-        Log.d(TAG, "Entered code: " + enteredCode);
 
         database.child(docId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "Database snapshot exists: " + dataSnapshot.exists());
-
                 if (dataSnapshot.exists()) {
-                    Log.d(TAG, "Snapshot data: " + dataSnapshot.getValue());
-
                     String storedCode = dataSnapshot.child("code").getValue(String.class);
                     Long expiresAt = dataSnapshot.child("expires_at").getValue(Long.class);
-                    Boolean verified = dataSnapshot.child("verified").getValue(Boolean.class);
                     Long attempts = dataSnapshot.child("attempts").getValue(Long.class);
-
-                    Log.d(TAG, "Stored code: " + storedCode);
-                    Log.d(TAG, "Expires at: " + expiresAt);
-                    Log.d(TAG, "Verified: " + verified);
-                    Log.d(TAG, "Attempts: " + attempts);
-
-                    // Check if already used
-                    if (verified != null && verified) {
-                        buttonConfirm.setEnabled(true);
-                        showCustomDialog(R.drawable.ic_error, "Code Used", "This code has already been used.");
-                        return;
-                    }
 
                     // Check expiry
                     if (expiresAt != null && System.currentTimeMillis() / 1000 > expiresAt) {
                         buttonConfirm.setEnabled(true);
-                        showCustomDialog(R.drawable.ic_error, "Code Expired", "Code has expired. Please request a new one.");
+                        showOnScreenError("Code Expired. Please request a new one.");
                         clearCodeFields();
                         return;
                     }
@@ -138,7 +120,7 @@ public class ResetMethodEmail extends AppCompatActivity {
                     // Check attempts
                     if (attempts != null && attempts >= 5) {
                         buttonConfirm.setEnabled(true);
-                        showCustomDialog(R.drawable.ic_error, "Too Many Attempts", "Maximum attempts exceeded.");
+                        showOnScreenError("Maximum attempts exceeded. Please resend the code.");
                         return;
                     }
 
@@ -151,9 +133,10 @@ public class ResetMethodEmail extends AppCompatActivity {
 
                         database.child(docId).updateChildren(updates)
                                 .addOnSuccessListener(aVoid -> {
-                                    showCustomDialog(R.drawable.ic_check, "Success!", "Code verified!");
+                                    showCustomDialog(R.drawable.ic_check, "Success!", "Code has been verified.");
 
                                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                        if (countDownTimer != null) countDownTimer.cancel();
                                         Intent intent = new Intent(ResetMethodEmail.this, ChangePassword.class);
                                         intent.putExtra("email", email);
                                         intent.putExtra("verified", true);
@@ -170,7 +153,7 @@ public class ResetMethodEmail extends AppCompatActivity {
                         buttonConfirm.setEnabled(true);
                         clearCodeFields();
                         codeFields[0].requestFocus();
-                        showCustomDialog(R.drawable.ic_error, "Incorrect Code", "Attempts: " + newAttempts + "/5");
+                        showOnScreenError("Wrong Code. Attempts: " + newAttempts + "/5");
                     }
                 } else {
                     buttonConfirm.setEnabled(true);
@@ -183,18 +166,23 @@ public class ResetMethodEmail extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
                 buttonConfirm.setEnabled(true);
                 Log.e(TAG, "Database error: " + databaseError.getMessage());
-                Log.e(TAG, "Error code: " + databaseError.getCode());
-                Log.e(TAG, "Error details: " + databaseError.getDetails());
                 Toast.makeText(ResetMethodEmail.this, "Error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void resendCode() {
+        if (!textResendCode.isEnabled()) {
+            Toast.makeText(this, "Please wait before resending the code.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        textResendCode.setEnabled(false);
+        textError.setVisibility(View.GONE);
         Toast.makeText(this, "Sending new code...", Toast.LENGTH_SHORT).show();
 
-        // Use StringRequest to match FP_FindAccount format
-        com.android.volley.toolbox.StringRequest request = new com.android.volley.toolbox.StringRequest(
+        // Use StringRequest
+        StringRequest request = new StringRequest(
                 Request.Method.POST,
                 API_URL,
                 response -> {
@@ -206,18 +194,19 @@ public class ResetMethodEmail extends AppCompatActivity {
                             Toast.makeText(this, "New code sent!", Toast.LENGTH_SHORT).show();
                             startResendTimer();
                             clearCodeFields();
-                            codeFields[0].requestFocus();
                         } else {
                             String message = jsonResponse.optString("message", "Failed to send code");
                             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                            textResendCode.setEnabled(true); // Re-enable if API fails immediately
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                         Toast.makeText(this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                        textResendCode.setEnabled(true); // Re-enable on parse error
                     }
                 },
                 error -> {
-                    String msg = "Network error";
+                    String msg = "Failed to send code. Network error.";
                     if (error.networkResponse != null) {
                         try {
                             String responseBody = new String(error.networkResponse.data, "utf-8");
@@ -227,6 +216,7 @@ public class ResetMethodEmail extends AppCompatActivity {
                         }
                     }
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                    textResendCode.setEnabled(true); // Re-enable on network error
                 }
         ) {
             @Override
@@ -240,7 +230,57 @@ public class ResetMethodEmail extends AppCompatActivity {
         Volley.newRequestQueue(this).add(request);
     }
 
-    // Keep all other methods the same (getFullCode, clearCodeFields, setupAutoFocus, showCustomDialog, startResendTimer, onDestroy)
+    private void startResendTimer() {
+        // 1. Cancel existing timer
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
+        // 2. Disable the resend link/change appearance
+        textResendCode.setEnabled(false);
+        textResendCode.setAlpha(0.5f);
+        textResendCode.setText("Resend Code");
+        textResendCode.setVisibility(View.GONE);
+
+        // 3. Show the countdown TextView
+        textTimer.setVisibility(View.VISIBLE);
+
+        // 4. Create and start the timer
+        countDownTimer = new CountDownTimer(TIMER_DURATION_MS, 1000) { // 60s, ticks every 1s
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long seconds = millisUntilFinished / 1000;
+                textTimer.setText(String.format(Locale.getDefault(), "Resend in %ds", seconds));
+            }
+
+            @Override
+            public void onFinish() {
+                // 5. When finished, hide countdown and re-enable link
+                textTimer.setVisibility(View.GONE);
+                textResendCode.setEnabled(true);
+                textResendCode.setAlpha(1.0f);
+                textResendCode.setText("Resend Code");
+            }
+        }.start();
+    }
+
+    private void showOnScreenError(String message) {
+        textError.setText(message);
+        textError.setVisibility(View.VISIBLE);
+
+        // Check if the timer is currently running
+        // If countDownTimer is NOT null, and the timer TextView is visible, the timer is active.
+        // If textTimer is GONE, the timer has finished.
+        if (textTimer.getVisibility() == View.VISIBLE) {
+            // The timer is active (still counting down), keep the timer text visible.
+            textTimer.setVisibility(View.VISIBLE);
+            textResendCode.setVisibility(View.GONE);
+        } else {
+            // The timer has finished (onFinish was called), show the resend link.
+            textResendCode.setVisibility(View.VISIBLE);
+            textTimer.setVisibility(View.GONE);
+        }
+    }
 
     private String getFullCode() {
         StringBuilder builder = new StringBuilder();
@@ -254,12 +294,15 @@ public class ResetMethodEmail extends AppCompatActivity {
         for (EditText field : codeFields) {
             field.setText("");
         }
+        if (codeFields.length > 0) {
+            codeFields[0].requestFocus();
+        }
     }
 
     private void setupAutoFocus() {
         for (int i = 0; i < codeFields.length; i++) {
             EditText current = codeFields[i];
-            int currentIndex = i;
+            final int currentIndex = i;
 
             current.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -267,15 +310,25 @@ public class ResetMethodEmail extends AppCompatActivity {
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    // Move focus forward when a digit is entered
                     if (s.length() == 1 && currentIndex < codeFields.length - 1) {
                         codeFields[currentIndex + 1].requestFocus();
-                    } else if (s.length() == 0 && currentIndex > 0) {
-                        codeFields[currentIndex - 1].requestFocus();
                     }
                 }
 
                 @Override
                 public void afterTextChanged(Editable s) {}
+            });
+
+            // Add key listener to handle backspace/delete correctly
+            current.setOnKeyListener((v, keyCode, event) -> {
+                if (keyCode == KeyEvent.KEYCODE_DEL && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (codeFields[currentIndex].getText().toString().isEmpty() && currentIndex > 0) {
+                        codeFields[currentIndex - 1].requestFocus();
+                        codeFields[currentIndex - 1].setText("");
+                    }
+                }
+                return false;
             });
         }
     }
@@ -303,38 +356,11 @@ public class ResetMethodEmail extends AppCompatActivity {
         dialog.show();
     }
 
-    private void startResendTimer() {
-        canResend = false;
-        textResendCode.setEnabled(false);
-        textResendCode.setAlpha(0.5f);
-
-        if (countDownTimer != null) {
-            countDownTimer.cancel();
-        }
-
-        countDownTimer = new CountDownTimer(60000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                if (textTimer != null) {
-                    textTimer.setText("Resend in " + (millisUntilFinished / 1000) + "s");
-                }
-            }
-
-            @Override
-            public void onFinish() {
-                canResend = true;
-                if (textTimer != null) {
-                    textTimer.setText("Code not received?");
-                }
-                textResendCode.setEnabled(true);
-                textResendCode.setAlpha(1.0f);
-            }
-        }.start();
-    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Crucial: Cancel the timer to prevent memory leaks
         if (countDownTimer != null) {
             countDownTimer.cancel();
         }

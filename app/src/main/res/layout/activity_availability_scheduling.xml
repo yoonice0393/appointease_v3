@@ -27,7 +27,7 @@
             android:id="@+id/textTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="SET AVAILABILITY"
+            android:text="UPDATE SCHEDULE"
             android:textColor="@color/brown_text"
             android:textSize="22sp"
             android:fontFamily="@font/montserrat_extra_bold"

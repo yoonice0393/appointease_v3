@@ -15,12 +15,14 @@
         android:theme="@style/Theme.StTherese"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".doctor.AppointmentDetailsActivity"
+            android:name=".Terms_Conditions"
             android:exported="false" />
         <activity
-            android:name=".doctor.AppointmentDetails"
-            android:exported="false"
-            android:theme="@style/Theme.StTherese" />
+            android:name=".doctor.AppointmentDetailsActivity"
+            android:exported="false" /> <!-- <activity -->
+        <!-- android:name=".doctor.AppointmentDetails" -->
+        <!-- android:exported="false" -->
+        <!-- android:theme="@style/Theme.StTherese" /> -->
         <activity
             android:name=".patient.activities.AppointmentDetailsActivity"
             android:exported="false" />
@@ -103,8 +105,9 @@
             android:name=".SignInPage"
             android:exported="false" />
         <activity
-            android:name=".SplashScreen"
-            android:exported="true">
+            android:name=".SplashScreenActivity"
+            android:exported="true"
+            android:theme="@style/Theme.App.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

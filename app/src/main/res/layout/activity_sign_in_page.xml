@@ -4,38 +4,45 @@
     android:layout_height="match_parent"
     android:background="@color/bg_color">
 
-    <!-- Centered Logo -->
-    <ImageView
-        android:id="@+id/logoImage"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="56dp"
-        app:srcCompat="@drawable/sttherese_logo"
+    <!-- Top Section with Logo and Title -->
+    <LinearLayout
+        android:id="@+id/topSection"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cardView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Text below the logo -->
-    <TextView
-        android:id="@+id/logoText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="@font/montserrat_extra_bold"
-        android:textColor="@color/brown_text"
-        android:text="AppointEase"
-        android:textSize="30sp"
-        app:layout_constraintTop_toBottomOf="@id/logoImage"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/logoImage"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            app:srcCompat="@drawable/sttherese_logo" />
 
+        <!-- App Name -->
+        <TextView
+            android:id="@+id/logoText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/montserrat_extra_bold"
+            android:textColor="@color/brown_text"
+            android:text="AppointEase"
+            android:textSize="32sp" />
+    </LinearLayout>
+
+    <!-- Bottom Card -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
         android:layout_marginEnd="0dp"
-        android:layout_marginBottom="0dp"
-        app:cardCornerRadius="20dp"
+        app:cardCornerRadius="30dp"
         app:cardElevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,9 +53,10 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:padding="24dp"
-            android:paddingStart="48dp"
-            android:paddingEnd="48dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
             android:background="@drawable/card_top_round">
 
             <!-- Title -->
@@ -56,9 +64,9 @@
                 android:id="@+id/textViewWelcome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="50dp"
+                android:layout_margin="30dp"
                 android:fontFamily="@font/montserrat_extra_bold"
-                android:text="Welcome!"
+                android:text="Sign In"
                 android:textColor="@color/brown_text"
                 android:textSize="25sp" />
 
@@ -101,7 +109,7 @@
                 android:layout_height="50dp"
                 android:layout_marginBottom="8dp"
                 android:background="@drawable/edittext_bg"
-                android:drawableEnd="@drawable/ic_eye"
+                android:drawableEnd="@drawable/ic_eye_slash"
                 android:drawablePadding="8dp"
                 android:hint="Enter your password"
                 android:inputType="textPassword"
@@ -116,7 +124,7 @@
                 android:layout_gravity="end"
                 android:layout_marginBottom="20dp"
                 android:fontFamily="@font/poppins_regular"
-                android:text="Forgot Password?"
+                android:text="@string/forgot_pass_underlined_text"
                 android:textColor="@color/red_primary"
                 android:textSize="11sp" />
 
@@ -147,16 +155,16 @@
                     android:fontFamily="@font/poppins_regular"
                     android:text="Don't have an account? "
                     android:textColor="@color/small_text"
-                    android:textSize="11sp" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/textSignUp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_regular"
-                    android:text="Sign Up"
+                    android:text="@string/create_acc_underlined_text"
                     android:textColor="@color/red_primary"
-                    android:textSize="11sp" />
+                    android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

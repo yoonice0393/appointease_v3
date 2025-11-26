@@ -128,7 +128,6 @@ public class BookingAppointmentActivity extends AppCompatActivity {
         buttonPickDate.setOnClickListener(v -> showDatePicker());
 
         // Book appointment button
-        // *** MODIFIED TO CHECK PATIENT LIMIT FIRST ***
         buttonBook.setOnClickListener(v -> checkPatientDailyAppointmentLimit());
     }
 
@@ -210,7 +209,7 @@ public class BookingAppointmentActivity extends AppCompatActivity {
 
         // Set placeholder content
         doctorNameText.setText("Select Doctor");
-        doctorSpecialtyText.setText("Tap to choose your healthcare provider");
+        doctorSpecialtyText.setText("Tap to choose");
         doctorImageView.setImageResource(R.drawable.ic_doctor_placeholder); // Use your default image
 
         // Clear and update card view
@@ -474,7 +473,7 @@ public class BookingAppointmentActivity extends AppCompatActivity {
     private void blockUnavailableSlots(String doctorId, String date) {
         List<String> bookedTimes = new ArrayList<>();
 
-        // --- Step A: Check existing appointments (bookings) ---
+        // Check existing appointments (bookings) ---
         db.collection("appointments")
                 .whereEqualTo("doctorId", doctorId)
                 .whereEqualTo("date", date)
@@ -533,12 +532,11 @@ public class BookingAppointmentActivity extends AppCompatActivity {
                     Button button = (Button) child;
                     String time = button.getText().toString();
 
-                    // Retrieve the original time, or use the current text if original time is not tagged
                     String originalTime = (button.getTag() instanceof String) ? (String)button.getTag() : time;
 
                     if (bookedTimes.contains(originalTime)) {
                         button.setEnabled(false);
-                        button.setBackgroundResource(R.drawable.time_slot_unavailable);
+                        button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_unavailable));
                         button.setText("BOOKED");
                         button.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
                     }
@@ -556,8 +554,9 @@ public class BookingAppointmentActivity extends AppCompatActivity {
 
                     if (bookedTimes.contains(originalTime)) {
                         button.setEnabled(false);
-                        button.setBackgroundResource(R.drawable.time_slot_unavailable);
+                        button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_unavailable));
                         button.setText("BOOKED");
+                        button.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
                     }
                 }
             }
@@ -574,7 +573,7 @@ public class BookingAppointmentActivity extends AppCompatActivity {
             if (child instanceof Button) {
                 Button button = (Button) child;
                 button.setEnabled(false);
-                button.setBackgroundResource(R.drawable.time_slot_unavailable);
+                button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_unavailable));
             }
         }
 
@@ -584,7 +583,7 @@ public class BookingAppointmentActivity extends AppCompatActivity {
             if (child instanceof Button) {
                 Button button = (Button) child;
                 button.setEnabled(false);
-                button.setBackgroundResource(R.drawable.time_slot_unavailable);
+                button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_unavailable));
             }
         }
 
@@ -592,6 +591,7 @@ public class BookingAppointmentActivity extends AppCompatActivity {
             Toast.makeText(this, "The doctor is on leave or unavailable for the entire day.", Toast.LENGTH_LONG).show();
         }
     }
+
     private void updateDoctorCard(DocumentSnapshot doctor) {
         // Inflate doctor card content
         View doctorView = LayoutInflater.from(this).inflate(R.layout.doctor_card_content, null);
@@ -624,7 +624,7 @@ public class BookingAppointmentActivity extends AppCompatActivity {
 
         // Check if the category schedule was found
         if (selectedCategorySchedule == null || availableDaysForCategory.isEmpty()) {
-            Toast.makeText(this, "Clinic schedule not defined for the selected doctor/service.", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "Clinic schedule not defined for the selected doctor/service.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -755,24 +755,18 @@ public class BookingAppointmentActivity extends AppCompatActivity {
 
 
     private void createTimeSlotButton(String time24, String time12, int ampm) {
-        MaterialButton button = new MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
+        Button button = new Button(this);
 
         // Display 12-hour format to user
         button.setText(time12);
         // Store 24-hour format as tag for backend operations
         button.setTag(time24);
 
-        // Shape + corner radius
-        button.setCornerRadius((int) (16 * getResources().getDisplayMetrics().density));
-        button.setStrokeWidth(0);
-
-        // Default state = available Beige
-        button.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E5D5C6")));
+        // Set background drawable
+        button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_available));
         button.setTextColor(Color.BLACK);
 
-        // Remove material default padding
-        button.setInsetTop(0);
-        button.setInsetBottom(0);
+        // Remove default padding
         button.setPadding(16, 8, 16, 8);
 
         // Figma font
@@ -782,6 +776,9 @@ public class BookingAppointmentActivity extends AppCompatActivity {
         } catch (Exception e) {
             button.setTypeface(null, Typeface.BOLD);
         }
+
+        // Make it not all caps (default Android behavior)
+        button.setAllCaps(false);
 
         button.setOnClickListener(this::onTimeSlotClicked);
 
@@ -801,23 +798,23 @@ public class BookingAppointmentActivity extends AppCompatActivity {
     }
 
     private void onTimeSlotClicked(View v) {
-        MaterialButton button = (MaterialButton) v;
+        Button button = (Button) v;
 
         if (selectedTimeButton != null && selectedTimeButton != button) {
             selectedTimeButton.setSelected(false);
-            selectedTimeButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E5D5C6"))); // beige
+            selectedTimeButton.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_available));
             selectedTimeButton.setTextColor(Color.BLACK);
         }
 
         if (button.isSelected()) {
             button.setSelected(false);
-            button.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E5D5C6"))); // beige
+            button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_available));
             button.setTextColor(Color.BLACK);
             selectedTime = null;
             selectedTimeButton = null;
         } else {
             button.setSelected(true);
-            button.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#A86A3D"))); // brown
+            button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_selected));
             button.setTextColor(Color.WHITE);
 
             selectedTime = button.getTag().toString();
@@ -840,6 +837,10 @@ public class BookingAppointmentActivity extends AppCompatActivity {
     private void checkPatientDailyAppointmentLimit() {
         if (mAuth.getCurrentUser() == null) {
             Toast.makeText(this, "You must be logged in to book an appointment.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (selectedDoctorId == null || selectedDate == null || selectedTime == null || selectedAppointmentType == null) {
+            Toast.makeText(this, "Please complete all booking details.", Toast.LENGTH_SHORT).show();
             return;
         }
 

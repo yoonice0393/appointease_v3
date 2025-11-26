@@ -3,6 +3,7 @@ package com.example.sttherese;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.StringRequest;
@@ -243,62 +245,81 @@ public class CA_AccountCredentials extends AppCompatActivity {
         else return 2; // Strong
     }
 
-    private void validateAndSignUp() {
-        String email = editTextEmail.getText().toString().trim();
-        String password = editTextPassword.getText().toString().trim();
-        String confirmPassword = editTextConfirmPassword.getText().toString().trim();
+        private void validateAndSignUp() {
+            String email = editTextEmail.getText().toString().trim();
+            String password = editTextPassword.getText().toString().trim();
+            String confirmPassword = editTextConfirmPassword.getText().toString().trim();
 
-        // Reset errors
-        editTextEmail.setError(null);
-        editTextPassword.setError(null);
-        editTextConfirmPassword.setError(null);
+            // Reset errors
+            editTextEmail.setError(null);
+            editTextPassword.setError(null);
+            editTextConfirmPassword.setError(null);
 
-        boolean hasError = false;
+            boolean hasError = false;
 
-        // Validate email
-        if (email.isEmpty()) {
-            editTextEmail.setError("Email is required");
-            hasError = true;
-        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            editTextEmail.setError("Invalid email address");
-            hasError = true;
+            // Validate email
+            if (email.isEmpty()) {
+                editTextEmail.setError("Email is required");
+                hasError = true;
+            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                editTextEmail.setError("Invalid email address");
+                hasError = true;
+            }
+
+            // Validate password
+            if (password.isEmpty()) {
+                editTextPassword.setError("Password is required");
+                hasError = true;
+            } else if (password.length() < 6) {
+                editTextPassword.setError("Password must be at least 6 characters");
+                hasError = true;
+            }
+
+            // Validate confirm password
+            if (confirmPassword.isEmpty()) {
+                editTextConfirmPassword.setError("Please confirm your password");
+                hasError = true;
+            } else if (!password.equals(confirmPassword)) {
+                editTextConfirmPassword.setError("Passwords do not match");
+                hasError = true;
+            }
+
+            // Check terms and conditions
+    //        if (!checkBoxTerms.isChecked()) {
+    //            Toast.makeText(this, "Please agree to Terms and Conditions", Toast.LENGTH_SHORT).show();
+    //            hasError = true;
+    //        }
+
+            if (hasError) {
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Disable button to prevent double submission
+            buttonSignUp.setEnabled(false);
+            buttonSignUp.setText("Creating account...");
+
+            // Get the gray color resource (you need to define a gray color in colors.xml)
+            // Assuming you have a color resource named 'gray_button_color' or using a standard Android gray
+            int grayColor = ContextCompat.getColor(this, R.color.gray_button_color); // Replace with your color
+
+            // Change the background tint to gray
+            buttonSignUp.setBackgroundTintList(ColorStateList.valueOf(grayColor));
+
+            // Create Firebase account
+            createFirebaseAccount(email, password);
         }
 
-        // Validate password
-        if (password.isEmpty()) {
-            editTextPassword.setError("Password is required");
-            hasError = true;
-        } else if (password.length() < 6) {
-            editTextPassword.setError("Password must be at least 6 characters");
-            hasError = true;
-        }
+    private void restoreSignUpButton() {
+        // 1. Enable button
+        buttonSignUp.setEnabled(true);
 
-        // Validate confirm password
-        if (confirmPassword.isEmpty()) {
-            editTextConfirmPassword.setError("Please confirm your password");
-            hasError = true;
-        } else if (!password.equals(confirmPassword)) {
-            editTextConfirmPassword.setError("Passwords do not match");
-            hasError = true;
-        }
+        // 2. Set the original text
+        buttonSignUp.setText("Create Account");
 
-        // Check terms and conditions
-//        if (!checkBoxTerms.isChecked()) {
-//            Toast.makeText(this, "Please agree to Terms and Conditions", Toast.LENGTH_SHORT).show();
-//            hasError = true;
-//        }
-
-        if (hasError) {
-            Toast.makeText(this, "Please correct the errors", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Disable button to prevent double submission
-        buttonSignUp.setEnabled(false);
-        buttonSignUp.setText("Creating account...");
-
-        // Create Firebase account
-        createFirebaseAccount(email, password);
+        // 3. Restore the original red primary color
+        int originalColor = ContextCompat.getColor(this, R.color.red_primary);
+        buttonSignUp.setBackgroundTintList(ColorStateList.valueOf(originalColor));
     }
 
     private void createFirebaseAccount(String email, String password) {
@@ -323,6 +344,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
                             // END: CHAINED OPERATIONS
                         }
                     } else {
+                        restoreSignUpButton();
                         handleSignUpFailure(task.getException() != null ? task.getException().getMessage() : "Sign up failed");
                     }
                 });
@@ -330,8 +352,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
 
     // helper method to handle cleanup
     private void handleSignUpFailure(String errorMessage) {
-        buttonSignUp.setEnabled(true);
-        buttonSignUp.setText("Sign Up");
+        restoreSignUpButton();
         Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
         // Optional: Log the user out if they were successfully authenticated but data failed to save
         if (mAuth.getCurrentUser() != null) {
@@ -352,7 +373,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
         db.collection("users").document(userId)
                 .set(userData)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "User account created!", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(this, "User account created!", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error saving user: " + e.getMessage(),
@@ -363,7 +384,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
 
     private com.google.android.gms.tasks.Task<Void> savePatientRecord(String userId) {
 
-        // --- START: Custom ID Creation ---
+
         // 1. Clean and normalize names
         String cleanFirstName = firstName.toLowerCase().replaceAll("\\s+", "_");
         String cleanLastName = lastName.toLowerCase().replaceAll("\\s+", "_");
@@ -427,7 +448,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
         db.collection("email_verifications").document(emailKey)
                 .set(codeData)
                 .addOnSuccessListener(unused -> {
-                    StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.88.250/user_api/send_verification_code.php",
+                    StringRequest request = new StringRequest(Request.Method.POST, "https://sttherese-api.onrender.com/send_verification_code.php",
                             response -> {
                                 // Log or show a message
                                 Log.d("EMAIL", "Response: " + response);
@@ -452,15 +473,18 @@ public class CA_AccountCredentials extends AppCompatActivity {
 
                     // 2. ✅ FIX: Delay navigation by 3 seconds so the user can read the message
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        restoreSignUpButton();
                         Intent intent = new Intent(CA_AccountCredentials.this, CA_Confirmation.class);
                         intent.putExtra("email", email);
                         startActivity(intent);
                         finish(); // Finish the current activity AFTER the delay
                     }, 3000); // 3000 milliseconds = 3 seconds
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to generate code: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+                .addOnFailureListener(e ->{
+                    restoreSignUpButton();
+                        Toast.makeText(this, "Failed to generate code: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                });
     }
 
 

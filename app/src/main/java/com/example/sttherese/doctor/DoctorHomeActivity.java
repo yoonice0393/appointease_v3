@@ -68,12 +68,11 @@ public class DoctorHomeActivity extends AppCompatActivity {
         initializeViews();
         setupGreeting();
         setupClickListeners();
-        fetchUniquePatientCount();
 
 
         // Setup RecyclerView (structure only, query added later)
         rvUpcomingAppointments.setLayoutManager(new LinearLayoutManager(this));
-
+        testFetchAllAppointments();
         // Fetch doctor profile → then appointments
         fetchDoctorProfile();
     }
@@ -132,14 +131,90 @@ public class DoctorHomeActivity extends AppCompatActivity {
         tvViewAll.setOnClickListener(v ->
                 startActivity(new Intent(this, DoctorAppointmentActivity.class)));
     }
+    private void testFetchDoctorAppointments() {
+        if (doctorDocId == null) return;
 
+        Log.d(TAG, "TEST: Fetching appointments for doctorId = " + doctorDocId + " (no other filters)");
+
+        db.collection("appointments")
+                .whereEqualTo("doctorId", doctorDocId)
+                .get()
+                .addOnSuccessListener(querySnapshots -> {
+                    if (querySnapshots != null) {
+                        Log.d(TAG, "TEST: Found " + querySnapshots.size() + " appointments for this doctor");
+
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : querySnapshots.getDocuments()) {
+                            Log.d(TAG, "TEST Doctor Appointment - ID: " + doc.getId() +
+                                    ", doctorId: '" + doc.getString("doctorId") + "'" +
+                                    ", status: '" + doc.getString("status") + "'" +
+                                    ", date: '" + doc.getString("date") + "'");
+                        }
+                    } else {
+                        Log.w(TAG, "TEST: No appointments found for doctorId: " + doctorDocId);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "TEST: Error: ", e);
+                });
+    }
+    // Add logging to verify the doctorDocId and query
+    private void fetchTotalAppointmentCount() {
+        if (doctorDocId == null) {
+            Log.w(TAG, "Cannot fetch appointment count: doctorDocId is null.");
+            return;
+        }
+
+        // 🔍 DEBUG: Log the doctorDocId being used
+        Log.d(TAG, "Fetching appointments for doctorDocId: " + doctorDocId);
+
+        String todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                .format(Calendar.getInstance().getTime());
+
+        // 🔍 DEBUG: Log the date filter
+        Log.d(TAG, "Using date filter (today): " + todayDate);
+
+        // Query ALL confirmed appointments from today onwards
+        db.collection("appointments")
+                .whereEqualTo("doctorId", doctorDocId)
+                .whereEqualTo("status", "confirmed")
+//                .whereGreaterThanOrEqualTo("date", todayDate)
+                .get()
+                .addOnSuccessListener(querySnapshots -> {
+                    if (querySnapshots != null) {
+                        int count = querySnapshots.size();
+
+                        // 🔍 DEBUG: Log the results
+                        Log.d(TAG, "Total confirmed appointments found: " + count);
+
+                        // Log each appointment for debugging
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : querySnapshots.getDocuments()) {
+                            Log.d(TAG, "Appointment ID: " + doc.getId() +
+                                    ", doctorId: " + doc.getString("doctorId") +
+                                    ", status: " + doc.getString("status") +
+                                    ", date: " + doc.getString("date"));
+                        }
+
+                        tvAppointmentCount.setText(String.format(Locale.getDefault(), "%02d", count));
+                    } else {
+                        Log.w(TAG, "QuerySnapshots is null");
+                        tvAppointmentCount.setText("00");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching total appointment count: ", e);
+                    tvAppointmentCount.setText("--");
+                });
+    }
+
+    // Update your fetchDoctorProfile method to call this new method:
     private void fetchDoctorProfile() {
-        // userDocId is the Firebase Auth UID
         if (userDocId == null) return;
 
-        // 1. Query the 'doctors' collection where 'user_id' equals the logged-in Auth UID
+        // 🔍 DEBUG: Log the Auth UID being used
+        Log.d(TAG, "Fetching doctor profile for Auth UID: " + userDocId);
+
         db.collection("doctors")
-                .whereEqualTo("user_id", userDocId) // Assuming the doctor document stores the Auth UID as 'user_id'
+                .whereEqualTo("user_id", userDocId)
                 .limit(1)
                 .get()
                 .addOnSuccessListener(querySnapshots -> {
@@ -147,17 +222,18 @@ public class DoctorHomeActivity extends AppCompatActivity {
 
                         com.google.firebase.firestore.DocumentSnapshot snapshot = querySnapshots.getDocuments().get(0);
 
-                        // 2. Extract Doctor Details
-                        doctorDocId = snapshot.getId(); // Save the doctor's document ID
+                        doctorDocId = snapshot.getId();
 
-                        // Note: Use the field name 'name' from your Firestore document (e.g., "Dr. Maria Santos")
+                        // 🔍 DEBUG: Log the doctor document ID retrieved
+                        Log.d(TAG, "Doctor Document ID (doctorDocId): " + doctorDocId);
+                        Log.d(TAG, "Doctor user_id field: " + snapshot.getString("user_id"));
+
                         String rawName = snapshot.getString("name");
 
                         if (rawName != null) {
                             doctorName = rawName;
                             tvUserName.setText(doctorName);
 
-                            // 3. Save the Doctor's name and Doc ID to SharedPreferences
                             SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putString("doctor_doc_id", doctorDocId);
@@ -165,14 +241,16 @@ public class DoctorHomeActivity extends AppCompatActivity {
                             editor.apply();
                         }
 
-                        // 4. Now that we have the Doctor's Doc ID, fetch related data
-                        fetchAppointments();         // Fetch the upcoming appointment list
-                        fetchUniquePatientCount();   // 🚨 Fetch the total unique patient count
+                        fetchAppointments();
+                        fetchTotalAppointmentCount();
+                        fetchUniquePatientCount();
+
+                        // 🔍 DEBUG: Call test method AFTER getting doctorDocId
+                        testFetchDoctorAppointments();
 
                     } else {
                         Log.w(TAG, "No doctor profile found for Auth UID: " + userDocId);
                         tvUserName.setText("Doctor!");
-                        // Handle case where doctor profile hasn't been created yet
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -180,9 +258,28 @@ public class DoctorHomeActivity extends AppCompatActivity {
                     tvUserName.setText("Doctor!");
                 });
     }
+    private void testFetchAllAppointments() {
+        Log.d(TAG, "TEST: Fetching ALL appointments in database");
 
+        db.collection("appointments")
+                .get()
+                .addOnSuccessListener(querySnapshots -> {
+                    if (querySnapshots != null) {
+                        Log.d(TAG, "TEST: Total appointments in database: " + querySnapshots.size());
 
-
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : querySnapshots.getDocuments()) {
+                            Log.d(TAG, "TEST Appointment - ID: " + doc.getId() +
+                                    ", doctorId: '" + doc.getString("doctorId") + "'" +
+                                    ", status: '" + doc.getString("status") + "'" +
+                                    ", date: '" + doc.getString("date") + "'");
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "TEST: Error fetching all appointments: ", e);
+                });
+    }
+    // Update your fetchAppointments method - remove the count update since it's now separate:
     private void fetchAppointments() {
         if (doctorDocId == null) {
             Log.w(TAG, "Cannot fetch appointments: doctorDocId is null.");
@@ -197,7 +294,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
                 .whereEqualTo("status", "pending")
                 .whereGreaterThanOrEqualTo("date", todayDate)
                 .orderBy("date", Query.Direction.ASCENDING)
-                .limit(2);
+                .limit(2);  // Only show 2 in the list
 
         AppointmentAdapter.OnAppointmentClickListener appointmentClickListener = appointment -> {
             Intent intent = new Intent(DoctorHomeActivity.this, DoctorCalendarActivity.class);
@@ -209,8 +306,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
                 appointmentClickListener,
                 appointmentQuery,
                 itemCount -> {
-
-                    tvAppointmentCount.setText(String.format(Locale.getDefault(), "%02d", itemCount));
+                    // Only control the empty state visibility, not the count
                     if (itemCount > 0) {
                         layoutDataContent.setVisibility(View.VISIBLE);
                         layoutEmptyState.setVisibility(View.GONE);

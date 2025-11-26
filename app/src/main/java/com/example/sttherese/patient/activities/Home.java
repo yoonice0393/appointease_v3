@@ -329,11 +329,10 @@
                     }
                 });
 
-                btnHome.setOnClickListener(v -> Toast.makeText(this, "Already on Home", Toast.LENGTH_SHORT).show());
+                btnHome.setOnClickListener(v -> Toast.makeText(this, "Already at Home", Toast.LENGTH_SHORT).show());
                 btnDoctor.setOnClickListener(v -> startActivity(new Intent(this, DoctorsActivity.class)));
                 btnCalendar.setOnClickListener(v -> startActivity(new Intent(this, CalendarActivity.class)));
                 btnHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
-                btnAdd.setOnClickListener(v -> Toast.makeText(this, "Add New", Toast.LENGTH_SHORT).show());
 
                 if (btnBookAppointment != null) {
                     // This button is in the "empty state" card

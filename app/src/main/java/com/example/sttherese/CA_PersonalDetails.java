@@ -135,21 +135,16 @@ public class CA_PersonalDetails extends AppCompatActivity {
         String contactNumber = editTextContactNumber.getText().toString().trim();
         String address = editTextAddress.getText().toString().trim();
 
+        // --- 1. Required Fields (Text Inputs) ---
+        // Prioritize fields that are always mandatory.
 
-        if (selectedGenderId == -1) {
-            Toast.makeText(this, "Please select your gender", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        RadioButton selectedGenderButton = findViewById(selectedGenderId);
-        String gender = selectedGenderButton.getText().toString();
-        
-        // Validation with specific error messages
         if (firstName.isEmpty()) {
             editTextFirstName.setError("First name is required");
             editTextFirstName.requestFocus();
             return;
         }
+
+        // Middle name is often optional, so no check is needed here unless it's required.
 
         if (lastName.isEmpty()) {
             editTextLastName.setError("Last name is required");
@@ -158,33 +153,49 @@ public class CA_PersonalDetails extends AppCompatActivity {
         }
 
         if (dob.isEmpty()) {
+            // Note: Use setError for the field, and Toast for overall instruction.
             editTextDOB.setError("Date of birth is required");
             editTextDOB.requestFocus();
-            Toast.makeText(this, "Please select your date of birth", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please select your date of birth.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int age = calculateAge(dob);
+        // --- 2. Required Fields (Radio Group) ---
+        if (selectedGenderId == -1) {
+            // Note: Since a RadioGroup doesn't have an setError method, a Toast is the best approach.
+            Toast.makeText(this, "Please select your gender.", Toast.LENGTH_SHORT).show();
+            // You can also add a visual cue to the RadioGroup/label if available.
+            return;
+        }
+        // Safely get gender *after* the check passes
+        RadioButton selectedGenderButton = findViewById(selectedGenderId);
+        String gender = selectedGenderButton.getText().toString();
 
-        // Check 1: Ensure age is a reasonable value (not 0, which often means an error)
+
+        // --- 3. Logic & Format Checks (Age) ---
+
+        int age = calculateAge(dob);
+        final int MINIMUM_REGISTRATION_AGE = 18;
+
+        // Check A: Ensure age is valid (0 often means calculation error or future date)
         if (age <= 0) {
             Toast.makeText(this, "Invalid date of birth selected.", Toast.LENGTH_LONG).show();
-            editTextDOB.setError("Invalid DOB");
+//            editTextDOB.setError("Invalid DOB or future date selected.");
             editTextDOB.requestFocus();
             return;
         }
 
-        // Check 2: Minimum age restriction (e.g., must be 18 to create an account)
-        // If you allow minors to register, change 18 to 0 or adjust this logic.
-        final int MINIMUM_REGISTRATION_AGE = 18;
-
+        // Check B: Minimum age restriction
         if (age < MINIMUM_REGISTRATION_AGE) {
             String message = "You must be at least " + MINIMUM_REGISTRATION_AGE + " years old to create an account.";
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-            editTextDOB.setError("Must be " + MINIMUM_REGISTRATION_AGE + " years old.");
+//            editTextDOB.setError("Must be " + MINIMUM_REGISTRATION_AGE + " years old.");
             editTextDOB.requestFocus();
             return;
         }
+
+
+        // --- 4. Contact & Address Checks ---
 
         if (contactNumber.isEmpty()) {
             editTextContactNumber.setError("Contact number is required");
@@ -192,9 +203,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
             return;
         }
 
-
-        // Validate Philippine mobile number format
-        // Should be 11 digits starting with 09
+        // Validate Philippine mobile number format *after* checking if it's empty
         if (!isValidPhilippineNumber(contactNumber)) {
             editTextContactNumber.setError("Please enter a valid Philippine mobile number (e.g., 09123456789)");
             editTextContactNumber.requestFocus();
@@ -207,7 +216,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
             return;
         }
 
-        // All validations passed, proceed to Account Credentials
+        // --- 5. All validations passed, proceed ---
         Intent intent = new Intent(CA_PersonalDetails.this, CA_AccountCredentials.class);
         intent.putExtra("first_name", firstName);
         intent.putExtra("middle_name", middleName);
@@ -219,7 +228,6 @@ public class CA_PersonalDetails extends AppCompatActivity {
         intent.putExtra("address", address);
         startActivity(intent);
     }
-
     private boolean isValidPhilippineNumber(String number) {
         // Remove any spaces, dashes, or parentheses
         String cleaned = number.replaceAll("[\\s\\-()]", "");

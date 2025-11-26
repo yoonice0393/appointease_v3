@@ -48,4 +48,88 @@
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
 
+    <string name="create_acc_underlined_text"><u>Create Account</u></string>
+    <string name="forgot_pass_underlined_text"><u>Forgot Password?</u></string>
+    <string name="sign_in_underlined_text"><u>Sign In</u></string>
+
+    <string name="terms">
+        <![CDATA[
+<b>IMPORTANT NOTICE:</b><br><br>
+These Terms and Conditions ("Terms") constitute a legally binding agreement between you ("User" or "Client") and St. Therese Multi-Specialty Services, Inc. ("Clinic", "Company", "We", "Us"), the operator of the mobile and web-based system AppointEase ("App" or "Service"). By creating an account, accessing, or using the Service, you acknowledge that you have read, understood, and agreed to be bound by these Terms, as well as our separate Privacy Policy.<br><br>
+If you do not agree to these Terms, you must discontinue use of the Service.<br><br>
+<b>1. DEFINITIONS</b><br><br>
+1.1 "Service" refers to the AppointEase mobile app and web application used for patient appointment booking, doctor scheduling, clinical records access, notifications, and administrative tools for clinic staff and managers.<br><br>
+1.2 "User" refers to any patient, doctor, staff member, or manager accessing or using the Service.<br><br>
+1.3 "Personal Data" refers to any information relating to an identifiable individual as defined under the Data Privacy Act of 2012 (RA 10173).<br><br>
+1.4 "Electronic Signature" refers to One-Time Passwords (OTPs), confirmation links, and other electronic verification used within the Service.<br><br>
+1.5 "Clinic Account" refers to the User\'s registered account used to access the Service.<br><br>
+<b>2. ACCESS AND USE OF THE SERVICE</b><br><br>
+<b>2.1 Eligibility</b><br>
+Users must be at least 18 years old, of sound mind, and capable of entering into legally binding agreements.<br><br>
+<b>2.2 Account Creation</b><br>
+Users must provide accurate and complete information during registration, including personal data, contact information, and verification documents. Users are responsible for maintaining the confidentiality of their login details.<br><br>
+<b>2.3 User Responsibilities</b><br>
+Users agree to:<br>
+• Use the Service only for lawful and legitimate purposes.<br>
+• Avoid sharing account credentials with others.<br>
+• Immediately notify the Clinic of unauthorized account usage.<br>
+• Provide truthful medical history or appointment information.<br><br>
+<b>2.4 Prohibited Uses</b><br>
+Users must NOT:<br>
+• Submit false, fraudulent, misleading, or harmful information.<br>
+• Attempt to manipulate, damage, disrupt, or reverse-engineer the Service.<br>
+• Use the Service if doing so is defamatory, obscene, abusive, or illegal.<br>
+• Violate any Philippine law, regulation, or intellectual property rule.<br><br>
+<b>3. APPOINTMENT SCHEDULING</b><br><br>
+<b>3.1 Appointment Scheduling</b><br>
+The Service enables patients to book appointments based on real-time doctor availability, and final confirmation via in-app notification, email, or SMS.<br><br>
+<b>3.2 Record Access</b><br>
+Authorized Users may access medical records, prescriptions, and clinic documents subject to the Clinic\'s policies and applicable data protection laws.<br><br>
+<b>3.3 Cancellations and Rescheduling</b><br>
+Users may cancel or reschedule appointments through the App. The Clinic reserves the right to cancel appointments due to unforeseen circumstances and will notify Users accordingly.<br><br>
+<b>4. DATA PRIVACY AND SECURITY</b><br><br>
+<b>4.1 Data Collection</b><br>
+The Clinic collects and processes Personal Data in accordance with the Data Privacy Act of 2012 (RA 10173) and our Privacy Policy.<br><br>
+<b>4.2 Data Usage</b><br>
+Personal Data is used solely for:<br>
+• Appointment scheduling and management.<br>
+• Communication regarding clinic services.<br>
+• Compliance with legal and regulatory obligations.<br><br>
+<b>4.3 Data Security</b><br>
+We implement industry-standard security measures to protect User data. However, no system is completely secure, and Users acknowledge inherent risks in electronic data transmission.<br><br>
+<b>4.4 Third-Party Services</b><br>
+The Service may integrate with third-party providers (e.g., SMS, email). These providers have their own privacy policies, and we are not responsible for their practices.<br><br>
+<b>5. INTELLECTUAL PROPERTY</b><br><br>
+All content, features, and functionality of the Service, including but not limited to text, graphics, logos, and software, are the exclusive property of St. Therese Multi-Specialty Services, Inc. or its licensors and are protected by copyright, trademark, and other intellectual property laws.<br><br>
+<b>6. LIMITATION OF LIABILITY</b><br><br>
+<b>6.1 Service Availability</b><br>
+The Service is provided "as is" without warranties of any kind. We do not guarantee uninterrupted or error-free operation.<br><br>
+<b>6.2 Medical Disclaimer</b><br>
+The Service is a scheduling and administrative tool only. It does not provide medical advice, diagnosis, or treatment. Users must consult qualified healthcare professionals for medical concerns.<br><br>
+<b>6.3 Liability Cap</b><br>
+To the maximum extent permitted by law, the Clinic shall not be liable for any indirect, incidental, special, or consequential damages arising from the use or inability to use the Service.<br><br>
+<b>7. TERMINATION</b><br><br>
+<b>7.1 User Termination</b><br>
+Users may terminate their account at any time by contacting the Clinic or using in-app account deletion features.<br><br>
+<b>7.2 Clinic Termination</b><br>
+The Clinic reserves the right to suspend or terminate User accounts for violation of these Terms, fraudulent activity, or other legitimate reasons, with or without notice.<br><br>
+<b>8. AMENDMENTS</b><br><br>
+The Clinic may update these Terms from time to time. Continued use of the Service after changes constitute acceptance of the revised Terms. Users will be notified of material changes via the App or email.<br><br>
+<b>9. GOVERNING LAW</b><br><br>
+These Terms shall be governed by and construed in accordance with the laws of the Republic of the Philippines. Any disputes shall be resolved in the appropriate courts of the Philippines.<br><br>
+<b>10. CONTACT INFORMATION</b><br><br>
+For questions or concerns regarding these Terms, please contact:<br><br>
+<b>St. Therese Multi-Specialty Services, Inc.</b><br>
+Email: support@sttherese.com<br>
+Phone: +63 XXX XXX XXXX<br>
+Address: [Clinic Address]<br><br>
+<b>11. SEVERABILITY</b><br><br>
+If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.\n\n
+<b>12. ENTIRE AGREEMENT</b><br><br>
+These Terms, together with our Privacy Policy, constitute the entire agreement between you and St. Therese Multi-Specialty Services, Inc. regarding the use of the Service.\n\n
+By using AppointEase, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
+        ]]>
+    </string>
+
+
 </resources>

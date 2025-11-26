@@ -434,6 +434,19 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonTerms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:text="Terms &amp; Conditions"
+                android:textColor="@color/card_white"
+                android:textSize="12sp"
+                app:backgroundTint="@color/red_primary"
+                app:layout_constraintBottom_toTopOf="@+id/buttonLogout"
+                tools:layout_editor_absoluteX="24dp">
+
+            </com.google.android.material.button.MaterialButton>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonLogout"
@@ -447,7 +460,6 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent">
-
 
             </com.google.android.material.button.MaterialButton>
 

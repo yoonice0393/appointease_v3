@@ -87,7 +87,7 @@ public class DoctorsActivity extends AppCompatActivity {
          btnHome.setOnClickListener(v -> startActivity(new Intent(this, Home.class)));
          btnCalendar.setOnClickListener(v -> startActivity(new Intent(this, CalendarActivity.class)));
          btnHistory.setOnClickListener(v -> startActivity(new Intent(this, HistoryActivity.class)));
-        btnDoctor.setOnClickListener(v -> Toast.makeText(this, "Already on Doctors", Toast.LENGTH_SHORT).show());
+        btnDoctor.setOnClickListener(v -> Toast.makeText(this, "Already at Doctors", Toast.LENGTH_SHORT).show());
         btnAdd.setOnClickListener(v -> startActivity(new Intent(this, BookingAppointmentActivity.class)));
     }
 

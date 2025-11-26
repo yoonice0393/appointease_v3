@@ -29,15 +29,22 @@
             android:text="Please confirm every details"
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
-            android:fontFamily="@font/poppins_regular"
+            android:fontFamily="@font/poppins_medium"
             android:layout_marginBottom="16dp" />
+
+        <View
+            android:layout_width="50dp"
+            android:layout_height="3dp"
+            android:layout_marginBottom="10dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/divider" />
 
         <TextView
             android:id="@+id/confirmAppointmentType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Gynecology"
-            android:layout_gravity="center"
+            android:layout_gravity="center_horizontal"
             android:textColor="@color/brown_text"
             android:textSize="25sp"
             android:fontFamily="@font/montserrat_extra_bold"
@@ -46,7 +53,7 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="12dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="#FFFFFF"
             android:layout_marginBottom="24dp">
@@ -58,10 +65,10 @@
                 android:padding="16dp"
                 android:gravity="center_vertical">
 
-                <View
+                <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:background="@drawable/ic_doctor_placeholder"
+                    android:src="@drawable/bg_circle_gray"
                     android:layout_marginEnd="16dp" />
 
                 <LinearLayout
@@ -98,24 +105,26 @@
             android:gravity="center"
             android:layout_marginBottom="32dp">
 
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_clock"
+                app:tint="@color/card_white"
+                android:padding="5dp"
+                android:background="@drawable/bg_circle_light"/>
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="center"
+                android:layout_marginStart="10dp"
                 android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_clock"
-                    app:tint="@color/text_secondary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Time"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="#708C5A3D"
                     android:textSize="10sp"
                     android:fontFamily="@font/poppins_regular"
                     android:layout_marginTop="4dp"/>
@@ -130,35 +139,38 @@
                     android:fontFamily="@font/poppins_semi_bold"/>
             </LinearLayout>
 
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_calendar"
+                android:padding="5dp"
+                android:background="@drawable/bg_circle_light"
+                app:tint="@color/card_white"/>
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
                 android:layout_weight="1"
-                android:gravity="center"
                 android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_calendar"
-                    app:tint="@color/text_secondary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Date"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="#708C5A3D"
                     android:textSize="10sp"
                     android:fontFamily="@font/poppins_regular"
                     android:layout_marginTop="4dp"/>
 
                 <TextView
                     android:id="@+id/confirmDate"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="02 January 2026"
                     android:textColor="@color/brown_text"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:fontFamily="@font/poppins_semi_bold"/>
             </LinearLayout>
         </LinearLayout>

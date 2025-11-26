@@ -3,6 +3,7 @@ package com.example.sttherese;
 import com.example.sttherese.patient.activities.Home;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.example.sttherese.doctor.DoctorHomeActivity;
@@ -110,10 +111,10 @@ public class SignInPage extends AppCompatActivity {
 
         if (passwordVisible) {
             editTextPassword.setTransformationMethod(null);
-            editTextPassword.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_slash, 0);
+            editTextPassword.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye, 0);
         } else {
             editTextPassword.setTransformationMethod(new android.text.method.PasswordTransformationMethod());
-            editTextPassword.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye, 0);
+            editTextPassword.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_eye_slash, 0);
         }
 
         editTextPassword.setSelection(editTextPassword.getText().length());
@@ -179,43 +180,65 @@ public class SignInPage extends AppCompatActivity {
                                 editor.putString("email", email);
                                 editor.apply();
 
-                                // Optional: Fetch additional user data from Firestore
                                 fetchUserRoleAndRedirect(userDocId);
-
                                 Toast.makeText(SignInPage.this, "Login successful!", Toast.LENGTH_SHORT).show();
-
-                                // Navigate to Home
-//                                Intent intent = new Intent(SignInPage.this, Home.class);
-//                                intent.putExtra(USER_DOC_ID_EXTRA, userDocId);
-//                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//                                startActivity(intent);
-//                                finish();
                             }
                         } else {
-                            // Sign in failed - record failed attempt
-                            recordFailedAttempt(email);
-
-                            String errorMessage = "Authentication failed. Check your email and password.";
+                            // Sign in failed - check the error code
                             if (task.getException() != null) {
-                                String exception = task.getException().getMessage();
-                                if (exception != null) {
-                                    if (exception.contains("no user record")) {
-                                        errorMessage = "No account found with this email";
-                                    } else if (exception.contains("password is invalid")) {
-                                        errorMessage = "Incorrect password";
-                                    } else if (exception.contains("network")) {
-                                        errorMessage = "Network error. Please check your connection";
-                                    } else {
-                                        errorMessage = exception;
-                                    }
+                                Exception exception = task.getException();
+                                String errorCode = "";
+
+                                // Try to get the error code from FirebaseAuthException
+                                if (exception instanceof com.google.firebase.auth.FirebaseAuthException) {
+                                    errorCode = ((com.google.firebase.auth.FirebaseAuthException) exception).getErrorCode();
+                                    android.util.Log.e("LOGIN_ERROR", "Firebase Error Code: " + errorCode);
                                 }
+
+                                android.util.Log.e("LOGIN_ERROR", "Exception Class: " + exception.getClass().getName());
+                                android.util.Log.e("LOGIN_ERROR", "Exception Message: " + exception.getMessage());
+
+                                // Check error code for user not found
+                                if ("ERROR_USER_NOT_FOUND".equals(errorCode) ||
+                                        "ERROR_INVALID_EMAIL".equals(errorCode)) {
+
+                                    android.util.Log.w("LOGIN_ERROR", ">>> USER NOT FOUND - NOT RECORDING ATTEMPT <<<");
+                                    showCustomDialog(R.drawable.ic_error, "Account Not Found",
+                                            "No account found with this email address");
+
+                                }
+                                // Check error code for wrong password
+                                else if ("ERROR_WRONG_PASSWORD".equals(errorCode) ||
+                                        "ERROR_INVALID_CREDENTIAL".equals(errorCode)) {
+
+                                    android.util.Log.w("LOGIN_ERROR", ">>> WRONG PASSWORD - RECORDING ATTEMPT <<<");
+                                    recordFailedAttempt(email);
+
+                                }
+                                // Network error
+                                else if (exception.getMessage() != null &&
+                                        exception.getMessage().toLowerCase().contains("network")) {
+
+                                    android.util.Log.w("LOGIN_ERROR", ">>> NETWORK ERROR - NOT RECORDING ATTEMPT <<<");
+                                    showCustomDialog(R.drawable.ic_error, "Network Error",
+                                            "Please check your internet connection");
+
+                                }
+                                // Fallback: If we can't determine the error, assume wrong password to be safe
+                                else {
+                                    android.util.Log.w("LOGIN_ERROR", ">>> UNKNOWN ERROR - RECORDING ATTEMPT (to be safe) <<<");
+                                    recordFailedAttempt(email);
+                                }
+
+                            } else {
+                                android.util.Log.e("LOGIN_ERROR", ">>> NO EXCEPTION OBJECT <<<");
+                                showCustomDialog(R.drawable.ic_error, "Login Failed",
+                                        "Authentication failed. Please try again.");
                             }
-                            Toast.makeText(SignInPage.this, errorMessage, Toast.LENGTH_LONG).show();
                         }
                     });
         });
     }
-
     /**
      * Check if user has exceeded login attempts (5 attempts = 15 minute lockout)
      */
@@ -289,7 +312,7 @@ public class SignInPage extends AppCompatActivity {
                                     showCustomDialog(R.drawable.ic_acc_lock,"Too many failed attempts!", "Your account has been locked for 15 minutes.");
 
                                 } else {
-                                    showCustomDialog(R.drawable.ic_error,"Login failed!", "Attempts: " + finalCurrentAttempts + "/5");
+                                    showCustomDialog(R.drawable.ic_error,"Incorrect Email or Password", "Login Attempts: " + finalCurrentAttempts + "/5");
                                 }
                             })
                             .addOnFailureListener(e -> {

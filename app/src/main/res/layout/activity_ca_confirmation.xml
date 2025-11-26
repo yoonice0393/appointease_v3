@@ -72,20 +72,51 @@
             style="@style/CodeInputStyle" />
     </LinearLayout>
 
+
                 <!-- Resend Code -->
+
+    <TextView
+        android:id="@+id/textError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:fontFamily="@font/poppins_regular"
+        android:text="Wrong Code. Please try again"
+        android:layout_marginEnd="50dp"
+        android:layout_marginTop="10dp"
+        android:textColor="#FC022D"
+        android:visibility="gone"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutCodeInputs" />
+
+
+
     <TextView
         android:id="@+id/textResendCode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
+        android:layout_marginEnd="50dp"
         android:fontFamily="@font/poppins_regular"
         android:text="Resend Code"
-        android:layout_marginEnd="50dp"
-        android:layout_marginTop="10dp"
         android:textColor="@color/text_secondary"
         android:textSize="11sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layoutCodeInputs" />
+        app:layout_constraintTop_toBottomOf="@+id/textError" />
+
+    <TextView
+        android:id="@+id/textResendTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/poppins_semi_bold"
+        android:text="Resend in 60s"
+        android:visibility="gone"
+        android:layout_marginEnd="50dp"
+        android:textColor="@color/brown_text"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textResendCode" />
 
                 <!-- Confirm Button -->
     <com.google.android.material.button.MaterialButton

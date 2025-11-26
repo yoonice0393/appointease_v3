@@ -113,7 +113,7 @@ public class HistoryActivity extends AppCompatActivity implements
                 tvNoHistoryMessage.setText("You don't have any confirmed appointments yet.");
                 break;
             case "completed":
-                tvNoHistoryTitle.setText("NO COMPLETED VISITS");
+                tvNoHistoryTitle.setText("NO COMPLETED APPOINTMENTS");
                 tvNoHistoryMessage.setText("You haven't completed any visits to the center yet.");
                 break;
             case "cancelled":
@@ -302,22 +302,21 @@ public class HistoryActivity extends AppCompatActivity implements
 
     private void setupClickListeners() {
         btnHome.setOnClickListener(v -> {
-            showToast("Home");
             startActivity(new Intent(HistoryActivity.this, Home.class));
         });
 
         btnDoctor.setOnClickListener(v -> {
-            showToast("Doctors");
+
             startActivity(new Intent(HistoryActivity.this, DoctorsActivity.class));
         });
 
         btnAdd.setOnClickListener(v -> {
-            showToast("Add New Appointment");
+
             startActivity(new Intent(HistoryActivity.this, BookingAppointmentActivity.class));
         });
 
         btnCalendar.setOnClickListener(v -> {
-            showToast("Calendar");
+
             startActivity(new Intent(HistoryActivity.this, CalendarActivity.class));
         });
 
