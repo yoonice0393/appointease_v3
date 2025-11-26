@@ -177,7 +177,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
         db.collection("appointments")
                 .whereEqualTo("doctorId", doctorDocId)
                 .whereEqualTo("status", "confirmed")
-//                .whereGreaterThanOrEqualTo("date", todayDate)
+                .whereGreaterThanOrEqualTo("date", todayDate)
                 .get()
                 .addOnSuccessListener(querySnapshots -> {
                     if (querySnapshots != null) {
