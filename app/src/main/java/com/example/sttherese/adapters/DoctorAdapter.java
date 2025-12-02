@@ -31,6 +31,7 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
     private Context context;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private List<Doctor> doctors = new ArrayList<>();
+
     private OnDoctorClickListener listener;
     private Query query;
     private ListenerRegistration registration;

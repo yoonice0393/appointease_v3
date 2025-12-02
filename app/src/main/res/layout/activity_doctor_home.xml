@@ -77,6 +77,8 @@
                                 android:id="@+id/ivProfile"
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
+                                android:padding="5dp"
+                                android:src="@drawable/ic_person"
                                 android:background="@drawable/bg_circle_gray" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>

@@ -324,8 +324,8 @@
                     if (!checkedIds.isEmpty()) {
                         int selectedId = checkedIds.get(0);
                         if (selectedId == R.id.chipAll) fetchDoctors("All");
-                        else if (selectedId == R.id.chipObGyne) fetchDoctors("Ob-gyne");
-                        else if (selectedId == R.id.chipMedical) fetchDoctors("Medical");
+                        else if (selectedId == R.id.chipObGyne) fetchDoctors("OB-GYNE");
+                        else if (selectedId == R.id.chipMedical) fetchDoctors("INTERNAL MEDICINE");
                     }
                 });
 
@@ -403,8 +403,6 @@
 
                 FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-                // Step 1: Fetch fixed weekly schedules for the doctor
-                // 🛑 CRITICAL FIX: Use the correct field name 'doctorID' for clinic_schedules
                 db.collection("clinic_schedules")
                         .whereEqualTo("doctor_id", doctorId)
                         .get()
@@ -601,6 +599,7 @@
 
             private void fetchDoctors(String specialty) {
                 Query query = db.collection("doctors");
+
                 if (!specialty.equals("All")) {
                     query = query.whereEqualTo("specialty", specialty);
                 }

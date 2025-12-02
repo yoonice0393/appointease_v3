@@ -77,6 +77,8 @@
                             android:id="@+id/ivProfile"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
+                            android:padding="5dp"
+                            android:src="@drawable/ic_person"
                             android:background="@drawable/bg_circle_gray" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -360,6 +362,7 @@
                     android:textSize="12sp"
                     android:textColor="#D14A4A"
                     android:fontFamily="@font/poppins_semi_bold" />
+
             </RelativeLayout>
 
             <HorizontalScrollView
@@ -402,7 +405,7 @@
                         android:id="@+id/chipMedical"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Medical"
+                        android:text="INTERNAL MEDICINE"
                         android:fontFamily="@font/poppins_semi_bold"
                         android:textColor="@color/chip_text_selector"
                         app:chipBackgroundColor="@color/chip_background_selector"
@@ -410,12 +413,20 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice" />
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Scroll to right to view other doctors"
+                android:fontFamily="@font/poppins_medium"
+                android:textColor="@color/brown_text"
+                android:textSize="10sp"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvDoctors"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp" />
+                android:layout_marginBottom="10dp" />
+
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

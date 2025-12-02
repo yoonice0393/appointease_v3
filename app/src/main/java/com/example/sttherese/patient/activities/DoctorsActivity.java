@@ -114,19 +114,21 @@ public class DoctorsActivity extends AppCompatActivity {
     }
 
     private void loadSpecialtyChips() {
-        // Step 1: Clear old content and re-add the static chipAll
         chipGroup.removeAllViews();
-        // The chipAll instance MUST be retained from initializeViews()
+
         if (chipAll != null) {
             chipGroup.addView(chipAll);
-            chipAll.setChecked(true); // Ensure 'All' is selected by default on load
-            selectedFilter = "All";  // Ensure the filter variable reflects the default
+            chipAll.setChecked(true);
+            selectedFilter = "All";
         }
 
+        // Query doctors and extract unique specialties (like before)
         db.collection("doctors")
+                .whereEqualTo("is_active", true) // Only active doctors
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     Set<String> specialties = new HashSet<>();
+
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String specialty = document.getString("specialty");
                         if (specialty != null && !specialty.isEmpty()) {
@@ -134,14 +136,18 @@ public class DoctorsActivity extends AppCompatActivity {
                         }
                     }
 
-                    // Create a chip for each unique specialty
+                    if (specialties.isEmpty()) {
+                        Toast.makeText(this, "No active doctors available", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Create chips for each unique specialty
                     for (String specialty : specialties) {
                         Chip chip = createSpecialtyChip(specialty);
                         chipGroup.addView(chip);
                         specialtyChips.put(specialty, chip);
                     }
 
-                    // Re-setup filters after chips are loaded, which will attach the listener
                     setupFilters();
                     applyQuery("");
                 })
@@ -223,16 +229,22 @@ public class DoctorsActivity extends AppCompatActivity {
             query = query.orderBy("name");
         }
 
+        // 🔍 DEBUG: Check how many results the query returns
+        query.get().addOnSuccessListener(querySnapshot -> {
+            Log.d("DoctorsActivity", "Total doctors found: " + querySnapshot.size());
+            for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                Log.d("DoctorsActivity", "Doctor: " + doc.getString("name"));
+            }
+        });
+
         if (doctorAdapter != null) doctorAdapter.removeListener();
 
-        // Assuming Doctor model has getId() and getName()
         doctorAdapter = new DoctorAdapter(this, doctor -> {
             showScheduleDialog(doctor.getId(), doctor.getName());
         }, query);
 
         rvDoctors.setAdapter(doctorAdapter);
     }
-
     private void showScheduleDialog(String doctorId, String doctorName) {
         android.app.Dialog dialog = new android.app.Dialog(this);
         dialog.setContentView(R.layout.dialog_doctor_schedule);

@@ -39,6 +39,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +74,8 @@ public class BookingAppointmentActivity extends AppCompatActivity {
 
     private String selectedCategorySchedule = null;
     private List<String> availableDaysForCategory = new ArrayList<>(); // Store all available days
+    private String selectedSpecialty = null; // NEW: Track selected specialty
+    private List<Map<String, Object>> servicesListWithSpecialty = new ArrayList<>(); // NEW
 
 
     @Override
@@ -132,69 +135,120 @@ public class BookingAppointmentActivity extends AppCompatActivity {
     }
 
     private void fetchAppointmentTypes() {
-        db.collection("services")
+        db.collection("specialties")
                 .get()
-                .addOnSuccessListener(querySnapshot -> {
+                .addOnSuccessListener(specialtySnapshots -> {
+                    servicesListWithSpecialty.clear();
                     appointmentTypes.clear();
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        String type = document.getString("service_name");
-                        if (type != null) {
-                            appointmentTypes.add(type);
-                        }
+
+                    if (specialtySnapshots.isEmpty()) {
+                        Toast.makeText(this, "No specialties found", Toast.LENGTH_SHORT).show();
+                        return;
                     }
 
-                    // Setup dropdown adapter
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                            this,
-                            R.layout.dropdown_item,
-                            appointmentTypes
-                    );
-                    spinnerAppointmentType.setAdapter(adapter);
+                    // Track how many specialties we need to query
+                    int totalSpecialties = specialtySnapshots.size();
+                    final int[] processedCount = {0};
+
+                    // Loop through each specialty
+                    for (DocumentSnapshot specialtyDoc : specialtySnapshots) {
+                        String specialtyId = specialtyDoc.getId(); // e.g., "OB-GYNE"
+                        String specialtyName = specialtyDoc.getString("name");
+
+                        // Query the services sub-collection
+                        db.collection("specialties")
+                                .document(specialtyId)
+                                .collection("services")
+                                .get()
+                                .addOnSuccessListener(serviceSnapshots -> {
+                                    // Add each service to the list
+                                    for (DocumentSnapshot serviceDoc : serviceSnapshots) {
+                                        String serviceName = serviceDoc.getString("name");
+
+                                        if (serviceName != null) {
+                                            // Store service name for dropdown
+                                            appointmentTypes.add(serviceName);
+
+                                            // Store service with its specialty for later lookup
+                                            Map<String, Object> serviceData = new HashMap<>();
+                                            serviceData.put("serviceName", serviceName);
+                                            serviceData.put("specialty", specialtyId);
+                                            serviceData.put("specialtyName", specialtyName);
+                                            serviceData.put("serviceId", serviceDoc.getId());
+                                            servicesListWithSpecialty.add(serviceData);
+                                        }
+                                    }
+
+                                    // Check if all specialties have been processed
+                                    processedCount[0]++;
+                                    if (processedCount[0] == totalSpecialties) {
+                                        // All done - setup the dropdown
+                                        setupDropdownAdapter();
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    processedCount[0]++;
+                                    if (processedCount[0] == totalSpecialties) {
+                                        setupDropdownAdapter();
+                                    }
+                                });
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to load appointment types", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed to load specialties: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
                 });
     }
 
+    private void setupDropdownAdapter() {
+        // Sort alphabetically for better UX
+        Collections.sort(appointmentTypes);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                R.layout.dropdown_item,
+                appointmentTypes
+        );
+        spinnerAppointmentType.setAdapter(adapter);
+    }
+
     private void fetchDoctorsByType(String appointmentType) {
-        // 1. Reset everything related to the previous doctor selection
+        // 1. Reset everything
         selectedDoctorId = null;
         selectedDoctor = null;
+        selectedSpecialty = null;
         doctorsQuery = null;
         gridMorning.removeAllViews();
         gridAfternoon.removeAllViews();
         textSelectedDate.setText("No date selected");
-
-        // Clear and reset the Doctor Card UI to its default state
+        selectedDate = null;
+        selectedTime = null;
         resetDoctorCardToDefault();
 
-        // Step 1: Get the service document to find assigned_doctor_id
-        db.collection("services")
-                .whereEqualTo("service_name", appointmentType)
-                .limit(1)
-                .get()
-                .addOnSuccessListener(serviceQuerySnapshot -> {
-                    if (!serviceQuerySnapshot.isEmpty()) {
-                        DocumentSnapshot serviceDoc = serviceQuerySnapshot.getDocuments().get(0);
-                        String assignedDoctorId = serviceDoc.getString("assigned_doctor_id"); // e.g., "D001"
-                        String category = serviceDoc.getString("category"); // e.g., "Ob-gyne"
+        // 2. Find the specialty for this service
+        String specialty = null;
+        for (Map<String, Object> serviceData : servicesListWithSpecialty) {
+            if (appointmentType.equals(serviceData.get("serviceName"))) {
+                specialty = (String) serviceData.get("specialty");
+                selectedSpecialty = specialty;
+                break;
+            }
+        }
 
-                        if (assignedDoctorId != null && category != null) {
-                            // Success: Proceed to fetch schedules and doctor details
-                            fetchClinicSchedulesForDoctor(assignedDoctorId, category);
-                        } else {
-                            Toast.makeText(this, "No Doctor Available in this service.", Toast.LENGTH_SHORT).show();
-                            // State already reset above, now just exit.
-                        }
-                    } else {
-                        Toast.makeText(this, "Service not found.", Toast.LENGTH_SHORT).show();
-                        // State already reset above, now just exit.
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to load service: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    // State already reset above, now just exit.
-                });
+        if (specialty == null) {
+            Toast.makeText(this, "Could not determine specialty for this service.",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 3. Query ALL active doctors with this specialty
+        doctorsQuery = db.collection("doctors")
+                .whereEqualTo("specialty", specialty)
+                .whereEqualTo("is_active", true);
+
+        // 4. Prompt user to select a doctor
+        promptDoctorSelectionCard(specialty);
+        Toast.makeText(this, "Please select a doctor", Toast.LENGTH_LONG).show();
     }
     /**
      * Clears the current doctor's details and shows a default placeholder message.

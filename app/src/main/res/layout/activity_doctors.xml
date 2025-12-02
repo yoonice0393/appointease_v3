@@ -6,132 +6,123 @@
     android:layout_height="match_parent"
     android:background="#F7F1EE">
 
-    <!-- Main Content -->
-    <ScrollView
-        android:id="@+id/scrollView2"
+    <!-- Main Content (Remove ScrollView) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:fillViewport="true"
+        android:padding="24dp"
         android:paddingBottom="100dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
+        <!-- Search Bar -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/searchCard"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="24dp">
+            android:background="@drawable/bg_search_outline_brown"
+            app:cardBackgroundColor="#00FFFFFF"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Header -->
-
-            <!-- Search Bar -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/searchCard"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_search_outline_brown"
-                app:cardBackgroundColor="#00FFFFFF"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="0dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="4dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <EditText
+                    android:id="@+id/etSearch"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_search_outline_brown"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="4dp">
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:hint="Search"
+                    android:inputType="text"
+                    android:padding="12dp"
+                    android:paddingStart="16dp"
+                    android:fontFamily="@font/poppins_regular"
+                    android:textColor="@color/brown_text"
+                    android:textColorHint="#8C5A3D"
+                    android:textSize="12sp" />
 
-                    <EditText
-                        android:id="@+id/etSearch"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:background="@android:color/transparent"
-                        android:hint="Search"
-                        android:inputType="text"
-                        android:padding="12dp"
-                        android:paddingStart="16dp"
-                        android:fontFamily="@font/poppins_regular"
-                        android:textColor="@color/brown_text"
-                        android:textColorHint="#8C5A3D"
-                        android:textSize="12sp" />
+                <ImageView
+                    android:id="@+id/btnSearch"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_circle_red"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_search"
+                    app:tint="#FFFFFF" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-                    <ImageView
-                        android:id="@+id/btnSearch"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@drawable/bg_circle_red"
-                        android:padding="12dp"
-                        android:src="@drawable/ic_search"
-                        app:tint="#FFFFFF" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+        <!-- Our Doctors Section Header -->
+        <TextView
+            android:id="@+id/tvOurDoctors"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:fontFamily="@font/poppins_bold"
+            android:text="Our Doctors"
+            android:textColor="@color/brown_text"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/searchCard" />
 
-            <!-- Our Doctors Section Header -->
-            <TextView
-                android:id="@+id/tvOurDoctors"
+        <!-- Filter Chips -->
+        <HorizontalScrollView
+            android:id="@+id/filterScroll"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:scrollbars="none"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvOurDoctors">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:fontFamily="@font/poppins_bold"
-                android:text="Our Doctors"
-                android:textColor="@color/brown_text"
-                android:textSize="16sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/searchCard" />
+                app:singleSelection="true"
+                app:chipSpacingHorizontal="8dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
 
-
-            <!-- Filter Chips -->
-            <HorizontalScrollView
-                android:id="@+id/filterScroll"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:scrollbars="none"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvOurDoctors">
-
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroup"
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:singleSelection="true"
-                    app:chipSpacingHorizontal="8dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp">
+                    android:fontFamily="@font/poppins_semi_bold"
+                    android:textColor="@color/chip_text_selector_alt"
+                    android:text="All Doctors"
+                    app:chipBackgroundColor="@color/chip_background_selector_alt"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:checked="true"
+                    app:chipStrokeWidth="1.5dp"
+                    app:chipStrokeColor="#50333333"/>
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipAll"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_semi_bold"
-                        android:textColor="@color/chip_text_selector_alt"
-                        android:text="All Doctors"
-                        app:chipBackgroundColor="@color/chip_background_selector_alt"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:checked="true"
-                        app:chipStrokeWidth="1.5dp"
-                        app:chipStrokeColor="#50333333"/>
+            </com.google.android.material.chip.ChipGroup>
+        </HorizontalScrollView>
 
-                </com.google.android.material.chip.ChipGroup>
-            </HorizontalScrollView>
+        <!-- RecyclerView for Doctors List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvDoctors"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:clipToPadding="false"
+            android:paddingBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/filterScroll" />
 
-            <!-- RecyclerView for Doctors List -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvDoctors"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:nestedScrollingEnabled="false"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/filterScroll" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </ScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Bottom Navigation -->
     <androidx.cardview.widget.CardView
