@@ -130,7 +130,7 @@ public class CA_Confirmation extends AppCompatActivity {
                     } else {
                         docRef.update("verified", true)
                                 .addOnSuccessListener(aVoid -> {
-                                    showDialog(R.drawable.ic_check, "Success!", "You successfully created your account..");
+                                    showDialog(R.drawable.ic_check, "Success!", "You successfully created your account.");
                                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                                         if (resendTimer != null) resendTimer.cancel();
                                         Intent intent = new Intent(CA_Confirmation.this, SignInPage.class);

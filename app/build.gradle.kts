@@ -38,6 +38,8 @@ android {
 
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
+    implementation("com.google.firebase:firebase-messaging:23.4.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation ("com.google.firebase:firebase-auth")
     implementation("com.firebaseui:firebase-ui-firestore:8.0.2")
     implementation("com.google.code.gson:gson:2.10.1")
@@ -51,6 +53,8 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("com.github.f0ris.sweetalert:library:1.5.6")
     implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
 // Or the latest version
 // For control over item selection of both touch and mouse driven selection
     implementation("androidx.recyclerview:recyclerview-selection:1.2.0")
@@ -73,4 +77,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+
 }
+

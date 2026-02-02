@@ -130,6 +130,13 @@ These Terms, together with our Privacy Policy, constitute the entire agreement b
 By using AppointEase, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
         ]]>
     </string>
+    <string name="privacy">
+ <![CDATA[
+ <b>Privacy Policy</b><br><br>
 
+
+]]>
+
+     </string>
 
 </resources>

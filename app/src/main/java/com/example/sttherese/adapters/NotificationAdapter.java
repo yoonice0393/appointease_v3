@@ -1,6 +1,5 @@
 package com.example.sttherese.adapters;
 
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +40,13 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return notifications.size();
     }
 
+    // ADDED: Method to update the list
+    public void updateList(List<Notification> newNotifications) {
+        this.notifications.clear();
+        this.notifications.addAll(newNotifications);
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView title, message;
         View unreadDot;
@@ -53,4 +59,3 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
     }
 }
-

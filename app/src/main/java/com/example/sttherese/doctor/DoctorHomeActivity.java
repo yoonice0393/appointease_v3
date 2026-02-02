@@ -18,6 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.sttherese.R;
 import com.example.sttherese.SignInPage;
 import com.example.sttherese.adapters.AppointmentAdapter;
+import com.example.sttherese.patient.activities.CalendarActivity;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
@@ -31,6 +33,8 @@ public class DoctorHomeActivity extends AppCompatActivity {
 
     private TextView tvGreeting, tvUserName, tvViewAll;
     private ImageView ivNotification, ivProfile,  btnAdd;
+    MaterialButton btnGA;
+
 
     private RecyclerView rvUpcomingAppointments;
 
@@ -98,6 +102,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
         btnCalendar = findViewById(R.id.btnCalendar);
         btnHistory = findViewById(R.id.btnHistory);
         btnAdd = findViewById(R.id.btnAdd);
+        btnGA= findViewById(R.id.btnGA);
     }
 
     private void setupGreeting() {
@@ -130,6 +135,39 @@ public class DoctorHomeActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AvailabilityScheduling.class)));
         tvViewAll.setOnClickListener(v ->
                 startActivity(new Intent(this, DoctorAppointmentActivity.class)));
+
+
+        btnGA.setOnClickListener(v -> {
+            startActivity(new Intent(DoctorHomeActivity.this, GASimulationActivity.class));
+        });
+//        tvGA.setOnClickListener(v -> {
+//                    Toast.makeText(this, "Starting test...", Toast.LENGTH_SHORT).show();
+//
+//                    new Thread(() -> {
+//                        try {
+//                            GASimulationRunner.SimulationResult result =
+//                                    GASimulationRunner.runSimulation();
+//
+//                            runOnUiThread(() -> {
+//                                String message = "Success! Scheduled " +
+//                                        result.scheduledCount + "/" + result.totalRequests;
+//                                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+//                                Log.d("TEST", message);
+//                            });
+//                        } catch (Exception e) {
+//                            runOnUiThread(() -> {
+//                                Toast.makeText(this, "Error: " + e.getMessage(),
+//                                        Toast.LENGTH_LONG).show();
+//                                Log.e("TEST", "Error", e);
+//                            });
+//                        }
+//                    }).start();
+//                });
+//
+//        btnNavigate.setOnClickListener(v -> {
+//            // Navigate to appointment details or doctor profile
+//            showToast("View Appointment Details");
+//        });
     }
     private void testFetchDoctorAppointments() {
         if (doctorDocId == null) return;

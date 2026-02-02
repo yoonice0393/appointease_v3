@@ -24,7 +24,6 @@
                 android:id="@+id/calendarCard"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
@@ -41,8 +40,8 @@
                     app:mcv_headerTextAppearance="@style/CalendarHeaderText"
                     app:mcv_selectionColor="@color/red_primary"
                     app:mcv_showOtherDates="all"
-                    app:mcv_weekDayTextAppearance="@style/CalendarWeekText"
-                    app:mcv_tileSize="40dp"/>
+                    app:mcv_tileSize="40dp"
+                    app:mcv_weekDayTextAppearance="@style/CalendarWeekText" />
             </androidx.cardview.widget.CardView>
 
             <!-- Upcoming Appointment Card -->

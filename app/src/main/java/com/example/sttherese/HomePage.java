@@ -165,6 +165,7 @@ public class HomePage extends AppCompatActivity {
 //        Volley.newRequestQueue(this).add(request);
     }
 
+
         private void setupClickListeners() {
             // Search functionality
             btnSearch.setOnClickListener(v -> {
@@ -344,4 +345,5 @@ public class HomePage extends AppCompatActivity {
             // Update greeting when returning to activity
             setupGreeting();
         }
+
     }

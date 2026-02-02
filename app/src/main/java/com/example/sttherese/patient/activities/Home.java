@@ -1,7 +1,10 @@
         package com.example.sttherese.patient.activities;
 
+        import android.Manifest;
         import android.content.Intent;
         import android.content.SharedPreferences;
+        import android.content.pm.PackageManager;
+        import android.os.Build;
         import android.os.Bundle;
         import android.util.Log;
         import android.view.View;
@@ -15,9 +18,12 @@
 
         import androidx.appcompat.app.AppCompatActivity;
         import androidx.cardview.widget.CardView;
+        import androidx.core.app.ActivityCompat;
+        import androidx.core.content.ContextCompat;
         import androidx.recyclerview.widget.LinearLayoutManager;
         import androidx.recyclerview.widget.RecyclerView;
 
+        import com.example.sttherese.MyFirebaseMessagingService;
         import com.example.sttherese.R;
         import com.example.sttherese.SignInPage;
         import com.example.sttherese.adapters.AppointmentAdapter;
@@ -30,6 +36,7 @@
         import com.google.firebase.firestore.DocumentSnapshot;
         import com.google.firebase.firestore.FirebaseFirestore;
         import com.google.firebase.firestore.Query;
+        import com.google.firebase.messaging.FirebaseMessaging;
 
         import java.text.SimpleDateFormat;
         import java.util.ArrayList;
@@ -107,6 +114,7 @@
                 setupRecyclerViews();
                 setupGreeting();
                 setupClickListeners();
+                requestNotificationPermission();
                 fetchUserName();
                 fetchAppointments();
                 fetchDoctors("All");
@@ -123,6 +131,24 @@
                     startActivity(intent);
                 });
 
+                FirebaseMessaging.getInstance().getToken()
+                        .addOnCompleteListener(task -> {
+                            if (!task.isSuccessful()) {
+                                Log.w("FCM", "Fetching FCM token failed", task.getException());
+                                return;
+                            }
+
+                            // Get the FCM token
+                            String token = task.getResult();
+                            Log.d("FCM_TOKEN", "Token retrieved: " + token);
+
+                            // IMPORTANT: Actually send the token to the server
+                            // This is what was missing in your original code
+                            MyFirebaseMessagingService.sendTokenToServer(token);
+                        });
+
+
+
 //                tvViewAllVisits.setOnClickListener(v -> {
 //                    Intent intent = new Intent(Home.this, HistoryActivity.class);
 //                    startActivity(intent);
@@ -130,6 +156,16 @@
 
 
             }
+            private void requestNotificationPermission() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this,
+                                new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+                    }
+                }
+            }
+
 
             private void fetchRecentVisit() {
                 // 1. Initial visibility: Assume no recent visit until confirmed
@@ -338,6 +374,9 @@
                     // This button is in the "empty state" card
                     btnBookAppointment.setOnClickListener(v -> Toast.makeText(this, "Book Appointment", Toast.LENGTH_SHORT).show());
                 }
+
+
+
             }
             private void showScheduleDialog(String doctorId, String doctorName) {
                 android.app.Dialog dialog = new android.app.Dialog(this);

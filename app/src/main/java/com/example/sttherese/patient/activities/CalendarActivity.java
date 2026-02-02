@@ -15,7 +15,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+//import com.example.sttherese.doctor.GASimulationActivity;
 import com.example.sttherese.R;
+import com.example.sttherese.doctor.GASimulationActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -97,11 +99,8 @@ public class CalendarActivity extends AppCompatActivity {
         btnHistory.setOnClickListener(v -> {
             startActivity(new Intent(CalendarActivity.this, HistoryActivity.class));
         });
-//
-//        btnNavigate.setOnClickListener(v -> {
-//            // Navigate to appointment details or doctor profile
-//            showToast("View Appointment Details");
-//        });
+
+
     }
 
     private void fetchAllUpcomingAppointments() {

@@ -12,6 +12,10 @@ import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.sttherese.R;
 import com.example.sttherese.adapters.DoctorAdapter;
 import com.example.sttherese.models.Doctor;
@@ -998,11 +1002,40 @@ public class BookingAppointmentActivity extends AppCompatActivity {
                 .set(appointment)
                 .addOnSuccessListener(aVoid -> {
                     showSuccessDialog();
+                    // 🔥 TRIGGER THE NOTIFICATION HERE
+                    String patientUid = mAuth.getCurrentUser().getUid();
+                    sendNotificationTrigger(patientUid);
+
+
                 })
                 .addOnFailureListener(e -> {
                     showFailureDialog();
                     buttonBook.setEnabled(true); // Re-enable on failure
                 });
+    }
+    private void sendNotificationTrigger(String uid) {
+        // Replace with your actual Render API URL
+        String url = "https://sttherese-api.onrender.com/send_notification.php";
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                response -> {
+                    // Success! The PHP script handled the notification
+                    android.util.Log.d("FCM_NOTIF", "Response: " + response);
+                },
+                error -> {
+                    android.util.Log.e("FCM_NOTIF", "Error: " + error.toString());
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("uid", uid); // Your PHP script looks for $_POST['uid']
+                return params;
+            }
+        };
+
+        queue.add(stringRequest);
     }
 
     private void showSuccessDialog() {
