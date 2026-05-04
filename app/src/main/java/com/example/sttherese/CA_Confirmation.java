@@ -190,13 +190,13 @@ public class CA_Confirmation extends AppCompatActivity {
                         protected Map<String, String> getParams() {
                             Map<String, String> params = new HashMap<>();
                             params.put("email", email);
-                            params.put("first_name", "User"); // You might need to retrieve the user's name
+                            params.put("first_name", "User");
                             params.put("code", newCode);
                             return params;
                         }
                     };
 
-                    // Volley is not initialized here, assuming you add it or use another pattern
+
                     Volley.newRequestQueue(this).add(request);
                 })
                 .addOnFailureListener(e -> {
@@ -211,14 +211,14 @@ public class CA_Confirmation extends AppCompatActivity {
             resendTimer.cancel();
         }
 
-        // 1. Disable the resend link
+        // Disable the resend link
         resendLink.setEnabled(false);
-        resendLink.setTextColor(getResources().getColor(R.color.text_secondary)); // Optional: change color
+        resendLink.setTextColor(getResources().getColor(R.color.text_secondary));
 
-        // 2. Show the countdown TextView
+        //  Show the countdown TextView
         textResendTimer.setVisibility(View.VISIBLE);
 
-        // 3. Create and start the timer
+        //  Create and start the timer
         resendTimer = new CountDownTimer(TIMER_DURATION_MS, 1000) { // 60s, ticks every 1s
             @Override
             public void onTick(long millisUntilFinished) {
@@ -228,7 +228,7 @@ public class CA_Confirmation extends AppCompatActivity {
 
             @Override
             public void onFinish() {
-                // 4. When finished, hide countdown and re-enable link
+                //  When finished, hide countdown and re-enable link
                 textResendTimer.setVisibility(View.GONE);
                 resendLink.setEnabled(true);
                 resendLink.setTextColor(getResources().getColor(R.color.red_primary)); // Set back to primary color
@@ -239,7 +239,7 @@ public class CA_Confirmation extends AppCompatActivity {
     private void showOnScreenError(String message) {
         textError.setText(message);
         textError.setVisibility(View.VISIBLE);
-        // Ensure the timer is still running if the error occurs before it finishes
+
         if (resendTimer != null) {
             textResendTimer.setVisibility(View.VISIBLE);
         }
@@ -267,7 +267,7 @@ public class CA_Confirmation extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Crucial: Cancel the timer to prevent memory leaks when the activity is destroyed
+
         if (resendTimer != null) {
             resendTimer.cancel();
         }

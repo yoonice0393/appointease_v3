@@ -68,7 +68,7 @@ public class FP_FindAccount extends AppCompatActivity {
                 Request.Method.POST,
                 API_URL,
                 response -> {
-
+                    android.util.Log.d("FP_DEBUG", "Raw response: " + response);
                     try {
                         JSONObject jsonResponse = new JSONObject(response);
                         boolean success = jsonResponse.getBoolean("success");
@@ -128,7 +128,7 @@ public class FP_FindAccount extends AppCompatActivity {
 
         };
 
-        // 🎯 FIX: Increase timeout to handle server cold start
+        //  Increase timeout to handle server cold start
         int socketTimeout = 30000; // 30 seconds
         RetryPolicy policy = new DefaultRetryPolicy(
                 socketTimeout,

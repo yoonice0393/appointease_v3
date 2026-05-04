@@ -92,10 +92,10 @@ public class CA_AccountCredentials extends AppCompatActivity {
         // Toggle password visibility
         setupPasswordVisibilityToggle();
 
-        // Add password strength checker
+        // Password strength checker
         editTextPassword.addTextChangedListener(passwordStrengthWatcher);
 
-        // Add password match checker
+        // Password match checker
         editTextConfirmPassword.addTextChangedListener(confirmPasswordWatcher);
 
         // Email validation
@@ -299,9 +299,8 @@ public class CA_AccountCredentials extends AppCompatActivity {
             buttonSignUp.setEnabled(false);
             buttonSignUp.setText("Creating account...");
 
-            // Get the gray color resource (you need to define a gray color in colors.xml)
-            // Assuming you have a color resource named 'gray_button_color' or using a standard Android gray
-            int grayColor = ContextCompat.getColor(this, R.color.gray_button_color); // Replace with your color
+
+            int grayColor = ContextCompat.getColor(this, R.color.gray_button_color);
 
             // Change the background tint to gray
             buttonSignUp.setBackgroundTintList(ColorStateList.valueOf(grayColor));
@@ -311,13 +310,13 @@ public class CA_AccountCredentials extends AppCompatActivity {
         }
 
     private void restoreSignUpButton() {
-        // 1. Enable button
+        // Enable button
         buttonSignUp.setEnabled(true);
 
-        // 2. Set the original text
+        // Set the original text
         buttonSignUp.setText("Create Account");
 
-        // 3. Restore the original red primary color
+        // Restore the original red primary color
         int originalColor = ContextCompat.getColor(this, R.color.red_primary);
         buttonSignUp.setBackgroundTintList(ColorStateList.valueOf(originalColor));
     }
@@ -354,7 +353,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
     private void handleSignUpFailure(String errorMessage) {
         restoreSignUpButton();
         Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
-        // Optional: Log the user out if they were successfully authenticated but data failed to save
+
         if (mAuth.getCurrentUser() != null) {
             mAuth.getCurrentUser().delete(); // Prevents orphaned Firebase users
         }
@@ -385,15 +384,15 @@ public class CA_AccountCredentials extends AppCompatActivity {
     private com.google.android.gms.tasks.Task<Void> savePatientRecord(String userId) {
 
 
-        // 1. Clean and normalize names
+        //  Clean and normalize names
         String cleanFirstName = firstName.toLowerCase().replaceAll("\\s+", "_");
         String cleanLastName = lastName.toLowerCase().replaceAll("\\s+", "_");
 
-        // 2. Extract the first 6 characters of the userId for a unique suffix
+        // Extract the first 6 characters of the userId for a unique suffix
         // Math.min(userId.length(), 6) ensures we don't crash if userId is unexpectedly short.
         String uniqueSuffix = userId.substring(0, Math.min(userId.length(), 6));
 
-        // 3. Construct the final custom document ID
+        // Construct the final custom document ID
         String customDocId = "pat_" + cleanFirstName + "_" + cleanLastName + "_" + uniqueSuffix;
         // Example: "pat_john_doe_aB3xY9"
         // --- END: Custom ID Creation ---
@@ -419,7 +418,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
                 .document(customDocId) // <-- Using the custom ID here
                 .set(patientData)
                 .addOnSuccessListener(documentReference -> {
-                    // Success! Everything saved
+
 //
 //                    showCustomDialog(R.drawable.ic_check,"Account created successfully!","Redirecting to sign in...");
                 })
@@ -471,7 +470,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
                     showCustomDialog(R.drawable.ic_email,"Email sent!","Please check your email for the verification code.");
 
 
-                    // 2. ✅ FIX: Delay navigation by 3 seconds so the user can read the message
+                    //  Delay navigation by 3 seconds so the user can read the message
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         restoreSignUpButton();
                         Intent intent = new Intent(CA_AccountCredentials.this, CA_Confirmation.class);
@@ -559,7 +558,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
         }
         closeBtn.setOnClickListener(v -> {
             dialog.dismiss();
-//                // optional: focus email field
+//
 //            editTextEmail.requestFocus();
         });
 

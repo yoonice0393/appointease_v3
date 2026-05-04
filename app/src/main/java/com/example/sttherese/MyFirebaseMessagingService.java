@@ -55,10 +55,25 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Save notification to Realtime Database
         saveNotificationToRTDB(remoteMessage);
 
-        // Show push notification
+        String title = null;
+        String body  = null;
+
+        // Try notification payload first (works when app is in background)
         if (remoteMessage.getNotification() != null) {
-            String title = remoteMessage.getNotification().getTitle();
-            String body = remoteMessage.getNotification().getBody();
+            title = remoteMessage.getNotification().getTitle();
+            body  = remoteMessage.getNotification().getBody();
+        }
+
+        // Fall back to data payload (works when app is in foreground)
+        if (title == null && remoteMessage.getData().containsKey("title")) {
+            title = remoteMessage.getData().get("title");
+        }
+        if (body == null && remoteMessage.getData().containsKey("body")) {
+            body = remoteMessage.getData().get("body");
+        }
+
+        // Always show notification regardless of app state
+        if (title != null && body != null) {
             showNotification(title, body);
         }
     }
@@ -181,6 +196,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             json.put("uid", uid);
             json.put("fcmToken", fcmToken);
             json.put("platform", "android");
+            json.put("role", "patient");
         } catch (JSONException e) {
             Log.e(TAG, "JSON creation error", e);
             return;
@@ -191,7 +207,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 MediaType.get("application/json; charset=utf-8")
         );
 
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                .build();
 
         Request request = new Request.Builder()
                 .url(SERVER_URL)

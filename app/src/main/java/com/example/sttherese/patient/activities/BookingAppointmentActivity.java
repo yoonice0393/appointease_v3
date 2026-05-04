@@ -14,6 +14,7 @@ import android.widget.ImageView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.RetryPolicy;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.sttherese.R;
@@ -90,7 +91,7 @@ public class BookingAppointmentActivity extends AppCompatActivity {
         // Initialize Firebase
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance(); // INITIALIZE AUTH
-
+        warmUpRenderServer();
         // Initialize views
         initializeViews();
 
@@ -99,6 +100,22 @@ public class BookingAppointmentActivity extends AppCompatActivity {
 
         // Fetch data from Firebase
         fetchAppointmentTypes();
+    }
+
+    private void warmUpRenderServer() {
+        new Thread(() -> {
+            try {
+                java.net.URL url = new java.net.URL("https://sttherese-api.onrender.com/ping.php");
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(30000);
+                conn.setReadTimeout(30000);
+                conn.getResponseCode();
+                conn.disconnect();
+                android.util.Log.d("RENDER_PING", "Server warmed up");
+            } catch (Exception e) {
+                android.util.Log.e("RENDER_PING", "Warm up failed: " + e.getMessage());
+            }
+        }).start();
     }
 
     private void initializeViews() {
@@ -1002,42 +1019,58 @@ public class BookingAppointmentActivity extends AppCompatActivity {
                 .set(appointment)
                 .addOnSuccessListener(aVoid -> {
                     showSuccessDialog();
-                    // 🔥 TRIGGER THE NOTIFICATION HERE
-                    String patientUid = mAuth.getCurrentUser().getUid();
-                    sendNotificationTrigger(patientUid);
+                    //  TRIGGER THE NOTIFICATION HERE
+                    // Fetch patient name from patients collection then trigger notification
+                    db.collection("patients").document(customPatientId).get()
+                            .addOnSuccessListener(patientDoc -> {
+                                String firstName  = patientDoc.getString("first_name")  != null ? patientDoc.getString("first_name")  : "";
+                                String lastName   = patientDoc.getString("last_name")   != null ? patientDoc.getString("last_name")   : "";
+                                String patientFullName = (firstName + " " + lastName).trim();
 
-
+                                sendNotificationTrigger(
+                                        mAuth.getCurrentUser().getUid(),
+                                        patientFullName.isEmpty() ? "A patient" : patientFullName
+                                );
+                            })
+                            .addOnFailureListener(e -> sendNotificationTrigger(
+                                    mAuth.getCurrentUser().getUid(), "A patient"
+                            ));
                 })
                 .addOnFailureListener(e -> {
                     showFailureDialog();
-                    buttonBook.setEnabled(true); // Re-enable on failure
+                    buttonBook.setEnabled(true);
                 });
     }
-    private void sendNotificationTrigger(String uid) {
-        // Replace with your actual Render API URL
+    private void sendNotificationTrigger(String uid, String patientName) {
         String url = "https://sttherese-api.onrender.com/send_notification.php";
-
         RequestQueue queue = Volley.newRequestQueue(this);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
-                response -> {
-                    // Success! The PHP script handled the notification
-                    android.util.Log.d("FCM_NOTIF", "Response: " + response);
-                },
-                error -> {
-                    android.util.Log.e("FCM_NOTIF", "Error: " + error.toString());
-                }) {
+                response -> android.util.Log.d("FCM_NOTIF", "Response: " + response),
+                error -> android.util.Log.e("FCM_NOTIF", "Error: " + error.toString())) {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("uid", uid); // Your PHP script looks for $_POST['uid']
+                params.put("action", "appointment_booked");
+                params.put("uid", uid);
+                params.put("patient_name", patientName);
+                params.put("date", selectedDate != null ? selectedDate : "");
+                params.put("time", selectedTime != null ? selectedTime : "");
                 return params;
+            }
+            // ── Increase Volley timeout ──
+            @Override
+            public RetryPolicy getRetryPolicy() {
+                return new com.android.volley.DefaultRetryPolicy(
+                        60000,
+                        0,
+                        1.0f
+                );
             }
         };
 
         queue.add(stringRequest);
     }
-
     private void showSuccessDialog() {
         // Use AlertDialog Builder to create a custom dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

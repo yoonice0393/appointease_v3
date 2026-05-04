@@ -100,7 +100,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
             return 0;
         }
 
-        // Assuming dobString is in "YYYY-MM-DD" format as set in showDatePicker()
+        //  dobString is in "YYYY-MM-DD" format as set in showDatePicker()
         try {
             String[] parts = dobString.split("-");
             int birthYear = Integer.parseInt(parts[0]);
@@ -108,7 +108,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
             int birthDay = Integer.parseInt(parts[2]);
 
             Calendar dob = Calendar.getInstance();
-            dob.set(birthYear, birthMonth - 1, birthDay); // Note: Month is 0-indexed
+            dob.set(birthYear, birthMonth - 1, birthDay); // Month is 0-indexed
 
             Calendar today = Calendar.getInstance();
 
@@ -121,7 +121,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
             return age;
 
         } catch (Exception e) {
-            // Handle potential parsing error (shouldn't happen if format is consistent)
+            // Handle potential parsing error
             return 0;
         }
     }
@@ -136,7 +136,6 @@ public class CA_PersonalDetails extends AppCompatActivity {
         String address = editTextAddress.getText().toString().trim();
 
         // --- 1. Required Fields (Text Inputs) ---
-        // Prioritize fields that are always mandatory.
 
         if (firstName.isEmpty()) {
             editTextFirstName.setError("First name is required");
@@ -144,7 +143,8 @@ public class CA_PersonalDetails extends AppCompatActivity {
             return;
         }
 
-        // Middle name is often optional, so no check is needed here unless it's required.
+        // Middle name is often optional, so we don't check for it.
+
 
         if (lastName.isEmpty()) {
             editTextLastName.setError("Last name is required");
@@ -153,7 +153,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
         }
 
         if (dob.isEmpty()) {
-            // Note: Use setError for the field, and Toast for overall instruction.
+            // Use setError for the field, and Toast for overall instruction.
             editTextDOB.setError("Date of birth is required");
             editTextDOB.requestFocus();
             Toast.makeText(this, "Please select your date of birth.", Toast.LENGTH_SHORT).show();
@@ -162,12 +162,12 @@ public class CA_PersonalDetails extends AppCompatActivity {
 
         // --- 2. Required Fields (Radio Group) ---
         if (selectedGenderId == -1) {
-            // Note: Since a RadioGroup doesn't have an setError method, a Toast is the best approach.
+            //  Since a RadioGroup doesn't have an setError method, a Toast is the best approach.
             Toast.makeText(this, "Please select your gender.", Toast.LENGTH_SHORT).show();
-            // You can also add a visual cue to the RadioGroup/label if available.
+
             return;
         }
-        // Safely get gender *after* the check passes
+        // Get the selected gender
         RadioButton selectedGenderButton = findViewById(selectedGenderId);
         String gender = selectedGenderButton.getText().toString();
 
@@ -177,7 +177,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
         int age = calculateAge(dob);
         final int MINIMUM_REGISTRATION_AGE = 18;
 
-        // Check A: Ensure age is valid (0 often means calculation error or future date)
+        // Check A: Ensure age is valid and not in the future
         if (age <= 0) {
             Toast.makeText(this, "Invalid date of birth selected.", Toast.LENGTH_LONG).show();
 //            editTextDOB.setError("Invalid DOB or future date selected.");
@@ -203,7 +203,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
             return;
         }
 
-        // Validate Philippine mobile number format *after* checking if it's empty
+        // Validate Philippine mobile number format (e.g., 09123456789)
         if (!isValidPhilippineNumber(contactNumber)) {
             editTextContactNumber.setError("Please enter a valid Philippine mobile number (e.g., 09123456789)");
             editTextContactNumber.requestFocus();
@@ -216,7 +216,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
             return;
         }
 
-        // --- 5. All validations passed, proceed ---
+        // --- 5. All validations passed, proceed to Account Credentials ---
         Intent intent = new Intent(CA_PersonalDetails.this, CA_AccountCredentials.class);
         intent.putExtra("first_name", firstName);
         intent.putExtra("middle_name", middleName);
@@ -237,13 +237,12 @@ public class CA_PersonalDetails extends AppCompatActivity {
             return true;
         }
 
-        // Alternative: Check if it's 10 digits starting with 9 (accept without leading 0)
+        // Check if it's 10 digits starting with 9 (accept without leading 0)
         if (cleaned.matches("^9\\d{9}$")) {
             return true;
         }
 
-        // You can also accept landline format or international format
-        // For now, we'll keep it strict to mobile numbers
+
 
         return false;
     }
