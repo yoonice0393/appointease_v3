@@ -1,5 +1,6 @@
 package com.example.sttherese.patient.activities;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -21,6 +22,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,40 +38,83 @@ public class NotificationActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private CardView noNotifCard;
 
-    private FirebaseAuth auth;
     private DatabaseReference notificationsRef;
-
     private List<Notification> notifList;
     private List<Notification> allNotifications;
     private NotificationAdapter adapter;
 
     private boolean showingAll = true;
+    private String patientFirestoreId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification);
 
-        Log.d(TAG, "=== NotificationActivity Started ===");
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        patientFirestoreId = prefs.getString("patient_firestore_id", null);
 
-        // Initialize Firebase
-        auth = FirebaseAuth.getInstance();
+        initializeUI();
+        setupRecyclerView();
 
-        // Check if user is logged in
-        if (auth.getCurrentUser() == null) {
-            Log.e(TAG, "User not logged in!");
-            finish();
-            return;
+        if (patientFirestoreId == null) {
+            fetchIdAndStartListening();
+        } else {
+            startListening();
         }
+    }
 
-        String userId = auth.getCurrentUser().getUid();
-        Log.d(TAG, "Current User ID: " + userId);
+    private void fetchIdAndStartListening() {
+        String authUid = FirebaseAuth.getInstance().getUid();
+        if (authUid == null) return;
 
+        FirebaseFirestore.getInstance().collection("patients")
+                .whereEqualTo("userId", authUid).limit(1).get()
+                .addOnSuccessListener(q -> {
+                    if (!q.isEmpty()) {
+                        patientFirestoreId = q.getDocuments().get(0).getId();
+                        getSharedPreferences("UserPrefs", MODE_PRIVATE).edit()
+                                .putString("patient_firestore_id", patientFirestoreId).apply();
+                        startListening();
+                    }
+                });
+    }
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance("https://appointease-7aa63-default-rtdb.asia-southeast1.firebasedatabase.app");
-        notificationsRef = database.getReference("notifications");
+    private void startListening() {
+        Log.d(TAG, "Listening for patient notifications under path: notifications/" + patientFirestoreId);
+        // FIXED PATH: Match the structure /notifications/{patientFirestoreId}
+        notificationsRef = FirebaseDatabase.getInstance("https://appointease-7aa63-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("notifications").child(patientFirestoreId);
 
-        // Initialize UI elements
+        notificationsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                allNotifications.clear();
+                if (snapshot.exists()) {
+                    for (DataSnapshot child : snapshot.getChildren()) {
+                        try {
+                            Notification n = child.getValue(Notification.class);
+                            if (n != null) {
+                                n.setId(child.getKey());
+                                allNotifications.add(n);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Parsing error", e);
+                        }
+                    }
+                }
+                Collections.sort(allNotifications, (n1, n2) -> Long.compare(n2.getTimestamp(), n1.getTimestamp()));
+                refreshDisplay();
+                updateCounts();
+            }
+
+            @Override public void onCancelled(DatabaseError error) {
+                Log.e(TAG, "DB Error: " + error.getMessage());
+            }
+        });
+    }
+
+    private void initializeUI() {
         backBtn = findViewById(R.id.buttonBack);
         btnAll = findViewById(R.id.btnAll);
         btnUnread = findViewById(R.id.btnUnread);
@@ -78,162 +123,45 @@ public class NotificationActivity extends AppCompatActivity {
         unreadCount = findViewById(R.id.unreadCount);
         recyclerView = findViewById(R.id.recyclerViewNotifications);
         noNotifCard = findViewById(R.id.NoNotifCard);
-
         backBtn.setOnClickListener(v -> onBackPressed());
+        btnAll.setOnClickListener(v -> { showingAll = true; setActiveFilter(true); refreshDisplay(); });
+        btnUnread.setOnClickListener(v -> { showingAll = false; setActiveFilter(false); refreshDisplay(); });
+        markAllRead.setOnClickListener(v -> {
+            if (patientFirestoreId == null || notificationsRef == null) return;
+            for (Notification n : allNotifications) {
+                if (!n.isRead()) notificationsRef.child(n.getId()).child("isRead").setValue(true);
+            }
+        });
+    }
 
-        // Initialize lists
+    private void setupRecyclerView() {
         notifList = new ArrayList<>();
         allNotifications = new ArrayList<>();
-
-        // Setup adapter
         adapter = new NotificationAdapter(notifList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
-
-        // Set initial filter state
         setActiveFilter(true);
-
-        Log.d(TAG, "Listening to: notifications/" + userId);
-
-        // Listen for changes in Realtime Database
-        notificationsRef.child(userId).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Log.d(TAG, "=== Data Changed ===");
-                Log.d(TAG, "Snapshot exists: " + snapshot.exists());
-                Log.d(TAG, "Children count: " + snapshot.getChildrenCount());
-
-                allNotifications.clear();
-
-                for (DataSnapshot childSnapshot : snapshot.getChildren()) {
-                    Log.d(TAG, "Processing child: " + childSnapshot.getKey());
-
-                    try {
-                        Notification n = childSnapshot.getValue(Notification.class);
-                        if (n != null) {
-                            n.setId(childSnapshot.getKey());
-                            allNotifications.add(n);
-                            Log.d(TAG, "✅ Added notification: " + n.getTitle());
-                        } else {
-                            Log.e(TAG, "❌ Notification is null after parsing");
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "❌ Error parsing notification: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-
-                Log.d(TAG, "Total notifications loaded: " + allNotifications.size());
-
-                // Sort by timestamp (newest first)
-                Collections.sort(allNotifications, (n1, n2) ->
-                        Long.compare(n2.getTimestamp(), n1.getTimestamp())
-                );
-
-                // Update display based on current filter
-                if (showingAll) {
-                    showAllNotifications();
-                } else {
-                    showUnreadNotifications();
-                }
-
-                updateCounts();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                Log.e(TAG, "❌ Database error: " + error.getMessage());
-                error.toException().printStackTrace();
-            }
-        });
-
-        // Filter: All Notifications
-        btnAll.setOnClickListener(v -> {
-            Log.d(TAG, "All button clicked");
-            showingAll = true;
-            setActiveFilter(true);
-            showAllNotifications();
-        });
-
-        // Filter: Unread Notifications
-        btnUnread.setOnClickListener(v -> {
-            Log.d(TAG, "Unread button clicked");
-            showingAll = false;
-            setActiveFilter(false);
-            showUnreadNotifications();
-        });
-
-        // Mark all as read
-        markAllRead.setOnClickListener(v -> {
-            Log.d(TAG, "Mark all as read clicked");
-            for (Notification n : allNotifications) {
-                if (!n.isRead()) {
-                    notificationsRef.child(userId).child(n.getId())
-                            .child("isRead").setValue(true);
-                }
-            }
-        });
     }
 
-    private void showAllNotifications() {
-        Log.d(TAG, "showAllNotifications() - Total: " + allNotifications.size());
-
+    private void refreshDisplay() {
         notifList.clear();
-        notifList.addAll(allNotifications);
+        if (showingAll) notifList.addAll(allNotifications);
+        else for (Notification n : allNotifications) if (!n.isRead()) notifList.add(n);
         adapter.notifyDataSetChanged();
-
-        boolean isEmpty = notifList.isEmpty();
-        noNotifCard.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-        recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-
-        Log.d(TAG, "RecyclerView visibility: " + (recyclerView.getVisibility() == View.VISIBLE ? "VISIBLE" : "GONE"));
-        Log.d(TAG, "NoNotifCard visibility: " + (noNotifCard.getVisibility() == View.VISIBLE ? "VISIBLE" : "GONE"));
-    }
-
-    private void showUnreadNotifications() {
-        Log.d(TAG, "showUnreadNotifications()");
-
-        notifList.clear();
-        for (Notification n : allNotifications) {
-            if (!n.isRead()) {
-                notifList.add(n);
-            }
-        }
-        adapter.notifyDataSetChanged();
-
-        boolean isEmpty = notifList.isEmpty();
-        noNotifCard.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-        recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-
-        Log.d(TAG, "Unread count: " + notifList.size());
+        noNotifCard.setVisibility(notifList.isEmpty() ? View.VISIBLE : View.GONE);
+        recyclerView.setVisibility(notifList.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     private void updateCounts() {
-        int total = allNotifications.size();
-        int unread = 0;
-
-        for (Notification n : allNotifications) {
-            if (!n.isRead()) {
-                unread++;
-            }
-        }
-
-        Log.d(TAG, "Updating counts - Total: " + total + ", Unread: " + unread);
-
+        int total = allNotifications.size(), unread = 0;
+        for (Notification n : allNotifications) if (!n.isRead()) unread++;
         allCount.setText(String.valueOf(total));
         unreadCount.setText(String.valueOf(unread));
-
-        // Hide mark all as read if no unread notifications
         markAllRead.setVisibility(unread > 0 ? View.VISIBLE : View.INVISIBLE);
     }
 
     private void setActiveFilter(boolean isAll) {
-        if (isAll) {
-            btnAll.setBackgroundResource(R.drawable.filter_button_active);
-            btnUnread.setBackgroundResource(R.drawable.filter_button_bg);
-        } else {
-            btnAll.setBackgroundResource(R.drawable.filter_button_bg);
-            btnUnread.setBackgroundResource(R.drawable.filter_button_active);
-        }
+        btnAll.setBackgroundResource(isAll ? R.drawable.filter_button_active : R.drawable.filter_button_bg);
+        btnUnread.setBackgroundResource(!isAll ? R.drawable.filter_button_active : R.drawable.filter_button_bg);
     }
 }

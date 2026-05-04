@@ -5,6 +5,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
@@ -14,7 +17,6 @@ import androidx.core.app.NotificationCompat;
 import com.example.sttherese.patient.activities.NotificationActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -25,6 +27,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -38,205 +41,103 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "FCM_Service";
     private static final String SERVER_URL = "https://sttherese-api.onrender.com/save-fcm-token1.php";
-    private static final String CHANNEL_ID = "appointment_notifications";
+    private static final String CHANNEL_ID = "st_therese_notif_channel_v4";
 
     @Override
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
-        Log.d(TAG, "New FCM token received: " + token);
-        sendTokenToServer(token);
+        sendTokenToServer(this, token);
     }
 
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        Log.d(TAG, "Message received from: " + remoteMessage.getFrom());
-
-        // Save notification to Realtime Database
         saveNotificationToRTDB(remoteMessage);
 
-        String title = null;
-        String body  = null;
+        String title = "St. Therese Clinic";
+        String body = "You have a new update.";
 
-        // Try notification payload first (works when app is in background)
         if (remoteMessage.getNotification() != null) {
             title = remoteMessage.getNotification().getTitle();
-            body  = remoteMessage.getNotification().getBody();
+            body = remoteMessage.getNotification().getBody();
+        } else if (remoteMessage.getData().size() > 0) {
+            title = remoteMessage.getData().getOrDefault("title", title);
+            body = remoteMessage.getData().getOrDefault("body", remoteMessage.getData().getOrDefault("message", body));
         }
 
-        // Fall back to data payload (works when app is in foreground)
-        if (title == null && remoteMessage.getData().containsKey("title")) {
-            title = remoteMessage.getData().get("title");
-        }
-        if (body == null && remoteMessage.getData().containsKey("body")) {
-            body = remoteMessage.getData().get("body");
-        }
-
-        // Always show notification regardless of app state
-        if (title != null && body != null) {
-            showNotification(title, body);
-        }
+        showNotification(title, body);
     }
 
-    /**
-     * Save incoming notification to Realtime Database
-     */
     private void saveNotificationToRTDB(RemoteMessage remoteMessage) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
 
-        if (currentUser == null) {
-            Log.e(TAG, "User not logged in, cannot save notification");
-            return;
-        }
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = prefs.getString("user_role_type", "patient");
+        String appId = "doctor".equals(role) ? prefs.getString("doctor_doc_id", null) : prefs.getString("patient_firestore_id", null);
 
-        String userId = currentUser.getUid();
-        Log.d(TAG, "Saving notification for user: " + userId);
+        if (appId == null) return; // Wait for ID to be ready
 
-        RemoteMessage.Notification notification = remoteMessage.getNotification();
-
-        if (notification == null) {
-            Log.e(TAG, "Notification payload is null");
-            return;
-        }
-
-        Log.d(TAG, "Title: " + notification.getTitle());
-        Log.d(TAG, "Body: " + notification.getBody());
-
-        // Prepare notification data
         Map<String, Object> notifData = new HashMap<>();
-        notifData.put("userId", userId);
-        notifData.put("title", notification.getTitle());
-        notifData.put("message", notification.getBody());
+        notifData.put("userId", appId);
+        notifData.put("title", remoteMessage.getNotification() != null ? remoteMessage.getNotification().getTitle() : remoteMessage.getData().get("title"));
+        notifData.put("message", remoteMessage.getNotification() != null ? remoteMessage.getNotification().getBody() : remoteMessage.getData().getOrDefault("body", remoteMessage.getData().get("message")));
         notifData.put("isRead", false);
         notifData.put("timestamp", System.currentTimeMillis());
+        if (remoteMessage.getData().containsKey("status")) notifData.put("status", remoteMessage.getData().get("status"));
+        if (remoteMessage.getData().containsKey("type")) notifData.put("type", remoteMessage.getData().get("type"));
 
-        if (remoteMessage.getData().containsKey("type")) {
-            notifData.put("type", remoteMessage.getData().get("type"));
-            Log.d(TAG, "Type: " + remoteMessage.getData().get("type"));
-        }
-        if (remoteMessage.getData().containsKey("status")) {
-            notifData.put("status", remoteMessage.getData().get("status"));
-            Log.d(TAG, "Status: " + remoteMessage.getData().get("status"));
-        }
-
-        FirebaseDatabase database = FirebaseDatabase.getInstance("https://appointease-7aa63-default-rtdb.asia-southeast1.firebasedatabase.app");
-        DatabaseReference notificationsRef = database.getReference("notifications")
-                .child(userId)
-                .push();
-
-
-        notificationsRef.setValue(notifData)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "✅ Notification saved successfully to RTDB: " + notificationsRef.getKey());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "❌ Error saving notification to RTDB", e);
-                });
+        // PATH FIXED: Now saved under /notifications/{appId} to match your structure
+        FirebaseDatabase.getInstance("https://appointease-7aa63-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("notifications").child(appId).push().setValue(notifData);
     }
+
     private void showNotification(String title, String body) {
         createNotificationChannel();
-
         Intent intent = new Intent(this, NotificationActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                this,
-                0,
-                intent,
-                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE
-        );
+        
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(title)
-                .setContentText(body)
-                .setAutoCancel(true)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent);
+                .setSmallIcon(R.drawable.ic_notification).setContentTitle(title).setContentText(body)
+                .setAutoCancel(true).setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setPriority(NotificationCompat.PRIORITY_HIGH).setContentIntent(pendingIntent);
 
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(0, builder.build());
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager != null) manager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Appointment Notifications",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            channel.setDescription("Notifications for appointment updates");
-
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Clinic Updates", NotificationManager.IMPORTANCE_HIGH);
+            getSystemService(NotificationManager.class).createNotificationChannel(channel);
         }
     }
 
-    public static void sendTokenToServer(String fcmToken) {
-        if (fcmToken == null || fcmToken.isEmpty()) {
-            Log.e(TAG, "Cannot send token: FCM token is null or empty");
-            return;
-        }
+    public static void sendTokenToServer(Context context, String fcmToken) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || fcmToken == null) return;
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        SharedPreferences prefs = context.getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = prefs.getString("user_role_type", "patient");
+        String appId = "doctor".equals(role) ? prefs.getString("doctor_doc_id", null) : prefs.getString("patient_firestore_id", null);
 
-        if (currentUser == null) {
-            Log.w(TAG, "Cannot send token: User not logged in. Token will be sent after login.");
-            return;
-        }
-
-        String uid = currentUser.getUid();
-        Log.d(TAG, "Sending FCM token to server for UID: " + uid);
+        if (appId == null) return; // Wait for Firestore ID lookup
 
         JSONObject json = new JSONObject();
         try {
-            json.put("uid", uid);
+            json.put("uid", appId);
             json.put("fcmToken", fcmToken);
             json.put("platform", "android");
-            json.put("role", "patient");
-        } catch (JSONException e) {
-            Log.e(TAG, "JSON creation error", e);
-            return;
-        }
+            json.put("role", role);
+        } catch (JSONException e) { return; }
 
-        RequestBody body = RequestBody.create(
-                json.toString(),
-                MediaType.get("application/json; charset=utf-8")
-        );
-
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
-                .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
-                .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(SERVER_URL)
-                .post(body)
-                .addHeader("Content-Type", "application/json")
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e(TAG, "Failed to send FCM token to server", e);
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String responseBody = response.body() != null ? response.body().string() : "No response body";
-
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "FCM token sent successfully!");
-                    Log.d(TAG, "Response: " + responseBody);
-                } else {
-                    Log.e(TAG, "Server returned error: " + response.code());
-                    Log.e(TAG, "Error response: " + responseBody);
-                }
-            }
-        });
+        RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
+        new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).build()
+                .newCall(new Request.Builder().url(SERVER_URL).post(body).build()).enqueue(new Callback() {
+                    @Override public void onFailure(Call call, IOException e) {}
+                    @Override public void onResponse(Call call, Response response) throws IOException { response.close(); }
+                });
     }
 }

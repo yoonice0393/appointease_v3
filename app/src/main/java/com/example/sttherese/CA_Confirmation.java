@@ -13,6 +13,7 @@ import android.widget.*;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -174,7 +175,7 @@ public class CA_Confirmation extends AppCompatActivity {
         codeData.put("expiresAt", newExpiryTime);
 
         db.collection("email_verifications").document(emailKey)
-                .set(codeData)
+                .update(codeData)  // use update() to preserve email/verified fields
                 .addOnSuccessListener(unused -> {
                     StringRequest request = new StringRequest(Request.Method.POST, "https://sttherese-api.onrender.com/send_verification_code.php",
                             response -> {
@@ -183,7 +184,14 @@ public class CA_Confirmation extends AppCompatActivity {
                                 clearCode();
                             },
                             error -> {
-                                Toast.makeText(this, "Failed to send email: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                                String errMsg = error.getMessage();
+                                if (errMsg == null && error.networkResponse != null) {
+                                    errMsg = "HTTP " + error.networkResponse.statusCode
+                                            + ": " + new String(error.networkResponse.data);
+                                } else if (errMsg == null) {
+                                    errMsg = error.getClass().getSimpleName() + " (server may be starting up, try again)";
+                                }
+                                Toast.makeText(this, "Failed to send email: " + errMsg, Toast.LENGTH_LONG).show();
                                 resendLink.setEnabled(true);
                             }) {
                         @Override
@@ -196,6 +204,12 @@ public class CA_Confirmation extends AppCompatActivity {
                         }
                     };
 
+                    // 60s timeout — Render free tier can take up to ~60s to cold-start
+                    request.setRetryPolicy(new DefaultRetryPolicy(
+                            60000,
+                            0,
+                            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+                    ));
 
                     Volley.newRequestQueue(this).add(request);
                 })

@@ -26,6 +26,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -245,69 +246,69 @@ public class CA_AccountCredentials extends AppCompatActivity {
         else return 2; // Strong
     }
 
-        private void validateAndSignUp() {
-            String email = editTextEmail.getText().toString().trim();
-            String password = editTextPassword.getText().toString().trim();
-            String confirmPassword = editTextConfirmPassword.getText().toString().trim();
+    private void validateAndSignUp() {
+        String email = editTextEmail.getText().toString().trim();
+        String password = editTextPassword.getText().toString().trim();
+        String confirmPassword = editTextConfirmPassword.getText().toString().trim();
 
-            // Reset errors
-            editTextEmail.setError(null);
-            editTextPassword.setError(null);
-            editTextConfirmPassword.setError(null);
+        // Reset errors
+        editTextEmail.setError(null);
+        editTextPassword.setError(null);
+        editTextConfirmPassword.setError(null);
 
-            boolean hasError = false;
+        boolean hasError = false;
 
-            // Validate email
-            if (email.isEmpty()) {
-                editTextEmail.setError("Email is required");
-                hasError = true;
-            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                editTextEmail.setError("Invalid email address");
-                hasError = true;
-            }
-
-            // Validate password
-            if (password.isEmpty()) {
-                editTextPassword.setError("Password is required");
-                hasError = true;
-            } else if (password.length() < 6) {
-                editTextPassword.setError("Password must be at least 6 characters");
-                hasError = true;
-            }
-
-            // Validate confirm password
-            if (confirmPassword.isEmpty()) {
-                editTextConfirmPassword.setError("Please confirm your password");
-                hasError = true;
-            } else if (!password.equals(confirmPassword)) {
-                editTextConfirmPassword.setError("Passwords do not match");
-                hasError = true;
-            }
-
-            // Check terms and conditions
-    //        if (!checkBoxTerms.isChecked()) {
-    //            Toast.makeText(this, "Please agree to Terms and Conditions", Toast.LENGTH_SHORT).show();
-    //            hasError = true;
-    //        }
-
-            if (hasError) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Disable button to prevent double submission
-            buttonSignUp.setEnabled(false);
-            buttonSignUp.setText("Creating account...");
-
-
-            int grayColor = ContextCompat.getColor(this, R.color.gray_button_color);
-
-            // Change the background tint to gray
-            buttonSignUp.setBackgroundTintList(ColorStateList.valueOf(grayColor));
-
-            // Create Firebase account
-            createFirebaseAccount(email, password);
+        // Validate email
+        if (email.isEmpty()) {
+            editTextEmail.setError("Email is required");
+            hasError = true;
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            editTextEmail.setError("Invalid email address");
+            hasError = true;
         }
+
+        // Validate password
+        if (password.isEmpty()) {
+            editTextPassword.setError("Password is required");
+            hasError = true;
+        } else if (password.length() < 6) {
+            editTextPassword.setError("Password must be at least 6 characters");
+            hasError = true;
+        }
+
+        // Validate confirm password
+        if (confirmPassword.isEmpty()) {
+            editTextConfirmPassword.setError("Please confirm your password");
+            hasError = true;
+        } else if (!password.equals(confirmPassword)) {
+            editTextConfirmPassword.setError("Passwords do not match");
+            hasError = true;
+        }
+
+        // Check terms and conditions
+        //        if (!checkBoxTerms.isChecked()) {
+        //            Toast.makeText(this, "Please agree to Terms and Conditions", Toast.LENGTH_SHORT).show();
+        //            hasError = true;
+        //        }
+
+        if (hasError) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Disable button to prevent double submission
+        buttonSignUp.setEnabled(false);
+        buttonSignUp.setText("Creating account...");
+
+
+        int grayColor = ContextCompat.getColor(this, R.color.gray_button_color);
+
+        // Change the background tint to gray
+        buttonSignUp.setBackgroundTintList(ColorStateList.valueOf(grayColor));
+
+        // Create Firebase account
+        createFirebaseAccount(email, password);
+    }
 
     private void restoreSignUpButton() {
         // Enable button
@@ -453,17 +454,31 @@ public class CA_AccountCredentials extends AppCompatActivity {
                                 Log.d("EMAIL", "Response: " + response);
                             },
                             error -> {
-                                Log.e("EMAIL", "Error: " + error.getMessage());
+                                String errMsg = error.getMessage();
+                                if (errMsg == null && error.networkResponse != null) {
+                                    errMsg = "HTTP " + error.networkResponse.statusCode
+                                            + ": " + new String(error.networkResponse.data);
+                                } else if (errMsg == null) {
+                                    errMsg = error.getClass().getSimpleName();
+                                }
+                                Log.e("EMAIL", "Send verification error: " + errMsg);
                             }) {
                         @Override
                         protected Map<String, String> getParams() {
                             Map<String, String> params = new HashMap<>();
                             params.put("email", email);
-                            params.put("first_name", "User");
-                            params.put("code", verificationCode); // from the generated code
+                            params.put("first_name", firstName != null ? firstName : "User");
+                            params.put("code", verificationCode);
                             return params;
                         }
                     };
+
+                    // 60s timeout — Render free tier can take up to ~60s to cold-start
+                    request.setRetryPolicy(new DefaultRetryPolicy(
+                            60000,
+                            0,
+                            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+                    ));
 
                     Volley.newRequestQueue(this).add(request);
 
@@ -481,7 +496,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
                 })
                 .addOnFailureListener(e ->{
                     restoreSignUpButton();
-                        Toast.makeText(this, "Failed to generate code: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed to generate code: " + e.getMessage(), Toast.LENGTH_SHORT).show();
 
                 });
     }
