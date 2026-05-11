@@ -215,35 +215,50 @@ public class DoctorsActivity extends AppCompatActivity {
     }
 
     private void applyQuery(String searchQuery) {
-        Query query = db.collection("doctors");
+        String normalizedSearch = normalizeDoctorSearch(searchQuery);
 
-        if (!selectedFilter.equals("All")) {
-            query = query.whereEqualTo("specialty", selectedFilter);
-        }
-
-        if (searchQuery != null && !searchQuery.isEmpty()) {
-            query = query.orderBy("name")
-                    .startAt(searchQuery)
-                    .endAt(searchQuery + "\uf8ff");
-        } else {
-            query = query.orderBy("name");
-        }
-
-        // 🔍 DEBUG: Check how many results the query returns
-        query.get().addOnSuccessListener(querySnapshot -> {
-            Log.d("DoctorsActivity", "Total doctors found: " + querySnapshot.size());
+        db.collection("doctors")
+                .whereEqualTo("is_active", true)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+            List<com.example.sttherese.models.Doctor> doctors = new ArrayList<>();
             for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                Log.d("DoctorsActivity", "Doctor: " + doc.getString("name"));
+                com.example.sttherese.models.Doctor doctor = doc.toObject(com.example.sttherese.models.Doctor.class);
+                if (doctor == null) continue;
+                doctor.setId(doc.getId());
+
+                boolean matchesFilter = "All".equals(selectedFilter)
+                        || selectedFilter.equalsIgnoreCase(doctor.getSpecialty() == null ? "" : doctor.getSpecialty());
+                boolean matchesSearch = normalizedSearch.isEmpty()
+                        || normalizeDoctorSearch(doctor.getName()).contains(normalizedSearch)
+                        || normalizeDoctorSearch(doctor.getSpecialty()).contains(normalizedSearch);
+
+                if (matchesFilter && matchesSearch) {
+                    doctors.add(doctor);
+                }
             }
+            doctors.sort((d1, d2) -> String.valueOf(d1.getName()).compareToIgnoreCase(String.valueOf(d2.getName())));
+            if (doctorAdapter == null) {
+                doctorAdapter = new DoctorAdapter(this, doctor -> showScheduleDialog(doctor.getId(), doctor.getName()), null);
+                rvDoctors.setAdapter(doctorAdapter);
+            }
+            doctorAdapter.updateList(doctors);
+        }).addOnFailureListener(e -> {
+            Log.e("DoctorsActivity", "Error loading doctors: " + e.getMessage());
+            Toast.makeText(this, "Failed to load doctors.", Toast.LENGTH_SHORT).show();
         });
 
         if (doctorAdapter != null) doctorAdapter.removeListener();
+    }
 
-        doctorAdapter = new DoctorAdapter(this, doctor -> {
-            showScheduleDialog(doctor.getId(), doctor.getName());
-        }, query);
-
-        rvDoctors.setAdapter(doctorAdapter);
+    private String normalizeDoctorSearch(String value) {
+        if (value == null) return "";
+        return value.toLowerCase(Locale.ROOT)
+                .replace("doctor", "")
+                .replace("dr.", "")
+                .replace("dr ", "")
+                .replace(".", "")
+                .trim();
     }
     private void showScheduleDialog(String doctorId, String doctorName) {
         android.app.Dialog dialog = new android.app.Dialog(this);
@@ -342,7 +357,7 @@ public class DoctorsActivity extends AppCompatActivity {
                                 db.collection("appointments")
                                         .whereEqualTo("doctorId", doctorId)
                                         .whereGreaterThanOrEqualTo("date", getCurrentDateString())
-                                        .whereIn("status", Arrays.asList("pending", "confirmed"))
+                                                .whereIn("status", Arrays.asList("pending", "approved"))
                                         .get()
                                         .addOnSuccessListener(appointmentsSnapshot -> {
 

@@ -59,7 +59,7 @@
             android:layout_marginBottom="20dp"
             android:src="@drawable/ic_add"
             android:background="@drawable/bg_circle_red"
-            android:padding="16dp"
+            android:padding="8dp"
             app:tint="#FFFFFF"
             android:layout_marginHorizontal="8dp" />
 

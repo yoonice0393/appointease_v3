@@ -16,6 +16,9 @@
         android:theme="@style/Theme.StTherese"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".Privacy_Policy"
+            android:exported="false" />
+        <activity
             android:name=".Terms_Conditions"
             android:exported="false" />
         <activity
@@ -105,11 +108,10 @@
         <activity
             android:name=".SignInPage"
             android:exported="false" />
-
         <activity
             android:name=".doctor.GASimulationActivity"
-            android:label="GA Simulation"
-            android:exported="false" />
+            android:exported="false"
+            android:label="GA Simulation" />
         <activity
             android:name=".SplashScreenActivity"
             android:exported="true"
@@ -120,6 +122,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">

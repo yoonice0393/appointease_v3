@@ -62,12 +62,23 @@
                     app:chipStrokeColor="#50333333"/>
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chipConfirmed"
+                    android:id="@+id/chipApproved"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:textColor="@color/chip_text_selector_alt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Confirmed"
+                    android:text="Approved"
+                    app:chipBackgroundColor="@color/chip_background_selector_alt"
+                    app:chipStrokeWidth="1.5dp"
+                    app:chipStrokeColor="#50333333"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDenied"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:textColor="@color/chip_text_selector_alt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Denied"
                     app:chipBackgroundColor="@color/chip_background_selector_alt"
                     app:chipStrokeWidth="1.5dp"
                     app:chipStrokeColor="#50333333"/>

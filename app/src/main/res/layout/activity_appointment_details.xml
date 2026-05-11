@@ -13,6 +13,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical"
             android:paddingBottom="40dp">
 
@@ -52,10 +54,23 @@
                     android:textSize="32sp" />
             </FrameLayout>
 
-            <!-- Space for Profile Image Overlap -->
+            <!-- Profile image scrolls with the details content -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="100dp" />
+                android:layout_height="100dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
+
+                <ImageView
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_gravity="center_horizontal|top"
+                    android:layout_marginTop="-60dp"
+                    android:background="@drawable/bg_circle_gray"
+                    android:contentDescription="Profile"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_person" />
+            </FrameLayout>
 
             <!-- Appointment Details Row -->
             <LinearLayout
@@ -159,18 +174,45 @@
                             android:textSize="12sp" />
                     </LinearLayout>
 
-                    <!-- Status Button -->
-                    <Button
+                    <!-- Status Dropdown -->
+                    <LinearLayout
                         android:id="@+id/statusButton"
-                        android:layout_width="120dp"
+                        android:layout_width="150dp"
                         android:layout_height="40dp"
                         android:layout_marginTop="12dp"
-                        android:background="@drawable/status_background"
-                        android:text="Pending"
-                        android:fontFamily="@font/poppins_semi_bold"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:background="@drawable/bg_status_dropdown"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="0dp">
+
+                        <TextView
+                            android:id="@+id/tvStatusLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:text="Approved"
+                            android:textColor="@color/brown_text"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+
+                            android:background="@drawable/bg_status_chevron_box">
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="Open status dropdown"
+                                android:src="@drawable/ic_chevron_down_white" />
+                        </FrameLayout>
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
@@ -303,26 +345,25 @@
                     android:lineSpacingMultiplier="1.4" />
             </LinearLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonCancelAppointment"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginStart="56dp"
+                android:layout_marginTop="40dp"
+                android:layout_marginEnd="56dp"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:text="Cancel Appointment"
+                android:textAllCaps="false"
+                android:textColor="@color/card_white"
+                android:textSize="13sp"
+                app:backgroundTint="@color/red_primary"
+                app:cornerRadius="24dp" />
+
 
 
         </LinearLayout>
 
     </ScrollView>
 
-    <!-- <CHANGE> Profile image positioned absolutely on top to overlap header -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="140dp">
-
-        <ImageView
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_gravity="center_horizontal"
-            android:background="@drawable/bg_circle_gray"
-            android:contentDescription="Profile"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_person" />
-    </FrameLayout>
 </FrameLayout>

@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.sttherese.DateFormatter;
 import com.example.sttherese.R;
 import com.example.sttherese.models.Appointment;
 import com.google.firebase.firestore.DocumentChange;
@@ -20,6 +21,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -32,6 +34,10 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     private ListenerRegistration firestoreListener;
     private List<Appointment> originalAppointments = new ArrayList<>();
     private String activeSearchQuery = null;
+    private String activeDateFilter = null;
+    private String activeMinDate = null;
+    private List<String> activeAllowedStatuses = null;
+    private int activeLimit = -1;
     private final String mode;
 
     public interface OnAppointmentClickListener {
@@ -59,7 +65,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
 
             if (snapshots == null) return;
 
-            List<Appointment> currentAppointments = new ArrayList<>(appointments);
+            List<Appointment> currentAppointments = new ArrayList<>(originalAppointments);
 
             for (DocumentChange dc : snapshots.getDocumentChanges()) {
                 Appointment appointment = dc.getDocument().toObject(Appointment.class);
@@ -90,11 +96,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
             updateData(currentAppointments);
 
             // Apply active search if exists
-            if (activeSearchQuery != null && !activeSearchQuery.isEmpty()) {
-                filterByName(activeSearchQuery);
-            } else if (statusListener != null) {
-                statusListener.onDataLoaded(appointments.size());
-            }
+            applyActiveFilters();
         });
     }
 
@@ -111,7 +113,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot != null && !querySnapshot.isEmpty()) {
-                        var userDoc = querySnapshot.getDocuments().get(0);
+                        com.google.firebase.firestore.DocumentSnapshot userDoc = querySnapshot.getDocuments().get(0);
 
                         String firstName = userDoc.getString("first_name");
                         String lastName = userDoc.getString("last_name");
@@ -127,20 +129,17 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                         appointment.setPatientName(patientName);
                         appointment.setPatientAvatar(avatar);
 
-                        // Re-apply filter if active
-                        if (activeSearchQuery != null && !activeSearchQuery.isEmpty()) {
-                            filterByName(activeSearchQuery);
-                        } else {
-                            notifyDataSetChanged();
-                        }
+                        applyActiveFilters();
                     } else {
                         Log.w("AppointmentAdapter", "No patient found for userId: " + appointment.getUserId());
                         appointment.setPatientName("Patient");
+                        applyActiveFilters();
                     }
                 })
                 .addOnFailureListener(ex -> {
                     Log.e("AppointmentAdapter", "Failed to load patient info", ex);
                     appointment.setPatientName("Patient");
+                    applyActiveFilters();
                 });
     }
 
@@ -151,13 +150,10 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
 
         FirebaseFirestore.getInstance()
                 .collection("doctors")
-                .whereEqualTo("doctorId", appointment.getDoctorId())
-                .limit(1)
+                .document(appointment.getDoctorId())
                 .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
-                        var doc = querySnapshot.getDocuments().get(0);
-
+                .addOnSuccessListener(doc -> {
+                    if (doc != null && doc.exists()) {
                         String name = doc.getString("name");
                         String avatar = doc.getString("avatar");
                         String specialty = doc.getString("specialty");
@@ -165,15 +161,11 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                         appointment.setDoctorName(name);
                         appointment.setDoctorAvatar(avatar);
                         appointment.setSpecialty(specialty);
-
-                        notifyDataSetChanged();
-
-                        if (statusListener != null) {
-                            statusListener.onDataLoaded(appointments.size());
-                        }
                     } else {
                         Log.w("AppointmentAdapter", "No doctor found for doctorId: " + appointment.getDoctorId());
                     }
+
+                    applyActiveFilters();
                 })
                 .addOnFailureListener(ex ->
                         Log.e("AppointmentAdapter", "Failed to load doctor info", ex));
@@ -181,22 +173,75 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
 
     public void filterByName(String query) {
         activeSearchQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+        applyActiveFilters();
+    }
 
+    public void setDateFilter(String dateFilter) {
+        activeDateFilter = (dateFilter != null && !dateFilter.trim().isEmpty()) ? dateFilter.trim() : null;
+        applyActiveFilters();
+    }
+
+    public void setAllowedStatuses(List<String> statuses) {
+        activeAllowedStatuses = statuses;
+        applyActiveFilters();
+    }
+
+    public void applyFilters(String query, String dateFilter, List<String> allowedStatuses) {
+        activeSearchQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+        activeDateFilter = (dateFilter != null && !dateFilter.trim().isEmpty()) ? dateFilter.trim() : null;
+        activeMinDate = null;
+        activeAllowedStatuses = allowedStatuses;
+        activeLimit = -1;
+        applyActiveFilters();
+    }
+
+    public void applyFilters(String query, String dateFilter, String minDate, List<String> allowedStatuses) {
+        activeSearchQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+        activeDateFilter = (dateFilter != null && !dateFilter.trim().isEmpty()) ? dateFilter.trim() : null;
+        activeMinDate = (minDate != null && !minDate.trim().isEmpty()) ? minDate.trim() : null;
+        activeAllowedStatuses = allowedStatuses;
+        activeLimit = -1;
+        applyActiveFilters();
+    }
+
+    public void applyFilters(String query, String dateFilter, String minDate, List<String> allowedStatuses, int limit) {
+        activeSearchQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+        activeDateFilter = (dateFilter != null && !dateFilter.trim().isEmpty()) ? dateFilter.trim() : null;
+        activeMinDate = (minDate != null && !minDate.trim().isEmpty()) ? minDate.trim() : null;
+        activeAllowedStatuses = allowedStatuses;
+        activeLimit = limit;
+        applyActiveFilters();
+    }
+
+    private void applyActiveFilters() {
         appointments.clear();
 
-        if (activeSearchQuery == null) {
-            // Show all if no search query
-            appointments.addAll(originalAppointments);
-        } else {
-            String lowerCaseQuery = activeSearchQuery.toLowerCase(Locale.getDefault());
+        String lowerCaseQuery = activeSearchQuery == null
+                ? null
+                : activeSearchQuery.toLowerCase(Locale.getDefault());
 
-            for (Appointment appointment : originalAppointments) {
-                String searchTarget = null;
+        for (Appointment appointment : originalAppointments) {
+            if (!matchesStatusFilter(appointment)) {
+                continue;
+            }
+
+            if (!matchesDateFilter(appointment)) {
+                continue;
+            }
+
+            if (lowerCaseQuery != null) {
+                String searchTarget = "";
 
                 if ("doctor".equalsIgnoreCase(mode)) {
-                    searchTarget = appointment.getPatientName();
+                    searchTarget = safeText(appointment.getPatientName(), "") + " " +
+                            safeText(appointment.getSpecialty(), "") + " " +
+                            safeText(appointment.getAppointmentType(), "") + " " +
+                            safeText(appointment.getDate(), "");
                 } else if ("patient".equalsIgnoreCase(mode)) {
-                    searchTarget = appointment.getDoctorName();
+                    searchTarget = safeText(appointment.getDoctorName(), "") + " " +
+                            safeText(appointment.getSpecialty(), "") + " " +
+                            safeText(appointment.getAppointmentType(), "") + " " +
+                            safeText(appointment.getDate(), "");
                 }
 
                 // Filter based on name
@@ -204,6 +249,12 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                         searchTarget.toLowerCase(Locale.getDefault()).contains(lowerCaseQuery)) {
                     appointments.add(appointment);
                 }
+            } else {
+                appointments.add(appointment);
+            }
+
+            if (activeLimit > 0 && appointments.size() >= activeLimit) {
+                break;
             }
         }
 
@@ -214,14 +265,35 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
         }
     }
 
-    private void updateData(List<Appointment> newAppointments) {
-        this.appointments.clear();
-        this.appointments.addAll(newAppointments);
+    private boolean matchesStatusFilter(Appointment appointment) {
+        if (activeAllowedStatuses == null || activeAllowedStatuses.isEmpty()) {
+            return true;
+        }
 
+        String status = safeText(appointment.getStatus(), "").toLowerCase(Locale.getDefault());
+        for (String allowedStatus : activeAllowedStatuses) {
+            if (status.equals(safeText(allowedStatus, "").toLowerCase(Locale.getDefault()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean matchesDateFilter(Appointment appointment) {
+        String appointmentDate = appointment.getDate();
+        if (activeDateFilter != null) {
+            return activeDateFilter.equals(appointmentDate);
+        }
+
+        return activeMinDate == null || (appointmentDate != null && appointmentDate.compareTo(activeMinDate) >= 0);
+    }
+
+    private void updateData(List<Appointment> newAppointments) {
+        newAppointments.sort(Comparator
+                .comparing((Appointment appointment) -> safeText(appointment.getDate(), "9999-12-31"))
+                .thenComparing(appointment -> safeText(appointment.getTime(), "23:59")));
         this.originalAppointments.clear();
         this.originalAppointments.addAll(newAppointments);
-
-        notifyDataSetChanged();
     }
 
     @NonNull
@@ -257,7 +329,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
         // Bind text
         holder.tvName.setText(topName);
         holder.tvSubtitle.setText(subtitle);
-        holder.tvAppointmentDate.setText(safeText(appointment.getDate(), "No date"));
+        holder.tvAppointmentDate.setText(formatDisplayDate(appointment.getDate()));
         holder.tvAppointmentTime.setText(safeText(appointment.getTime(), "No time"));
 
         // Bind avatar
@@ -279,6 +351,12 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
 
     private String safeText(String value, String fallback) {
         return (value != null && !value.trim().isEmpty()) ? value : fallback;
+    }
+
+    private String formatDisplayDate(String date) {
+        return date != null && !date.trim().isEmpty()
+                ? DateFormatter.formatToFullDate(date)
+                : "No date";
     }
 
     @Override

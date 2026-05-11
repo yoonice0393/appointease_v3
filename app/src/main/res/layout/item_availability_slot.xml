@@ -26,7 +26,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_calendar"
-                app:tint="@color/brown_text"
+                app:tint="@color/text_secondary"
                 android:layout_marginEnd="12dp"/>
 
             <TextView
@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Date:"
-                android:textColor="@color/brown_text"
+                android:textColor="@color/text_secondary"
                 android:fontFamily="@font/poppins_semi_bold"
                 android:textSize="12sp"/>
 
@@ -65,7 +65,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_clock"
-                app:tint="@color/brown_text"
+                app:tint="@color/text_secondary"
                 android:layout_marginEnd="12dp"/>
 
             <TextView
@@ -73,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Time:"
-                android:textColor="@color/brown_text"
+                android:textColor="@color/text_secondary"
                 android:fontFamily="@font/poppins_semi_bold"
                 android:textSize="12sp"/>
 
@@ -83,7 +83,7 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:hint="Start time"
+                android:hint="Start"
                 android:textSize="11sp"
                 android:fontFamily="@font/poppins_regular"
                 android:background="@drawable/bg_input_field"
@@ -99,7 +99,7 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:hint="End time"
+                android:hint="End"
                 android:textSize="11sp"
                 android:fontFamily="@font/poppins_regular"
                 android:background="@drawable/bg_input_field"
@@ -120,7 +120,7 @@
                 android:fontFamily="@font/poppins_medium"
                 android:textSize="11sp"
                 app:cornerRadius="20dp"
-                app:backgroundTint="#7D5C50"
+                app:backgroundTint="#B3B3B3"
                 android:paddingHorizontal="12dp"
                 style="@style/Widget.MaterialComponents.Button"/>
         </LinearLayout>

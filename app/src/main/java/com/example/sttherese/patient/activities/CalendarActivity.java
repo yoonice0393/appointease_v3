@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 //import com.example.sttherese.doctor.GASimulationActivity;
+import com.example.sttherese.DateFormatter;
 import com.example.sttherese.R;
 import com.example.sttherese.doctor.GASimulationActivity;
 import com.google.firebase.auth.FirebaseAuth;
@@ -118,7 +119,7 @@ public class CalendarActivity extends AppCompatActivity {
 
         db.collection("appointments")
                 .whereEqualTo("userId", userId)
-                .whereIn("status", List.of("pending", "confirmed"))
+                .whereEqualTo("status", "approved")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     android.util.Log.d("PatientCalendar", "Found " + querySnapshot.size() + " appointments");
@@ -196,23 +197,13 @@ public class CalendarActivity extends AppCompatActivity {
         String dateStr = String.format(Locale.getDefault(), "%04d-%02d-%02d",
                 date.getYear(), date.getMonth(), date.getDay());
 
-        // 2. Date string format for the Dialog Header (e.g., "January 17, 2025")
-        String displayHeaderDate = dateStr; // Initialize with raw string as fallback
-        try {
-            SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            // Use the format that matches your dialog image: "Month Day, Year"
-            SimpleDateFormat headerFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
-            displayHeaderDate = headerFormat.format(dbFormat.parse(dateStr));
-        } catch (Exception e) {
-            // If parsing fails, displayHeaderDate remains the raw dateStr
-            android.util.Log.e("CalendarActivity", "Error formatting header date", e);
-        }
+        String displayHeaderDate = DateFormatter.formatToFullDate(dateStr);
 
         String finalDisplayHeaderDate = displayHeaderDate;
         db.collection("appointments")
                 .whereEqualTo("userId", userId)
                 .whereEqualTo("date", dateStr)
-                .whereIn("status", List.of("pending", "confirmed"))
+                .whereEqualTo("status", "approved")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     List<AppointmentDetail> appointments = new java.util.ArrayList<>();
@@ -305,7 +296,7 @@ public class CalendarActivity extends AppCompatActivity {
         } else {
             // Handle case where there are no appointments (e.g., show a placeholder)
             TextView noAppointmentsText = new TextView(this);
-            noAppointmentsText.setText("You have no confirmed appointments for this date.");
+            noAppointmentsText.setText("You have no approved appointments for this date.");
             noAppointmentsText.setPadding(32, 32, 32, 32);
             // ... set text color and gravity
             appointmentsContainer.addView(noAppointmentsText);
@@ -325,15 +316,7 @@ public class CalendarActivity extends AppCompatActivity {
         String appointmentType = appointmentDoc.getString("appointmentType");
         String doctorId = appointmentDoc.getString("doctorId");
 
-        // Format date
-        String formattedDate = dateStr;
-        try {
-            SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            SimpleDateFormat displayFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
-            formattedDate = displayFormat.format(dbFormat.parse(dateStr));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        String formattedDate = DateFormatter.formatWithDayOfWeek(dateStr);
 
         // Format time from 24-hour to 12-hour
         String formattedTime = timeStr;

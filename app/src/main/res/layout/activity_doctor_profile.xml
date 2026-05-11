@@ -64,7 +64,7 @@
                         android:layout_width="56dp"
                         android:layout_height="56dp"
                         android:padding="5dp"
-                        android:src="@drawable/ic_person"
+                        android:src="@drawable/ic_doctor_placeholder"
                         android:background="@drawable/bg_circle_gray"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -180,7 +180,7 @@
                     android:layout_margin="10dp"
                     android:layout_marginStart="68dp"
                     android:fontFamily="@font/poppins_medium"
-                    android:text="Gender"
+                    android:text="Gender:"
                     android:textColor="@color/brown_text"
                     android:textSize="11sp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -205,7 +205,7 @@
                     android:layout_margin="10dp"
                     android:layout_marginStart="68dp"
                     android:fontFamily="@font/poppins_medium"
-                    android:text="Date of Birth"
+                    android:text="Date of Birth:"
                     android:textColor="@color/brown_text"
                     android:textSize="11sp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -279,7 +279,7 @@
                     android:layout_margin="10dp"
                     android:layout_marginStart="68dp"
                     android:fontFamily="@font/poppins_medium"
-                    android:text="Mobile"
+                    android:text="Mobile Number: "
                     android:textColor="@color/brown_text"
                     android:textSize="11sp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -305,7 +305,7 @@
                     android:layout_marginStart="68dp"
                     android:layout_marginTop="94dp"
                     android:fontFamily="@font/poppins_medium"
-                    android:text="Specialty"
+                    android:text="Specialty:"
                     android:textColor="@color/brown_text"
                     android:textSize="11sp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -442,15 +442,31 @@
                 android:id="@+id/buttonTerms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:fontFamily="@font/poppins_semi_bold"
                 android:text="Terms &amp; Conditions"
                 android:textColor="@color/card_white"
                 android:textSize="12sp"
                 app:backgroundTint="@color/red_primary"
-                app:layout_constraintBottom_toTopOf="@+id/buttonLogout"
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout2"
                 tools:layout_editor_absoluteX="24dp">
 
             </com.google.android.material.button.MaterialButton>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonPrivacy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:text="Privacy and Policy"
+                android:textColor="@color/card_white"
+                android:textSize="12sp"
+                app:backgroundTint="@color/red_primary"
+                app:layout_constraintTop_toBottomOf="@+id/buttonTerms"
+                tools:layout_editor_absoluteX="24dp">
+
+            </com.google.android.material.button.MaterialButton>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonLogout"
                 android:layout_width="match_parent"
@@ -462,7 +478,8 @@
                 app:backgroundTint="@color/red_primary"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent">
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/buttonPrivacy">
 
 
             </com.google.android.material.button.MaterialButton>

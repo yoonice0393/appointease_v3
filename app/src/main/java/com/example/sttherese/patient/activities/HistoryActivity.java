@@ -10,18 +10,25 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sttherese.DateFormatter;
 import com.example.sttherese.R;
 import com.example.sttherese.adapters.HistoryAdapter;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.example.sttherese.adapters.OnItemCountChangeListener;
+import com.example.sttherese.models.Appointment;
+
+import java.util.Locale;
 
 public class HistoryActivity extends AppCompatActivity implements
         OnItemCountChangeListener,
@@ -111,6 +118,14 @@ public class HistoryActivity extends AppCompatActivity implements
             case "confirmed":
                 tvNoHistoryTitle.setText("NO CONFIRMED APPOINTMENTS");
                 tvNoHistoryMessage.setText("You don't have any confirmed appointments yet.");
+                break;
+            case "approved":
+                tvNoHistoryTitle.setText("NO APPROVED APPOINTMENTS");
+                tvNoHistoryMessage.setText("You don't have any approved appointments yet.");
+                break;
+            case "denied":
+                tvNoHistoryTitle.setText("NO DENIED APPOINTMENTS");
+                tvNoHistoryMessage.setText("You don't have any denied appointments.");
                 break;
             case "completed":
                 tvNoHistoryTitle.setText("NO COMPLETED APPOINTMENTS");
@@ -203,8 +218,7 @@ public class HistoryActivity extends AppCompatActivity implements
         }
 
         historyQuery = historyQuery
-                .orderBy("date", Query.Direction.DESCENDING)
-                .limit(currentLimit);
+                .orderBy("date", Query.Direction.DESCENDING);
 
         // Update the existing adapter's query
         if (historyAdapter != null) {
@@ -244,8 +258,7 @@ public class HistoryActivity extends AppCompatActivity implements
 
         // Add ordering and limit
         historyQuery = historyQuery
-                .orderBy("date", Query.Direction.DESCENDING)
-                .limit(currentLimit);
+                .orderBy("date", Query.Direction.DESCENDING);
 
         // Stop previous listener if adapter exists
         if (historyAdapter != null) {
@@ -253,7 +266,7 @@ public class HistoryActivity extends AppCompatActivity implements
         }
 
         // Initialize Adapter with the new query
-        historyAdapter = new HistoryAdapter(historyQuery, this, this);
+        historyAdapter = new HistoryAdapter(historyQuery, this, this, this::showAppointmentDetailDialog);
 
         rvHistoryAppointments.setAdapter(historyAdapter);
 
@@ -323,6 +336,66 @@ public class HistoryActivity extends AppCompatActivity implements
         btnHistory.setOnClickListener(v -> {
             showToast("Already at History");
         });
+    }
+
+    private void showAppointmentDetailDialog(Appointment appointment, DocumentSnapshot snapshot) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_appointment_history_detail, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        TextView body = dialogView.findViewById(R.id.textAppointmentDetailBody);
+        MaterialButton closeButton = dialogView.findViewById(R.id.buttonCloseAppointmentDetail);
+
+        String status = valueOrFallback(appointment.getStatus(), snapshot, "status", "N/A");
+        String details = "Appointment Type: " + valueOrFallback(appointment.getAppointmentType(), snapshot, "appointmentType", valueOrFallback(appointment.getSpecialty(), snapshot, "specialty", "N/A")) +
+                "\nDate: " + formatDate(valueOrFallback(appointment.getDate(), snapshot, "date", "N/A")) +
+                "\nTime: " + valueOrFallback(appointment.getTime(), snapshot, "time", "N/A") +
+                "\nDoctor: " + valueOrFallback(appointment.getDoctorName(), snapshot, "doctorName", "Doctor TBA") +
+                "\nStatus: " + capitalizeFirst(status);
+
+        String statusLower = status.toLowerCase(Locale.ROOT);
+        if (statusLower.contains("cancel") || statusLower.contains("denied")) {
+            details += "\nReason: " + firstSnapshotValue(snapshot, "reason", "cancel_reason", "cancellation_reason", "cancelled_reason", "denial_reason", "denied_reason", "staff_reason");
+        }
+        if (statusLower.contains("completed")) {
+            details += "\nDoctor Note: " + firstSnapshotValue(snapshot, "doctor_note", "doctor_notes", "consultation_note", "consultation_notes", "note", "notes");
+        }
+
+        body.setText(details);
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+    }
+
+    private String valueOrFallback(String value, DocumentSnapshot snapshot, String field, String fallback) {
+        if (value != null && !value.trim().isEmpty()) return value.trim();
+        String snapValue = snapshot != null ? snapshot.getString(field) : null;
+        return snapValue != null && !snapValue.trim().isEmpty() ? snapValue.trim() : fallback;
+    }
+
+    private String firstSnapshotValue(DocumentSnapshot snapshot, String... fields) {
+        if (snapshot != null) {
+            for (String field : fields) {
+                Object value = snapshot.get(field);
+                if (value != null && !value.toString().trim().isEmpty()) {
+                    return value.toString().trim();
+                }
+            }
+        }
+        return "N/A";
+    }
+
+    private String formatDate(String dateString) {
+        return DateFormatter.formatToFullDate(dateString);
+    }
+
+    private String capitalizeFirst(String text) {
+        if (text == null || text.trim().isEmpty()) return "N/A";
+        String cleaned = text.trim().toLowerCase(Locale.ROOT);
+        return Character.toUpperCase(cleaned.charAt(0)) + cleaned.substring(1);
     }
 
     private void showToast(String message) {

@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.example.sttherese.DateFormatter;
 import com.example.sttherese.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -37,7 +39,10 @@ public class DoctorCalendarActivity extends AppCompatActivity {
 
     private MaterialCalendarView calendarView;
     private TextView tvUpcomingTitle, tvUpcomingDate, tvUpcomingTime, tvUpcomingPatient;
+    private TextView tvPatientLabel;
     private ImageView btnAdd;
+    private ImageView ivPatient;
+    private View headerView, divider2, layoutDateTime, layoutEmptyUpcoming;
     private LinearLayout layoutDataContent, btnHome, btnAppointment, btnCalendar, btnHistory;
 
     private FirebaseAuth mAuth;
@@ -48,6 +53,7 @@ public class DoctorCalendarActivity extends AppCompatActivity {
     private int appointmentColor;
     private int scheduleColor;
     private int exceptionColor;
+    private final HashSet<CalendarDay> appointmentDates = new HashSet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +81,12 @@ public class DoctorCalendarActivity extends AppCompatActivity {
         tvUpcomingDate = findViewById(R.id.tvUpcomingDate);
         tvUpcomingTime = findViewById(R.id.tvUpcomingTime);
         tvUpcomingPatient = findViewById(R.id.tvUpcomingPatient);
+        tvPatientLabel = findViewById(R.id.tvPatientLabel);
+        ivPatient = findViewById(R.id.ivPatient);
+        headerView = findViewById(R.id.header);
+        divider2 = findViewById(R.id.divider2);
+        layoutDateTime = findViewById(R.id.layoutDateTime);
+        layoutEmptyUpcoming = findViewById(R.id.layoutEmptyUpcoming);
 
         btnHome = findViewById(R.id.btnHome);
         btnAppointment = findViewById(R.id.btnAppointment);
@@ -127,9 +139,8 @@ public class DoctorCalendarActivity extends AppCompatActivity {
 
                     this.clinicDoctorId = clinicId;
                     // STEP 2: Use the Clinic ID to load all calendar data
+                    calendarView.removeDecorators();
                     loadUpcomingAppointments(clinicId);
-                    loadRegularSchedule(clinicId);
-                    loadScheduleExceptions(clinicId);
 
                 })
                 .addOnFailureListener(e -> {
@@ -147,12 +158,12 @@ public class DoctorCalendarActivity extends AppCompatActivity {
 
         db.collection("appointments")
                 .whereEqualTo("doctorId", doctorId)
-                .whereIn("status", List.of("pending", "confirmed"))
+                .whereEqualTo("status", "approved")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     android.util.Log.d("DoctorCalendar", "Found " + querySnapshot.size() + " appointments");
 
-                    HashSet<CalendarDay> appointmentDates = new HashSet<>();
+                    appointmentDates.clear();
                     long now = new Date().getTime();
                     long smallestFutureDifference = Long.MAX_VALUE;
                     DocumentSnapshot upcomingAppointmentDoc = null;
@@ -212,15 +223,18 @@ public class DoctorCalendarActivity extends AppCompatActivity {
                     } else {
                         displayNoUpcomingAppointment();
                     }
+                    loadScheduleExceptions(doctorId);
                 })
                 .addOnFailureListener(e -> {
                     android.util.Log.e("DoctorCalendar", "Failed to load appointments", e);
                     Toast.makeText(this, "Failed to load appointments: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
+                    appointmentDates.clear();
+                    loadScheduleExceptions(doctorId);
                 });
     }
 
-    private void loadRegularSchedule(String doctorId) {
+    private void loadRegularSchedule(String doctorId, HashSet<CalendarDay> exceptionDates) {
         // Load doctor's regular weekly schedule from clinic_schedules collection
         db.collection("clinic_schedules")
                 .whereEqualTo("doctor_id", doctorId)
@@ -239,6 +253,8 @@ public class DoctorCalendarActivity extends AppCompatActivity {
 
                         if (!workingDays.isEmpty()) {
                             HashSet<CalendarDay> scheduleDates = generateScheduleDates(workingDays);
+                            scheduleDates.removeAll(exceptionDates);
+                            scheduleDates.removeAll(appointmentDates);
                             // Decorate calendar with regular schedule (Green dots)
                             calendarView.addDecorator(new EventDecorator(scheduleColor, scheduleDates));
                         }
@@ -276,9 +292,11 @@ public class DoctorCalendarActivity extends AppCompatActivity {
 
                     // Decorate calendar with exception dates (Orange dots)
                     calendarView.addDecorator(new EventDecorator(exceptionColor, exceptionDates));
+                    loadRegularSchedule(doctorId, exceptionDates);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to load exceptions", Toast.LENGTH_SHORT).show();
+                    loadRegularSchedule(doctorId, new HashSet<>());
                 });
     }
 
@@ -320,7 +338,7 @@ public class DoctorCalendarActivity extends AppCompatActivity {
         db.collection("appointments")
                 .whereEqualTo("doctorId", doctorId)
                 .whereEqualTo("date", dateStr)
-                .whereIn("status", List.of("pending", "confirmed"))
+                .whereEqualTo("status", "approved")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     StringBuilder appointments = new StringBuilder();
@@ -348,8 +366,7 @@ public class DoctorCalendarActivity extends AppCompatActivity {
                                     .append("\n");
                         }
                     }
-                        // Call the dialog function here
-                        showAppointmentsDialog(dateStr, appointments);
+                        loadExceptionForDateAndShowDialog(doctorId, dateStr, appointments);
                     })
         .addOnFailureListener(e -> {
                         // Log error
@@ -357,6 +374,58 @@ public class DoctorCalendarActivity extends AppCompatActivity {
                         e.printStackTrace();
                     });
                 }
+
+    private void loadExceptionForDateAndShowDialog(String doctorId, String dateStr, StringBuilder appointments) {
+        db.collection("schedule_exceptions")
+                .whereEqualTo("doctor_id", doctorId)
+                .whereEqualTo("date", dateStr)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    StringBuilder details = new StringBuilder(appointments);
+                    if (snapshot != null && !snapshot.isEmpty()) {
+                        if (details.length() > 0) details.append("\n");
+                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                            details.append(formatExceptionDetail(doc)).append("\n");
+                        }
+                    }
+                    showAppointmentsDialog(dateStr, details);
+                })
+                .addOnFailureListener(e -> showAppointmentsDialog(dateStr, appointments));
+    }
+
+    private String formatExceptionDetail(DocumentSnapshot doc) {
+        String type = doc.getString("exception_type");
+        String start = doc.getString("start_time");
+        String end = doc.getString("end_time");
+        Boolean isAllDay = doc.getBoolean("is_all_day");
+
+        String label = type == null ? "Schedule Exception" : capitalize(type) + " Schedule";
+        if (Boolean.TRUE.equals(isAllDay) || "blocked".equalsIgnoreCase(type)) {
+            return "• " + label + " - Blocked all day";
+        }
+
+        String timeRange = "";
+        if (start != null && end != null) {
+            timeRange = " (" + formatDisplayTime(start) + " - " + formatDisplayTime(end) + ")";
+        }
+        return "• " + label + timeRange;
+    }
+
+    private String capitalize(String value) {
+        if (value == null || value.trim().isEmpty()) return "";
+        String clean = value.trim().toLowerCase(Locale.ROOT);
+        return clean.substring(0, 1).toUpperCase(Locale.ROOT) + clean.substring(1);
+    }
+
+    private String formatDisplayTime(String time) {
+        try {
+            SimpleDateFormat input = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            SimpleDateFormat output = new SimpleDateFormat("h:mm a", Locale.getDefault());
+            return output.format(input.parse(time));
+        } catch (Exception e) {
+            return time;
+        }
+    }
 
     private void showAppointmentsDialog(String dateStr, StringBuilder appointments) {
         // Check if there are appointments to show
@@ -375,7 +444,7 @@ public class DoctorCalendarActivity extends AppCompatActivity {
         Button btnClose = dialog.findViewById(R.id.btnClose);
 
         // 3. Populate data
-        dialogTitle.setText("Appointments for " + dateStr);
+        dialogTitle.setText("Appointments for " + DateFormatter.formatToFullDate(dateStr));
         tvAppointmentList.setText(content);
 
         // Set text alignment based on content
@@ -399,14 +468,7 @@ public class DoctorCalendarActivity extends AppCompatActivity {
         String appointmentType = appointmentDoc.getString("appointmentType");
         String userId = appointmentDoc.getString("userId");
 
-        String formattedDate = dateStr;
-        try {
-            SimpleDateFormat dbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            SimpleDateFormat displayFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
-            formattedDate = displayFormat.format(dbFormat.parse(dateStr));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        String formattedDate = DateFormatter.formatWithDayOfWeek(dateStr);
 
         // Format time from 24-hour to 12-hour
         String formattedTime = timeStr;
@@ -423,36 +485,75 @@ public class DoctorCalendarActivity extends AppCompatActivity {
         tvUpcomingDate.setText(formattedDate);
         tvUpcomingTime.setText(formattedTime != null ? formattedTime : "N/A");
 
-        // Optional: Load patient name from users collection
         if (userId != null) {
             loadPatientName(userId);
         }
+        setUpcomingCardEmptyState(false);
     }
 
     private void loadPatientName(String userId) {
+        db.collection("patients")
+                .whereEqualTo("userId", userId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                        DocumentSnapshot patientDoc = querySnapshot.getDocuments().get(0);
+                        String fullName = buildName(
+                                patientDoc.getString("first_name"),
+                                patientDoc.getString("last_name"),
+                                patientDoc.getString("name"));
+                        if (!fullName.isEmpty()) {
+                            tvUpcomingPatient.setText(fullName);
+                            return;
+                        }
+                    }
+                    loadPatientNameFromUsers(userId);
+                })
+                .addOnFailureListener(e -> {
+                    loadPatientNameFromUsers(userId);
+                });
+    }
+
+    private void loadPatientNameFromUsers(String userId) {
         db.collection("users").document(userId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        String firstName = documentSnapshot.getString("firstName");
-                        String lastName = documentSnapshot.getString("lastName");
-                        if (firstName != null || lastName != null) {
-                            String fullName = (firstName != null ? firstName : "") + " " +
-                                    (lastName != null ? lastName : "");
-                            tvUpcomingPatient.setText(fullName.trim());
+                        String fullName = buildName(
+                                documentSnapshot.getString("firstName"),
+                                documentSnapshot.getString("lastName"),
+                                documentSnapshot.getString("name"));
+                        if (!fullName.isEmpty()) {
+                            tvUpcomingPatient.setText(fullName);
                         }
                     }
-                })
-                .addOnFailureListener(e -> {
-                    // Keep showing appointment type if patient name cannot be loaded
                 });
     }
 
+    private String buildName(String firstName, String lastName, String fallbackName) {
+        String combined = ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim();
+        if (!combined.isEmpty()) return combined;
+        return fallbackName != null ? fallbackName.trim() : "";
+    }
+
     private void displayNoUpcomingAppointment() {
-        tvUpcomingTitle.setText("No Upcoming Appointments");
-        tvUpcomingPatient.setText("Your schedule is clear");
+        tvUpcomingTitle.setText("NO APPOINTMENTS");
+        tvUpcomingPatient.setText("All your appointments will be displayed here.");
         tvUpcomingDate.setText("");
         tvUpcomingTime.setText("");
+        setUpcomingCardEmptyState(true);
+    }
+
+    private void setUpcomingCardEmptyState(boolean isEmpty) {
+        if (headerView != null) headerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        if (layoutEmptyUpcoming != null) layoutEmptyUpcoming.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        if (ivPatient != null) ivPatient.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        tvUpcomingPatient.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        if (tvPatientLabel != null) tvPatientLabel.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        if (divider2 != null) divider2.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        if (layoutDateTime != null) layoutDateTime.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        tvUpcomingTitle.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
     }
 
     private org.threeten.bp.LocalDate convertToLocalDate(Date date) {

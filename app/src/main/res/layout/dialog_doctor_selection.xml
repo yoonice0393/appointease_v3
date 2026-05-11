@@ -43,6 +43,21 @@
         android:minHeight="200dp"
         android:layout_margin="20dp"/>
 
+    <TextView
+        android:id="@+id/textNoDoctors"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="8dp"
+        android:fontFamily="@font/poppins_medium"
+        android:gravity="center"
+        android:text="No available doctor for this appointment type."
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp"
+        android:visibility="gone" />
+
     <Button
         android:id="@+id/buttonCloseDialog"
         android:layout_width="wrap_content"

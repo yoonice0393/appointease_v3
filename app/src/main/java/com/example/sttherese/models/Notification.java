@@ -1,5 +1,8 @@
 package com.example.sttherese.models;
 
+import com.google.firebase.database.PropertyName;
+import com.google.firebase.database.Exclude;
+
 public class Notification {
     private String id;
     private String userId;  // Add this field
@@ -25,8 +28,17 @@ public class Notification {
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
 
+    @Exclude
     public boolean isRead() { return isRead; }
-    public void setRead(boolean read) { isRead = read; }
+
+    @PropertyName("isRead")
+    public boolean getIsRead() { return isRead; }
+
+    @PropertyName("isRead")
+    public void setIsRead(boolean isRead) { this.isRead = isRead; }
+
+    @Exclude
+    public void setRead(boolean read) { this.isRead = read; }
 
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }

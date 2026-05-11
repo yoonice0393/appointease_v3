@@ -8,21 +8,23 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sttherese.DateFormatter;
 import com.example.sttherese.R;
 import com.example.sttherese.models.Appointment;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class HistoryAdapter extends FirestoreRecyclerAdapter<Appointment, HistoryAdapter.HistoryViewHolder> {
 
     public interface OnLoadMoreListener {
         void onLoadMore();
+    }
+
+    public interface OnHistoryClickListener {
+        void onHistoryClick(Appointment appointment, DocumentSnapshot snapshot);
     }
 
     private boolean hasMoreData = true;
@@ -40,13 +42,19 @@ public class HistoryAdapter extends FirestoreRecyclerAdapter<Appointment, Histor
 
     private final OnItemCountChangeListener itemCountChangeListener;
     private final OnLoadMoreListener onLoadMoreListener;
+    private final OnHistoryClickListener onHistoryClickListener;
 
     public HistoryAdapter(Query query, OnItemCountChangeListener countListener, OnLoadMoreListener loadMoreListener) {
+        this(query, countListener, loadMoreListener, null);
+    }
+
+    public HistoryAdapter(Query query, OnItemCountChangeListener countListener, OnLoadMoreListener loadMoreListener, OnHistoryClickListener clickListener) {
         super(new FirestoreRecyclerOptions.Builder<Appointment>()
                 .setQuery(query, Appointment.class)
                 .build());
         this.itemCountChangeListener = countListener;
         this.onLoadMoreListener = loadMoreListener;
+        this.onHistoryClickListener = clickListener;
     }
 
     @Override
@@ -62,25 +70,19 @@ public class HistoryAdapter extends FirestoreRecyclerAdapter<Appointment, Histor
         // 2. Doctor Name
         holder.tvDoctorName.setText("Doctor: " + doctor);
 
-        // 3. Date Formatting
-        try {
-            SimpleDateFormat firebaseFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Date date = firebaseFormat.parse(dateString);
-            SimpleDateFormat displayFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
-            holder.tvDate.setText(displayFormat.format(date));
-        } catch (Exception e) {
-            holder.tvDate.setText(dateString);
-        }
+        holder.tvDate.setText(DateFormatter.formatToFullDate(dateString));
 
         // 4. Status Button - UPDATE THIS DYNAMICALLY
         updateStatusButton(holder.btnStatus, status);
+        holder.itemView.setOnClickListener(v -> {
+            if (onHistoryClickListener != null) {
+                int adapterPosition = holder.getBindingAdapterPosition();
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    onHistoryClickListener.onHistoryClick(model, getSnapshots().getSnapshot(adapterPosition));
+                }
+            }
+        });
 
-        // Pagination trigger
-        if (position >= getItemCount() - 1 && hasMoreData && !loading && !loadMoreTriggered && onLoadMoreListener != null) {
-            loading = true;
-            loadMoreTriggered = true;
-            onLoadMoreListener.onLoadMore();
-        }
     }
 
     private void updateStatusButton(MaterialButton button, String status) {

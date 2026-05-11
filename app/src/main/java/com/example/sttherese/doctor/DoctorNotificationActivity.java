@@ -1,5 +1,6 @@
 package com.example.sttherese.doctor;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.sttherese.R;
 import com.example.sttherese.adapters.NotificationAdapter;
 import com.example.sttherese.models.Notification;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -26,7 +29,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DoctorNotificationActivity extends AppCompatActivity {
 
@@ -143,27 +148,90 @@ public class DoctorNotificationActivity extends AppCompatActivity {
 
         markAllRead.setOnClickListener(v -> {
             if (doctorDocId == null || notificationsRef == null) return;
+            Map<String, Object> updates = new HashMap<>();
             for (Notification n : allNotifications) {
-                if (!n.isRead()) {
-                    notificationsRef.child(n.getId()).child("isRead").setValue(true);
+                if (!n.isRead() && n.getId() != null) {
+                    n.setIsRead(true);
+                    updates.put(n.getId() + "/isRead", true);
                 }
             }
+            refreshDisplay();
+            updateCounts();
+            if (!updates.isEmpty()) notificationsRef.updateChildren(updates);
         });
     }
 
     private void setupRecyclerView() {
         notifList = new ArrayList<>();
         allNotifications = new ArrayList<>();
-        adapter = new NotificationAdapter(notifList);
+        adapter = new NotificationAdapter(notifList, this::handleNotificationClick);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
         setActiveFilter(true);
     }
 
+    private void handleNotificationClick(Notification notification) {
+        if (notification == null) return;
+
+        markNotificationRead(notification);
+
+        showNotificationDetailDialog(notification);
+    }
+
+    private void showNotificationDetailDialog(Notification notification) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_notification_detail, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        TextView message = dialogView.findViewById(R.id.textNotificationDialogMessage);
+        MaterialButton openButton = dialogView.findViewById(R.id.buttonOpenNotification);
+        MaterialButton closeButton = dialogView.findViewById(R.id.buttonCloseNotification);
+
+        String title = notification.getTitle() != null ? notification.getTitle() : "Notification";
+        String body = notification.getMessage() != null ? notification.getMessage() : "";
+        message.setText(body.trim().isEmpty() ? title : title + "\n" + body);
+
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+        openButton.setOnClickListener(v -> {
+            dialog.dismiss();
+            openRelatedPage(notification);
+        });
+
+        dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+    }
+
+    private void markNotificationRead(Notification notification) {
+        if (notification == null || notification.isRead()) return;
+        notification.setIsRead(true);
+        refreshDisplay();
+        updateCounts();
+        if (notificationsRef != null && notification.getId() != null) {
+            notificationsRef.child(notification.getId()).child("isRead").setValue(true);
+        }
+    }
+
+    private void openRelatedPage(Notification notification) {
+        String routeText = ((notification.getType() == null ? "" : notification.getType()) + " " +
+                (notification.getStatus() == null ? "" : notification.getStatus()) + " " +
+                (notification.getTitle() == null ? "" : notification.getTitle()) + " " +
+                (notification.getMessage() == null ? "" : notification.getMessage())).toLowerCase();
+
+        if (routeText.contains("completed") || routeText.contains("finished")) {
+            startActivity(new Intent(this, DoctorHistoryActivity.class));
+        } else {
+            startActivity(new Intent(this, DoctorCalendarActivity.class));
+        }
+    }
+
     private void refreshDisplay() {
         notifList.clear();
         if (showingAll) {
-            notifList.addAll(allNotifications);
+            for (Notification n : allNotifications) if (!n.isRead()) notifList.add(n);
+            for (Notification n : allNotifications) if (n.isRead()) notifList.add(n);
         } else {
             for (Notification n : allNotifications) if (!n.isRead()) notifList.add(n);
         }

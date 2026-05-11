@@ -16,6 +16,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import com.example.sttherese.DateFormatter;
+import com.example.sttherese.Privacy_Policy;
 import com.example.sttherese.R;
 import com.example.sttherese.SignInPage;
 import com.example.sttherese.Terms_Conditions;
@@ -24,16 +26,12 @@ import com.example.sttherese.patient.activities.ProfileActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 public class DoctorProfileActivity extends AppCompatActivity {
 
 
 
     ImageView backBtn;
-    MaterialButton logoutBtn, termsBtn;
+    MaterialButton logoutBtn, termsBtn, privacyBtn;
     TextView dialogTitle, nameHolder, genderHolder, dobHolder, emailHolder, mobileHolder,
             specialtyHolder, usernameHolder, doctorIdHolder, nameCard, emailCard, specialtyCard;
     TextView showInfoLink;
@@ -84,6 +82,10 @@ public class DoctorProfileActivity extends AppCompatActivity {
             Intent intent = new Intent(DoctorProfileActivity.this, Terms_Conditions.class);
             startActivity(intent);
         });
+        privacyBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(DoctorProfileActivity.this, Privacy_Policy.class);
+            startActivity(intent);
+        });
 
     }
 
@@ -103,6 +105,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
         showInfoLink = findViewById(R.id.textViewShowInfo);
         backBtn = findViewById(R.id.buttonBack);
         termsBtn = findViewById(R.id.buttonTerms);
+        privacyBtn = findViewById(R.id.buttonPrivacy);
         logoutBtn = findViewById(R.id.buttonLogout);
     }
 
@@ -181,10 +184,10 @@ public class DoctorProfileActivity extends AppCompatActivity {
                 emailHolder.setText(email != null ? email : "N/A");
                 emailCard.setText(email != null ? email : "N/A");
 
-                // 2. Fetch the 'patients' document by querying the 'userId' field
+                // 2. Fetch the 'doctors' document by querying the 'userId' field
                 // You are searching for the document where the field "userId" equals the Auth UID
                 db.collection("doctors")
-                        .whereEqualTo("user_id", authUid) // Find the patient document linked to this Auth UID
+                        .whereEqualTo("user_id", authUid) // Find the doctor document linked to this Auth UID
                         .limit(1)
                         .get()
                         .addOnSuccessListener(querySnapshot -> {
@@ -208,7 +211,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
                                 String dob = patientSnap.getString("dob");
                                 dobHolder.setText(formatDate(dob));
 
-                                mobileHolder.setText(patientSnap.getString("contact"));
+                                mobileHolder.setText(patientSnap.getString("mobile_number"));
                                 specialtyHolder.setText(capitalizeWords(patientSnap.getString("specialty")));
                                 specialtyCard.setText(capitalizeWords(patientSnap.getString("specialty")));
 
@@ -233,16 +236,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
 
 
     private String formatDate(String dateString) {
-        try {
-            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Date date = inputFormat.parse(dateString);
-
-            SimpleDateFormat outputFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
-            return outputFormat.format(date);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return dateString;
-        }
+        return DateFormatter.formatToFullDate(dateString);
     }
 
     private String capitalizeWords(String text) {

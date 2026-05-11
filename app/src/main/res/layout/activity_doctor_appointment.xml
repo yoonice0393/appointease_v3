@@ -64,26 +64,27 @@
             </androidx.cardview.widget.CardView>
 
 
-            <TextView
-                android:id="@+id/textView6"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:fontFamily="@font/poppins_semi_bold"
-                android:text="Appointments"
-                android:textColor="@color/brown_text"
-                android:textSize="12sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/searchCard" />
+<!--            <TextView-->
+<!--                android:id="@+id/textView6"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="20dp"-->
+<!--                android:fontFamily="@font/poppins_semi_bold"-->
+<!--                android:text="Appointments"-->
+<!--                android:textColor="@color/brown_text"-->
+<!--                android:textSize="12sp"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintTop_toBottomOf="@+id/searchCard" />-->
 
 
             <HorizontalScrollView
                 android:id="@+id/filterScroll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:scrollbars="none"
-                app:layout_constraintTop_toBottomOf="@+id/textView6"
+                app:layout_constraintTop_toBottomOf="@+id/searchCard"
                 tools:layout_editor_absoluteX="24dp">
 
                 <com.google.android.material.chip.ChipGroup
@@ -96,9 +97,10 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:checked="true"
                         android:fontFamily="@font/poppins_semi_bold"
                         android:text="All"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/chip_text_selector"
                         android:textSize="12sp"
                         app:chipBackgroundColor="@color/chip_background_selector"
                         app:chipStrokeWidth="0dp" />
@@ -231,6 +233,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Appointment"
+                    android:layout_gravity="center"
                     android:fontFamily="@font/montserrat_extra_bold"
                     android:textSize="10sp"
                     android:textColor="#D14A4A"

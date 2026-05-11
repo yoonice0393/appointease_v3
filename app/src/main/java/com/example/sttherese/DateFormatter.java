@@ -9,13 +9,16 @@ public class DateFormatter {
 
     // Convert "2025-11-27" to "27 November 2025"
     public static String formatToFullDate(String dateString) {
+        if (dateString == null || dateString.trim().isEmpty() || "N/A".equalsIgnoreCase(dateString.trim())) {
+            return dateString == null || dateString.trim().isEmpty() ? "N/A" : dateString;
+        }
         try {
             SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             SimpleDateFormat outputFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
 
             Date date = inputFormat.parse(dateString);
             return outputFormat.format(date);
-        } catch (ParseException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return dateString; // Return original if parsing fails
         }
@@ -79,13 +82,16 @@ public class DateFormatter {
 
     // Convert "2025-11-27" to "Wednesday, 27 November 2025"
     public static String formatWithDayOfWeek(String dateString) {
+        if (dateString == null || dateString.trim().isEmpty() || "N/A".equalsIgnoreCase(dateString.trim())) {
+            return dateString == null || dateString.trim().isEmpty() ? "N/A" : dateString;
+        }
         try {
             SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             SimpleDateFormat outputFormat = new SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault());
 
             Date date = inputFormat.parse(dateString);
             return outputFormat.format(date);
-        } catch (ParseException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return dateString;
         }

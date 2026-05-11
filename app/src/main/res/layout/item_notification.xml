@@ -1,61 +1,90 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/notificationCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="12dp"
-    android:background="@drawable/bg_card"
-    android:layout_marginVertical="4dp">
+    android:layout_marginBottom="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/card_white"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="10dp"
+    app:cardUseCompatPadding="false">
 
-    <ImageView
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:src="@drawable/ic_notif"
-        android:layout_gravity="center_vertical"
-        android:padding="5dp"
-        android:background="@drawable/bg_circle_gray"/>
-
-    <LinearLayout
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:layout_marginStart="10dp">
+        android:minHeight="54dp"
+        android:paddingStart="12dp"
+        android:paddingTop="9dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="9dp">
+
+        <ImageView
+            android:id="@+id/notificationIcon"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:background="@drawable/bg_circle_gray"
+            android:padding="8dp"
+            android:src="@drawable/ic_notif"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/brown_text" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:id="@+id/notificationTitle"
-            android:text="You successfully set an appointment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:ellipsize="end"
             android:fontFamily="@font/montserrat_extra_bold"
+            android:maxLines="1"
             android:textColor="@color/brown_text"
-            android:textSize="14sp"/>
+            android:textSize="13sp"
+            app:layout_constraintEnd_toStartOf="@+id/unreadDot"
+            app:layout_constraintStart_toEndOf="@+id/notificationIcon"
+            app:layout_constraintTop_toTopOf="@+id/notificationIcon"
+            tools:text="You successfully set an appointment" />
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:id="@+id/notificationMessage"
-            android:text="An appointment was made. Kindly check..."
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:ellipsize="end"
             android:fontFamily="@font/poppins_regular"
+            android:maxLines="1"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="11sp"
+            app:layout_constraintEnd_toStartOf="@+id/unreadDot"
+            app:layout_constraintStart_toEndOf="@+id/notificationIcon"
+            app:layout_constraintTop_toBottomOf="@+id/notificationTitle"
+            tools:text="An appointment was made. Kindly check..." />
 
         <TextView
             android:id="@+id/notificationTimestamp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="2h ago"
             android:fontFamily="@font/poppins_regular"
             android:textColor="@color/text_secondary"
             android:textSize="10sp"
-            android:layout_marginTop="2dp"
-            android:visibility="gone"/>
-    </LinearLayout>
+            android:visibility="gone"
+            tools:text="2h ago" />
 
-    <View
-        android:id="@+id/unreadDot"
-        android:layout_width="8dp"
-        android:layout_height="8dp"
-        android:background="@drawable/dot_red"
-        android:visibility="visible"
-        android:layout_gravity="center_vertical"/>
-</LinearLayout>
+        <View
+            android:id="@+id/unreadDot"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:background="@drawable/dot_red"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

@@ -78,7 +78,7 @@
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
                                 android:padding="5dp"
-                                android:src="@drawable/ic_person"
+                                android:src="@drawable/ic_doctor_placeholder"
                                 android:background="@drawable/bg_circle_gray" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
@@ -145,15 +145,16 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:padding="6dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:paddingTop="10dp"
                                 android:text="Appointments"
                                 android:layout_gravity="center"
-                                android:textSize="12sp"
-                                android:fontFamily="@font/montserrat_extra_bold"
+                                android:textSize="15sp"
+                                android:fontFamily="@font/montserrat_bold"
                                 android:textColor="@color/brown_text"
                                 android:layout_marginBottom="4dp"/>
 
@@ -161,6 +162,8 @@
                                 android:id="@+id/tvAppointmentCount"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:paddingTop="15dp"
+                                android:paddingBottom="15dp"
                                 android:text="00"
                                 android:gravity="center"
                                 android:fontFamily="@font/montserrat_extra_bold"
@@ -184,28 +187,31 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:padding="6dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Patients"
+                                android:paddingTop="10dp"
                                 android:layout_gravity="center"
-                                android:textSize="12sp"
-                                android:fontFamily="@font/montserrat_extra_bold"
+                                android:layout_marginBottom="4dp"
+                                android:fontFamily="@font/montserrat_bold"
+                                android:text="Patients"
                                 android:textColor="@color/brown_text"
-                                android:layout_marginBottom="4dp"/>
+                                android:textSize="15sp" />
 
                             <TextView
                                 android:id="@+id/tvPatientCount"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="00"
-                                android:gravity="center"
+                                android:layout_height="match_parent"
+                                android:paddingTop="15dp"
+                                android:paddingBottom="15dp"
+                                android:background="@drawable/appointment_card_bg"
                                 android:fontFamily="@font/montserrat_extra_bold"
-                                android:textSize="30sp"
+                                android:gravity="center"
+                                android:text="00"
                                 android:textColor="@color/card_white"
-                                android:background="@drawable/appointment_card_bg"/>
+                                android:textSize="30sp" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 

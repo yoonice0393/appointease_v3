@@ -26,9 +26,11 @@ import com.example.sttherese.adapters.AppointmentAdapter;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.gson.Gson;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -162,23 +164,39 @@ public class DoctorHomeActivity extends AppCompatActivity {
     private void fetchTotalAppointmentCount() {
         if (doctorDocId == null) return;
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime());
-        db.collection("appointments").whereEqualTo("doctorId", doctorDocId).whereEqualTo("status", "confirmed")
-                .whereGreaterThanOrEqualTo("date", today).get().addOnSuccessListener(q -> {
-                    if (q != null) tvAppointmentCount.setText(String.format(Locale.getDefault(), "%02d", q.size()));
+        db.collection("appointments")
+                .whereEqualTo("doctorId", doctorDocId)
+                .get().addOnSuccessListener(q -> {
+                    if (q != null) {
+                        int count = 0;
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : q.getDocuments()) {
+                            String status = doc.getString("status");
+                            String date = doc.getString("date");
+                            if ("approved".equalsIgnoreCase(status) && date != null && date.compareTo(today) >= 0) {
+                                count++;
+                            }
+                        }
+                        tvAppointmentCount.setText(String.format(Locale.getDefault(), "%02d", count));
+                    }
                 });
     }
 
     private void fetchAppointments() {
         if (doctorDocId == null) return;
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime());
-        Query q = db.collection("appointments").whereEqualTo("doctorId", doctorDocId).whereEqualTo("status", "pending")
-                .whereGreaterThanOrEqualTo("date", today).orderBy("date", Query.Direction.ASCENDING).limit(2);
+        Query q = db.collection("appointments")
+                .whereEqualTo("doctorId", doctorDocId);
 
-        appointmentAdapter = new AppointmentAdapter(this, a -> startActivity(new Intent(this, DoctorCalendarActivity.class)), q,
+        appointmentAdapter = new AppointmentAdapter(this, appointment -> {
+            Intent intent = new Intent(this, AppointmentDetailsActivity.class);
+            intent.putExtra("appointment_json", new Gson().toJson(appointment));
+            startActivity(intent);
+        }, q,
                 count -> {
                     layoutDataContent.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
                     layoutEmptyState.setVisibility(count > 0 ? View.GONE : View.VISIBLE);
                 }, "doctor");
+        appointmentAdapter.applyFilters("", null, today, Arrays.asList("approved"), 1);
         rvUpcomingAppointments.setAdapter(appointmentAdapter);
     }
 
@@ -188,6 +206,8 @@ public class DoctorHomeActivity extends AppCompatActivity {
             if (q != null) {
                 java.util.Set<String> ids = new java.util.HashSet<>();
                 for (com.google.firebase.firestore.DocumentSnapshot doc : q.getDocuments()) {
+                    String status = doc.getString("status");
+                    if (!"approved".equalsIgnoreCase(status)) continue;
                     String pId = doc.getString("userId");
                     if (pId != null) ids.add(pId);
                 }

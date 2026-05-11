@@ -35,6 +35,7 @@
                     android:id="@+id/chipGroupStatusFilters"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="8dp"
                     app:singleSelection="true">
 
                     <com.google.android.material.chip.Chip
@@ -42,15 +43,40 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#FFFFFF"
                         android:fontFamily="@font/poppins_semi_bold"
                         android:checked="true"
                         android:text="All"
+                        android:textColor="@color/chip_text_selector_alt"
                         android:textSize="12sp"
-                        app:chipBackgroundColor="@color/chip_background_selector"
-                        app:chipStrokeWidth="0dp"/>
+                        app:chipBackgroundColor="@color/chip_background_selector_alt"
+                        app:chipStrokeColor="#50333333"
+                        app:chipStrokeWidth="1.5dp" />
 
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipApproved"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:text="Approved"
+                        android:textColor="@color/chip_text_selector_alt"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/chip_background_selector_alt"
+                        app:chipStrokeColor="#50333333"
+                        app:chipStrokeWidth="1.5dp" />
 
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipDenied"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:text="Denied"
+                        android:textColor="@color/chip_text_selector_alt"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/chip_background_selector_alt"
+                        app:chipStrokeColor="#50333333"
+                        app:chipStrokeWidth="1.5dp" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipCompleted"
@@ -59,31 +85,24 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins_semi_bold"
                         android:text="Completed"
-                        android:textColor="@color/chip_text_selector"
-                        app:chipBackgroundColor="@color/chip_background_selector"
-                        app:chipStrokeWidth="0dp"/>
-
+                        android:textColor="@color/chip_text_selector_alt"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/chip_background_selector_alt"
+                        app:chipStrokeColor="#50333333"
+                        app:chipStrokeWidth="1.5dp" />
 
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipPending"
+                        android:id="@+id/chipCancelled"
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins_semi_bold"
-                        android:text="Pending"
-                        android:textColor="@color/chip_text_selector"
-                        app:chipBackgroundColor="@color/chip_background_selector"
-                        app:chipStrokeWidth="0dp"/>
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipCanceled"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_semi_bold"
-                        android:text="Canceled"
-                        android:textColor="@color/chip_text_selector"
-                        app:chipBackgroundColor="@color/chip_background_selector"
-                        app:chipStrokeWidth="0dp"/>
+                        android:text="Cancelled"
+                        android:textColor="@color/chip_text_selector_alt"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/chip_background_selector_alt"
+                        app:chipStrokeColor="#50333333"
+                        app:chipStrokeWidth="1.5dp" />
 
 
                 </com.google.android.material.chip.ChipGroup>
@@ -119,14 +138,16 @@
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
+                        android:id="@+id/tvNoHistoryMessage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="15dp"
                         android:layout_marginBottom="20dp"
                         android:fontFamily="@font/poppins_medium"
-                        android:text="You don't have any past visit in the center currently."
+                        android:gravity="center"
+                        android:text="You don't have any appointment history assigned to you."
                         android:textColor="@color/text_secondary"
-                        android:textSize="11sp"
+                        android:textSize="12sp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"

@@ -8,22 +8,30 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sttherese.DateFormatter;
 import com.example.sttherese.R;
 import com.example.sttherese.adapters.DoctorHistoryAdapter;
-import com.example.sttherese.adapters.HistoryAdapter;
 import com.example.sttherese.adapters.OnItemCountChangeListener;
+import com.example.sttherese.models.Appointment;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class DoctorHistoryActivity extends AppCompatActivity implements OnItemCountChangeListener {
     private static final String TAG = "DoctorHistoryActivity";
@@ -33,6 +41,7 @@ public class DoctorHistoryActivity extends AppCompatActivity implements OnItemCo
     // UI Views
     private RecyclerView rvHistoryAppointments;
     private CardView cardEmptyHistory;
+    private TextView tvNoHistoryTitle, tvNoHistoryMessage;
 
     // Adapter
     private DoctorHistoryAdapter historyAdapter;
@@ -107,6 +116,8 @@ public class DoctorHistoryActivity extends AppCompatActivity implements OnItemCo
         rvHistoryAppointments = findViewById(R.id.rvHistoryAppointments);
         cardEmptyHistory = findViewById(R.id.cardEmptyHistory);
         chipGroupStatusFilters = findViewById(R.id.chipGroupStatusFilters);
+        tvNoHistoryTitle = findViewById(R.id.tvNoHistoryTitle);
+        tvNoHistoryMessage = findViewById(R.id.tvNoHistoryMessage);
     }
 
     private void setupClickListeners() {
@@ -172,8 +183,7 @@ public class DoctorHistoryActivity extends AppCompatActivity implements OnItemCo
 
         // Add ordering and limit AFTER where clauses
         historyQuery = historyQuery
-                .orderBy("date", Query.Direction.DESCENDING)
-                .limit(currentLimit);
+                .orderBy("date", Query.Direction.DESCENDING);
 
         // Stop previous listener if adapter exists
         if (historyAdapter != null) {
@@ -181,7 +191,7 @@ public class DoctorHistoryActivity extends AppCompatActivity implements OnItemCo
         }
 
         // Initialize Adapter with the new query
-        historyAdapter = new DoctorHistoryAdapter(historyQuery, this);
+        historyAdapter = new DoctorHistoryAdapter(historyQuery, this, this::showAppointmentDetailDialog);
 
         rvHistoryAppointments.setLayoutManager(new LinearLayoutManager(this));
         rvHistoryAppointments.setAdapter(historyAdapter);
@@ -216,15 +226,109 @@ public class DoctorHistoryActivity extends AppCompatActivity implements OnItemCo
             Log.d(TAG, "Filter set to null (show all)");
         } else {
             // Convert to lowercase to match Firestore values
-            this.currentStatusFilter = status.toLowerCase();
+            this.currentStatusFilter = normalizeStatus(status);
             Log.d(TAG, "Filter set to: " + this.currentStatusFilter);
         }
 
         // Reset limit when changing filters
         currentLimit = PAGE_SIZE;
+        updateEmptyState(status);
 
         // Re-query with new filter
         setupHistoryList();
+    }
+
+    private void updateEmptyState(String filterStatus) {
+        String normalized = normalizeStatus(filterStatus);
+        switch (normalized) {
+            case "approved":
+                tvNoHistoryTitle.setText("NO APPROVED APPOINTMENTS");
+                tvNoHistoryMessage.setText("You don't have any approved appointments assigned to you.");
+                break;
+            case "denied":
+                tvNoHistoryTitle.setText("NO DENIED APPOINTMENTS");
+                tvNoHistoryMessage.setText("You don't have any denied appointments assigned to you.");
+                break;
+            case "cancelled":
+                tvNoHistoryTitle.setText("NO CANCELLED APPOINTMENTS");
+                tvNoHistoryMessage.setText("You don't have any cancelled appointments assigned to you.");
+                break;
+            case "completed":
+                tvNoHistoryTitle.setText("NO COMPLETED APPOINTMENTS");
+                tvNoHistoryMessage.setText("You don't have any completed appointments assigned to you.");
+                break;
+            default:
+                tvNoHistoryTitle.setText("NO HISTORY");
+                tvNoHistoryMessage.setText("You don't have any appointment history assigned to you.");
+                break;
+        }
+    }
+
+    private String normalizeStatus(String status) {
+        String normalized = status == null ? "" : status.toLowerCase(Locale.ROOT).trim();
+        if (normalized.equals("canceled")) return "cancelled";
+        return normalized;
+    }
+
+    private void showAppointmentDetailDialog(Appointment appointment, DocumentSnapshot snapshot) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_appointment_history_detail, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        TextView body = dialogView.findViewById(R.id.textAppointmentDetailBody);
+        MaterialButton closeButton = dialogView.findViewById(R.id.buttonCloseAppointmentDetail);
+
+        String status = valueOrFallback(appointment.getStatus(), snapshot, "status", "N/A");
+        String details = "Appointment Type: " + valueOrFallback(appointment.getAppointmentType(), snapshot, "appointmentType", valueOrFallback(appointment.getSpecialty(), snapshot, "specialty", "N/A")) +
+                "\nDate: " + formatDate(valueOrFallback(appointment.getDate(), snapshot, "date", "N/A")) +
+                "\nTime: " + valueOrFallback(appointment.getTime(), snapshot, "time", "N/A") +
+                "\nDoctor: " + valueOrFallback(appointment.getDoctorName(), snapshot, "doctorName", "You") +
+                "\nPatient: " + valueOrFallback(appointment.getPatientName(), snapshot, "patientName", "Patient") +
+                "\nStatus: " + capitalizeFirst(status);
+
+        String statusLower = status.toLowerCase(Locale.ROOT);
+        if (statusLower.contains("cancel") || statusLower.contains("denied")) {
+            details += "\nReason: " + firstSnapshotValue(snapshot, "reason", "cancel_reason", "cancellation_reason", "cancelled_reason", "denial_reason", "denied_reason", "staff_reason");
+        }
+        if (statusLower.contains("completed")) {
+            details += "\nDoctor Note: " + firstSnapshotValue(snapshot, "doctor_note", "doctor_notes", "consultation_note", "consultation_notes", "note", "notes");
+        }
+
+        body.setText(details);
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+    }
+
+    private String valueOrFallback(String value, DocumentSnapshot snapshot, String field, String fallback) {
+        if (value != null && !value.trim().isEmpty()) return value.trim();
+        String snapValue = snapshot != null ? snapshot.getString(field) : null;
+        return snapValue != null && !snapValue.trim().isEmpty() ? snapValue.trim() : fallback;
+    }
+
+    private String firstSnapshotValue(DocumentSnapshot snapshot, String... fields) {
+        if (snapshot != null) {
+            for (String field : fields) {
+                Object value = snapshot.get(field);
+                if (value != null && !value.toString().trim().isEmpty()) {
+                    return value.toString().trim();
+                }
+            }
+        }
+        return "N/A";
+    }
+
+    private String formatDate(String dateString) {
+        return DateFormatter.formatToFullDate(dateString);
+    }
+
+    private String capitalizeFirst(String text) {
+        if (text == null || text.trim().isEmpty()) return "N/A";
+        String cleaned = text.trim().toLowerCase(Locale.ROOT);
+        return Character.toUpperCase(cleaned.charAt(0)) + cleaned.substring(1);
     }
 
     @Override
@@ -243,6 +347,7 @@ public class DoctorHistoryActivity extends AppCompatActivity implements OnItemCo
         } else {
             rvHistoryAppointments.setVisibility(View.GONE);
             cardEmptyHistory.setVisibility(View.VISIBLE);
+            updateEmptyState(currentStatusFilter != null ? currentStatusFilter : "All");
         }
     }
 

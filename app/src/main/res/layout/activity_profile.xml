@@ -323,7 +323,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/textViewMobileHolder" />
 
                 <View
-                    android:id="@+id/divider2"
+                    android:id="@+id/dividerMedical"
                     android:layout_width="0dp"
                     android:layout_height="1dp"
                     android:layout_marginTop="5dp"
@@ -331,6 +331,147 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textViewAddressHolder" />
+
+                <TextView
+                    android:id="@+id/textViewMedicalInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:fontFamily="@font/poppins_semi_bold"
+                    android:text="Medical History:"
+                    android:textColor="@color/brown_text"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/dividerMedical" />
+
+                <TextView
+                    android:id="@+id/textViewMedicalCondition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="Condition:"
+                    android:textColor="@color/brown_text"
+                    android:textSize="11sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewMedicalInfo" />
+
+                <TextView
+                    android:id="@+id/textViewMedicalConditionHolder"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="N/A"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/textViewMedicalCondition"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewMedicalInfo" />
+
+                <TextView
+                    android:id="@+id/textViewCurrentMedication"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="Medication:"
+                    android:textColor="@color/brown_text"
+                    android:textSize="11sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewMedicalConditionHolder" />
+
+                <TextView
+                    android:id="@+id/textViewCurrentMedicationHolder"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="N/A"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/textViewCurrentMedication"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewMedicalConditionHolder" />
+
+                <TextView
+                    android:id="@+id/textViewAllergies"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="Allergies:"
+                    android:textColor="@color/brown_text"
+                    android:textSize="11sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewCurrentMedicationHolder" />
+
+                <TextView
+                    android:id="@+id/textViewAllergiesHolder"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="N/A"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/textViewAllergies"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewCurrentMedicationHolder" />
+
+                <TextView
+                    android:id="@+id/textViewFamilyMedicalHistory"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="Family History:"
+                    android:textColor="@color/brown_text"
+                    android:textSize="11sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewAllergiesHolder" />
+
+                <TextView
+                    android:id="@+id/textViewFamilyMedicalHistoryHolder"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:fontFamily="@font/poppins_medium"
+                    android:text="N/A"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/textViewFamilyMedicalHistory"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewAllergiesHolder" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonEditMedicalHistory"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="10dp"
+                    android:fontFamily="@font/poppins_semi_bold"
+                    android:text="Update Medical History"
+                    android:textAllCaps="false"
+                    android:textColor="@color/card_white"
+                    android:textSize="12sp"
+                    app:backgroundTint="@color/red_primary"
+                    app:cornerRadius="20dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewFamilyMedicalHistoryHolder" />
+
+                <View
+                    android:id="@+id/divider2"
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:background="#80D6C2B5"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/buttonEditMedicalHistory" />
 
                 <TextView
                     android:id="@+id/textViewAccountInfo"
@@ -446,6 +587,22 @@
                 android:textSize="12sp"
                 app:backgroundTint="@color/red_primary"
                 app:layout_constraintBottom_toTopOf="@+id/buttonLogout"
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout2"
+                tools:layout_editor_absoluteX="24dp">
+
+            </com.google.android.material.button.MaterialButton>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonPrivacy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_semi_bold"
+                android:text="Privacy and Policy"
+                android:textColor="@color/card_white"
+                android:textSize="12sp"
+                app:backgroundTint="@color/red_primary"
+                app:layout_constraintBottom_toTopOf="@+id/buttonLogout"
+                app:layout_constraintTop_toBottomOf="@+id/buttonTerms"
                 tools:layout_editor_absoluteX="24dp">
 
             </com.google.android.material.button.MaterialButton>

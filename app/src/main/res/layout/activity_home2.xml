@@ -419,13 +419,16 @@
                 android:text="Scroll to right to view other doctors"
                 android:fontFamily="@font/poppins_medium"
                 android:textColor="@color/brown_text"
-                android:textSize="10sp"/>
+                android:textSize="10sp"
+                android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvDoctors"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp" />
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="10dp"
+                android:nestedScrollingEnabled="false" />
 
 
         </LinearLayout>

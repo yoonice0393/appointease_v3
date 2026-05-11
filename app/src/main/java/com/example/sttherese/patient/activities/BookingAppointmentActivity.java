@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 
@@ -17,6 +19,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.RetryPolicy;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.sttherese.DateFormatter;
 import com.example.sttherese.R;
 import com.example.sttherese.adapters.DoctorAdapter;
 import com.example.sttherese.models.Doctor;
@@ -61,25 +64,29 @@ public class BookingAppointmentActivity extends AppCompatActivity {
     private TextView textSelectedDate;
     private GridLayout gridMorning, gridAfternoon;
     private MaterialButton buttonBook;
+    private MaterialButton buttonMedicalHistory;
 
     private FirebaseFirestore db;
-    private FirebaseAuth mAuth; 
+    private FirebaseAuth mAuth; // ADDED
     private String selectedDoctorId = null;
     private String selectedDate = null;
     private String selectedTime = null;
     private String selectedAppointmentType = null;
-    private Doctor selectedDoctor = null;
+    private Doctor selectedDoctor = null; // ADDED
 
     private List<String> appointmentTypes = new ArrayList<>();
     private Button selectedTimeButton = null;
 
+    // New class variable to hold the query for the adapter
     private Query doctorsQuery = null;
-    private DoctorAdapter doctorAdapter; 
+    private DoctorAdapter doctorAdapter; // Class variable for the adapter
 
     private String selectedCategorySchedule = null;
-    private List<String> availableDaysForCategory = new ArrayList<>(); 
-    private String selectedSpecialty = null; 
-    private List<Map<String, Object>> servicesListWithSpecialty = new ArrayList<>(); 
+    private List<String> availableDaysForCategory = new ArrayList<>(); // Store all available days
+    private String selectedSpecialty = null; // NEW: Track selected specialty
+    private List<Map<String, Object>> servicesListWithSpecialty = new ArrayList<>(); // NEW
+    private Map<String, Object> medicalHistory = new HashMap<>();
+    private boolean saveMedicalHistoryToProfile = false;
 
 
     @Override
@@ -87,11 +94,17 @@ public class BookingAppointmentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking_appointment);
 
+        // Initialize Firebase
         db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance(); 
+        mAuth = FirebaseAuth.getInstance(); // INITIALIZE AUTH
         warmUpRenderServer();
+        // Initialize views
         initializeViews();
+
+        // Setup listeners
         setupListeners();
+
+        // Fetch data from Firebase
         fetchAppointmentTypes();
     }
 
@@ -119,17 +132,21 @@ public class BookingAppointmentActivity extends AppCompatActivity {
         gridMorning = findViewById(R.id.gridMorning);
         gridAfternoon = findViewById(R.id.gridAfternoon);
         buttonBook = findViewById(R.id.buttonBook);
+        buttonMedicalHistory = findViewById(R.id.buttonMedicalHistory);
         closeButton = findViewById(R.id.closeButton);
     }
 
     private void setupListeners() {
+        // Close button
         closeButton.setOnClickListener(v -> finish());
 
+        // Appointment type selection
         spinnerAppointmentType.setOnItemClickListener((parent, view, position, id) -> {
             selectedAppointmentType = appointmentTypes.get(position);
             fetchDoctorsByType(selectedAppointmentType);
         });
 
+        // Doctor card click
         doctorCard.setOnClickListener(v -> {
             if (selectedAppointmentType != null) {
                 showDoctorSelectionDialog();
@@ -138,8 +155,66 @@ public class BookingAppointmentActivity extends AppCompatActivity {
             }
         });
 
+        // Date picker
         buttonPickDate.setOnClickListener(v -> showDatePicker());
+
+        buttonMedicalHistory.setOnClickListener(v -> showMedicalHistoryDialog());
+
+        // Book appointment button
         buttonBook.setOnClickListener(v -> checkPatientDailyAppointmentLimit());
+    }
+
+    private void showMedicalHistoryDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_medical_history, null);
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        EditText editMedicalCondition = dialogView.findViewById(R.id.editMedicalCondition);
+        EditText editCurrentMedication = dialogView.findViewById(R.id.editCurrentMedication);
+        EditText editAllergies = dialogView.findViewById(R.id.editAllergies);
+        EditText editFamilyMedicalHistory = dialogView.findViewById(R.id.editFamilyMedicalHistory);
+        CheckBox checkSaveToProfile = dialogView.findViewById(R.id.checkSaveToProfile);
+        MaterialButton buttonSaveMedicalHistory = dialogView.findViewById(R.id.buttonSaveMedicalHistory);
+        ImageView buttonCloseMedicalHistory = dialogView.findViewById(R.id.buttonCloseMedicalHistory);
+
+        editMedicalCondition.setText(getMedicalHistoryValue("condition"));
+        editCurrentMedication.setText(getMedicalHistoryValue("medication"));
+        editAllergies.setText(getMedicalHistoryValue("allergies"));
+        editFamilyMedicalHistory.setText(getMedicalHistoryValue("family_history"));
+        checkSaveToProfile.setChecked(saveMedicalHistoryToProfile);
+
+        buttonCloseMedicalHistory.setOnClickListener(v -> alertDialog.dismiss());
+        buttonSaveMedicalHistory.setOnClickListener(v -> {
+            medicalHistory.clear();
+            medicalHistory.put("condition", editMedicalCondition.getText().toString().trim());
+            medicalHistory.put("medication", editCurrentMedication.getText().toString().trim());
+            medicalHistory.put("allergies", editAllergies.getText().toString().trim());
+            medicalHistory.put("family_history", editFamilyMedicalHistory.getText().toString().trim());
+            medicalHistory.put("updated_at", new Date());
+            saveMedicalHistoryToProfile = checkSaveToProfile.isChecked();
+
+            buttonMedicalHistory.setText(hasMedicalHistory() ? "Edit Medical History" : "Add Medical History");
+            Toast.makeText(this, "Medical history saved for this booking.", Toast.LENGTH_SHORT).show();
+            alertDialog.dismiss();
+        });
+
+        alertDialog.show();
+        if (alertDialog.getWindow() != null) {
+            alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+    }
+
+    private String getMedicalHistoryValue(String key) {
+        Object value = medicalHistory.get(key);
+        return value != null ? value.toString() : "";
+    }
+
+    private boolean hasMedicalHistory() {
+        return !getMedicalHistoryValue("condition").isEmpty()
+                || !getMedicalHistoryValue("medication").isEmpty()
+                || !getMedicalHistoryValue("allergies").isEmpty()
+                || !getMedicalHistoryValue("family_history").isEmpty();
     }
 
     private void fetchAppointmentTypes() {
@@ -154,22 +229,30 @@ public class BookingAppointmentActivity extends AppCompatActivity {
                         return;
                     }
 
+                    // Track how many specialties we need to query
                     int totalSpecialties = specialtySnapshots.size();
                     final int[] processedCount = {0};
 
+                    // Loop through each specialty
                     for (DocumentSnapshot specialtyDoc : specialtySnapshots) {
-                        String specialtyId = specialtyDoc.getId(); 
+                        String specialtyId = specialtyDoc.getId(); // e.g., "OB-GYNE"
                         String specialtyName = specialtyDoc.getString("name");
 
+                        // Query the services sub-collection
                         db.collection("specialties")
                                 .document(specialtyId)
                                 .collection("services")
                                 .get()
                                 .addOnSuccessListener(serviceSnapshots -> {
+                                    // Add each service to the list
                                     for (DocumentSnapshot serviceDoc : serviceSnapshots) {
                                         String serviceName = serviceDoc.getString("name");
+
                                         if (serviceName != null) {
+                                            // Store service name for dropdown
                                             appointmentTypes.add(serviceName);
+
+                                            // Store service with its specialty for later lookup
                                             Map<String, Object> serviceData = new HashMap<>();
                                             serviceData.put("serviceName", serviceName);
                                             serviceData.put("specialty", specialtyId);
@@ -178,8 +261,11 @@ public class BookingAppointmentActivity extends AppCompatActivity {
                                             servicesListWithSpecialty.add(serviceData);
                                         }
                                     }
+
+                                    // Check if all specialties have been processed
                                     processedCount[0]++;
                                     if (processedCount[0] == totalSpecialties) {
+                                        // All done - setup the dropdown
                                         setupDropdownAdapter();
                                     }
                                 })
@@ -198,12 +284,19 @@ public class BookingAppointmentActivity extends AppCompatActivity {
     }
 
     private void setupDropdownAdapter() {
+        // Sort alphabetically for better UX
         Collections.sort(appointmentTypes);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.dropdown_item, appointmentTypes);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                R.layout.dropdown_item,
+                appointmentTypes
+        );
         spinnerAppointmentType.setAdapter(adapter);
     }
 
     private void fetchDoctorsByType(String appointmentType) {
+        // 1. Reset everything
         selectedDoctorId = null;
         selectedDoctor = null;
         selectedSpecialty = null;
@@ -215,6 +308,7 @@ public class BookingAppointmentActivity extends AppCompatActivity {
         selectedTime = null;
         resetDoctorCardToDefault();
 
+        // 2. Find the specialty for this service
         String specialty = null;
         for (Map<String, Object> serviceData : servicesListWithSpecialty) {
             if (appointmentType.equals(serviceData.get("serviceName"))) {
@@ -225,42 +319,191 @@ public class BookingAppointmentActivity extends AppCompatActivity {
         }
 
         if (specialty == null) {
-            Toast.makeText(this, "Could not determine specialty for this service.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Could not determine specialty for this service.",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // 3. Query ALL active doctors with this specialty
         doctorsQuery = db.collection("doctors")
                 .whereEqualTo("specialty", specialty)
                 .whereEqualTo("is_active", true);
 
+        // 4. Prompt user to select a doctor
         promptDoctorSelectionCard(specialty);
         Toast.makeText(this, "Please select a doctor", Toast.LENGTH_LONG).show();
     }
-
+    /**
+     * Clears the current doctor's details and shows a default placeholder message.
+     */
     private void resetDoctorCardToDefault() {
+        // Inflate the default content for the doctor card
         View doctorView = LayoutInflater.from(this).inflate(R.layout.doctor_card_content, null);
+
         ImageView doctorImageView = doctorView.findViewById(R.id.doctorImage);
         TextView doctorNameText = doctorView.findViewById(R.id.doctorName);
         TextView doctorSpecialtyText = doctorView.findViewById(R.id.doctorSpecialty);
 
+        // Set placeholder content
         doctorNameText.setText("Select Doctor");
         doctorSpecialtyText.setText("Tap to choose");
-        doctorImageView.setImageResource(R.drawable.ic_doctor_placeholder); 
+        doctorImageView.setImageResource(R.drawable.ic_doctor_placeholder); // Use your default image
 
+        // Clear and update card view
         doctorCard.removeAllViews();
         doctorCard.addView(doctorView);
     }
 
+    private void fetchClinicSchedulesForDoctor(String doctorId, String category) {
+        // Query all schedule documents that start with the doctor ID
+        db.collection("clinic_schedules")
+                .orderBy(com.google.firebase.firestore.FieldPath.documentId())
+                .startAt(doctorId)
+                .endAt(doctorId + "\uf8ff")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    availableDaysForCategory.clear();
+
+                    if (querySnapshot.isEmpty()) {
+                        Toast.makeText(this, "No clinic schedules found for this doctor.", Toast.LENGTH_SHORT).show();
+                        // Still allow doctor selection, but warn user
+                        fetchDoctorsForSelection(doctorId, category);
+                        return;
+                    }
+
+                    // Build a list of available days from the schedules
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        // Extract day from document ID (e.g., "D001_MON" -> need to convert MON to Monday)
+                        String docId = doc.getId();
+                        String[] parts = docId.split("_");
+
+                        if (parts.length >= 2) {
+                            String dayAbbr = parts[1]; // e.g., "MON", "TUE", "WED"
+                            String dayOfWeek = convertDayAbbrToFull(dayAbbr);
+
+                            if (dayOfWeek != null && !availableDaysForCategory.contains(dayOfWeek)) {
+                                availableDaysForCategory.add(dayOfWeek);
+                            }
+                        }
+                    }
+
+                    // Create a readable schedule string
+                    selectedCategorySchedule = formatScheduleDays(availableDaysForCategory);
+
+                    // Now fetch and display the doctor
+                    fetchDoctorsForSelection(doctorId, category);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to load clinic schedules: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    // Still allow proceeding even if schedule fetch fails
+                    fetchDoctorsForSelection(doctorId, category);
+                });
+    }
+
+
+    private String convertDayAbbrToFull(String dayAbbr) {
+        if (dayAbbr == null) return null;
+
+        switch (dayAbbr.toUpperCase()) {
+            case "MON": return "Monday";
+            case "TUE": return "Tuesday";
+            case "WED": return "Wednesday";
+            case "THU": return "Thursday";
+            case "FRI": return "Friday";
+            case "SAT": return "Saturday";
+            case "SUN": return "Sunday";
+            default: return null;
+        }
+    }
+    private String formatScheduleDays(List<String> days) {
+        if (days.isEmpty()) return "No schedule available";
+
+        // Define day order
+        String[] dayOrder = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
+        // Sort days according to the week order
+        List<String> sortedDays = new ArrayList<>();
+        for (String day : dayOrder) {
+            if (days.contains(day)) {
+                sortedDays.add(day);
+            }
+        }
+
+        // Check if it's consecutive days (Monday to Saturday)
+        if (isConsecutiveDays(sortedDays, dayOrder)) {
+            return sortedDays.get(0) + " to " + sortedDays.get(sortedDays.size() - 1);
+        }
+
+        // Otherwise, return comma-separated list
+        return String.join(", ", sortedDays);
+    }
+    private boolean isConsecutiveDays(List<String> days, String[] dayOrder) {
+        if (days.size() < 2) return false;
+
+        int firstIndex = -1;
+        int lastIndex = -1;
+
+        for (int i = 0; i < dayOrder.length; i++) {
+            if (dayOrder[i].equals(days.get(0))) {
+                firstIndex = i;
+            }
+            if (dayOrder[i].equals(days.get(days.size() - 1))) {
+                lastIndex = i;
+            }
+        }
+
+        // Check if all days between first and last are included
+        if (lastIndex - firstIndex + 1 == days.size()) {
+            for (int i = firstIndex; i <= lastIndex; i++) {
+                if (!days.contains(dayOrder[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    // Rename and modify the function that was fetchAndDisplayDoctor
+    private void fetchDoctorsForSelection(String doctorId, String category) {
+
+        // 1. Set up the query for the Doctor Selection Dialog
+        // This query lists ALL doctors matching the service's category/specialty.
+        doctorsQuery = db.collection("doctors")
+                .whereEqualTo("specialty", category);
+
+        // 2. Clear any previously selected doctor state
+        selectedDoctorId = null;
+        selectedDoctor = null;
+
+        // 3. Immediately update the UI to prompt the user to select
+        promptDoctorSelectionCard(category); // <--- NEW HELPER METHOD
+
+        // Inform the user they can now choose
+        Toast.makeText(this, "Please tap the card to select a doctor.", Toast.LENGTH_LONG).show();
+    }
+    /**
+     * Updates the Doctor Card UI to prompt the user to tap and select a doctor.
+     * @param category The category/specialty the user should choose from.
+     */
     private void promptDoctorSelectionCard(String category) {
+        // Inflate a temporary view or use your existing doctor_card_content structure
         View doctorView = LayoutInflater.from(this).inflate(R.layout.doctor_card_content, null);
+
+        // Assuming these IDs exist in doctor_card_content.xml:
         ImageView doctorImageView = doctorView.findViewById(R.id.doctorImage);
         TextView doctorNameText = doctorView.findViewById(R.id.doctorName);
         TextView doctorSpecialtyText = doctorView.findViewById(R.id.doctorSpecialty);
 
+        // Set prompt content
         doctorNameText.setText("Select Your Doctor");
         doctorSpecialtyText.setText("Specialty: " + category);
+
+        // Use a relevant icon instead of a doctor image, or your default placeholder
         doctorImageView.setImageResource(R.drawable.ic_doctor_placeholder);
 
+        // Clear and update card view
         doctorCard.removeAllViews();
         doctorCard.addView(doctorView);
     }
@@ -273,18 +516,22 @@ public class BookingAppointmentActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_doctor_selection, null);
+
         builder.setView(dialogView);
         final AlertDialog alertDialog = builder.create();
 
         RecyclerView recyclerView = dialogView.findViewById(R.id.recyclerViewDoctors);
+        TextView textNoDoctors = dialogView.findViewById(R.id.textNoDoctors);
         Button buttonCloseDialog = dialogView.findViewById(R.id.buttonCloseDialog);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         DoctorAdapter.OnDoctorClickListener listener = doctor -> {
+            // Update selected doctor
             selectedDoctor = doctor;
             selectedDoctorId = doctor.getId();
 
+            // IMPORTANT: Re-fetch clinic schedules for the newly selected doctor
             db.collection("clinic_schedules")
                     .orderBy(com.google.firebase.firestore.FieldPath.documentId())
                     .startAt(selectedDoctorId)
@@ -292,72 +539,240 @@ public class BookingAppointmentActivity extends AppCompatActivity {
                     .get()
                     .addOnSuccessListener(querySnapshot -> {
                         availableDaysForCategory.clear();
+
                         for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                             String docId = doc.getId();
                             String[] parts = docId.split("_");
+
                             if (parts.length >= 2) {
-                                String dayOfWeek = convertDayAbbrToFull(parts[1]);
+                                String dayAbbr = parts[1]; // e.g., "MON", "TUE", "WED"
+                                String dayOfWeek = convertDayAbbrToFull(dayAbbr);
+
                                 if (dayOfWeek != null && !availableDaysForCategory.contains(dayOfWeek)) {
                                     availableDaysForCategory.add(dayOfWeek);
                                 }
                             }
                         }
+
                         selectedCategorySchedule = formatScheduleDays(availableDaysForCategory);
+
+                        // Update the doctor card
                         db.collection("doctors").document(selectedDoctorId).get()
                                 .addOnSuccessListener(this::updateDoctorCard);
                     });
 
+            // Clear date/time selection since doctor changed
             selectedDate = null;
             selectedTime = null;
             textSelectedDate.setText("No date selected");
             gridMorning.removeAllViews();
             gridAfternoon.removeAllViews();
+
+            Toast.makeText(this, doctor.getName() + " selected.", Toast.LENGTH_SHORT).show();
             alertDialog.dismiss();
         };
 
-        doctorAdapter = new DoctorAdapter(this, listener, doctorsQuery, R.layout.item_doctor_no_button);
+        doctorAdapter = new DoctorAdapter(
+                this,
+                listener,
+                doctorsQuery,
+                R.layout.item_doctor_no_button
+        );
         recyclerView.setAdapter(doctorAdapter);
+        updateDoctorEmptyState(recyclerView, textNoDoctors);
+        doctorAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                updateDoctorEmptyState(recyclerView, textNoDoctors);
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                updateDoctorEmptyState(recyclerView, textNoDoctors);
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                updateDoctorEmptyState(recyclerView, textNoDoctors);
+            }
+        });
+
         buttonCloseDialog.setOnClickListener(v -> alertDialog.dismiss());
-        if (alertDialog.getWindow() != null) alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        alertDialog.setOnDismissListener(dialog -> {
+            if (doctorAdapter != null) {
+                doctorAdapter.removeListener();
+            }
+        });
+
+        if (alertDialog.getWindow() != null) {
+            alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
         alertDialog.show();
     }
 
-    private String convertDayAbbrToFull(String dayAbbr) {
-        if (dayAbbr == null) return null;
-        switch (dayAbbr.toUpperCase()) {
-            case "MON": return "Monday";
-            case "TUE": return "Tuesday";
-            case "WED": return "Wednesday";
-            case "THU": return "Thursday";
-            case "FRI": return "Friday";
-            case "SAT": return "Saturday";
-            case "SUN": return "Sunday";
-            default: return null;
+    private void updateDoctorEmptyState(RecyclerView recyclerView, TextView textNoDoctors) {
+        boolean isEmpty = doctorAdapter == null || doctorAdapter.getItemCount() == 0;
+        recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        textNoDoctors.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+    }
+
+    private boolean isDayAvailable(Calendar selectedCalendar, String categoryScheduleDays) {
+        if (availableDaysForCategory.isEmpty()) {
+            return false;
+        }
+
+        // Get the full day name (e.g., "Wednesday")
+        SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
+        String selectedDayFull = dayFormat.format(selectedCalendar.getTime());
+
+        // Check if the selected day is in the list of available days
+        return availableDaysForCategory.contains(selectedDayFull);
+    }
+
+    private void blockUnavailableSlots(String doctorId, String date) {
+        List<String> bookedTimes = new ArrayList<>();
+
+        // Check existing appointments (bookings) ---
+        db.collection("appointments")
+                .whereEqualTo("doctorId", doctorId)
+                .whereEqualTo("date", date)
+                .get()
+                .addOnSuccessListener(appointmentSnapshots -> {
+                    for (DocumentSnapshot doc : appointmentSnapshots) {
+                        // We only block slots that are 'pending' or 'confirmed'
+                        String status = doc.getString("status");
+                        if (status != null && (status.equals("pending") || status.equals("confirmed"))) {
+                            String time = doc.getString("time");
+                            if (time != null) {
+                                bookedTimes.add(time);
+                            }
+                        }
+                    }
+
+                    // --- Step B: Check schedule exceptions (leaves/absences) ---
+                    db.collection("schedule_exceptions")
+                            .whereEqualTo("doctor_id", doctorId)
+                            .whereEqualTo("date", date)
+                            .get()
+                            .addOnSuccessListener(exceptionSnapshots -> {
+                                for (DocumentSnapshot doc : exceptionSnapshots) {
+                                    String time = doc.getString("time");
+                                    if (time != null) {
+                                        // If time is set, block that specific slot
+                                        bookedTimes.add(time);
+                                    } else {
+                                        // If time is null, assume the whole day is blocked/on leave
+                                        disableAllTimeSlots(true);
+                                        return;
+                                    }
+                                }
+
+                                // --- Step C: Apply Blocks to UI ---
+                                applyBlocksToUI(bookedTimes);
+
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(this, "Failed to check schedule exceptions.", Toast.LENGTH_SHORT).show();
+                                applyBlocksToUI(bookedTimes); // Proceed with only appointments blocked
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to check existing appointments.", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void applyBlocksToUI(List<String> bookedTimes) {
+        // Helper function for iterating and blocking
+        Runnable blockChecker = () -> {
+            // Iterate through Morning Grid
+            for (int i = 0; i < gridMorning.getChildCount(); i++) {
+                View child = gridMorning.getChildAt(i);
+                if (child instanceof Button) {
+                    Button button = (Button) child;
+                    String time = button.getText().toString();
+
+                    String originalTime = (button.getTag() instanceof String) ? (String)button.getTag() : time;
+
+                    if (bookedTimes.contains(originalTime)) {
+                        button.setEnabled(false);
+                        button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_unavailable));
+                        button.setText("BOOKED");
+                        button.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+                    }
+                }
+            }
+
+            // Iterate through Afternoon Grid
+            for (int i = 0; i < gridAfternoon.getChildCount(); i++) {
+                View child = gridAfternoon.getChildAt(i);
+                if (child instanceof Button) {
+                    Button button = (Button) child;
+                    String time = button.getText().toString();
+
+                    String originalTime = (button.getTag() instanceof String) ? (String)button.getTag() : time;
+
+                    if (bookedTimes.contains(originalTime)) {
+                        button.setEnabled(false);
+                        button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_unavailable));
+                        button.setText("BOOKED");
+                        button.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+                    }
+                }
+            }
+        };
+
+        // Execute the checker
+        blockChecker.run();
+    }
+
+    private void disableAllTimeSlots(boolean showToast) {
+        // Disable all buttons in the morning grid
+        for (int i = 0; i < gridMorning.getChildCount(); i++) {
+            View child = gridMorning.getChildAt(i);
+            if (child instanceof Button) {
+                Button button = (Button) child;
+                button.setEnabled(false);
+                button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_unavailable));
+            }
+        }
+
+        // Disable all buttons in the afternoon grid
+        for (int i = 0; i < gridAfternoon.getChildCount(); i++) {
+            View child = gridAfternoon.getChildAt(i);
+            if (child instanceof Button) {
+                Button button = (Button) child;
+                button.setEnabled(false);
+                button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_unavailable));
+            }
+        }
+
+        if (showToast) {
+            Toast.makeText(this, "The doctor is on leave or unavailable for the entire day.", Toast.LENGTH_LONG).show();
         }
     }
 
-    private String formatScheduleDays(List<String> days) {
-        if (days.isEmpty()) return "No schedule available";
-        String[] dayOrder = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-        List<String> sortedDays = new ArrayList<>();
-        for (String day : dayOrder) if (days.contains(day)) sortedDays.add(day);
-        return String.join(", ", sortedDays);
-    }
-
     private void updateDoctorCard(DocumentSnapshot doctor) {
+        // Inflate doctor card content
         View doctorView = LayoutInflater.from(this).inflate(R.layout.doctor_card_content, null);
         doctorImageView = doctorView.findViewById(R.id.doctorImage);
         doctorNameText = doctorView.findViewById(R.id.doctorName);
         doctorSpecialtyText = doctorView.findViewById(R.id.doctorSpecialty);
 
+        // Set doctor info
         doctorNameText.setText(doctor.getString("name"));
-        doctorSpecialtyText.setText(doctor.getString("specialty") + " | " + selectedCategorySchedule);
+        doctorSpecialtyText.setText(doctor.getString("specialty") + " | " + selectedCategorySchedule); // Added schedule info
 
         String imageUrl = doctor.getString("imageUrl");
         if (imageUrl != null && !imageUrl.isEmpty()) {
-            Glide.with(this).load(imageUrl).placeholder(R.drawable.ic_doctor_placeholder).into(doctorImageView);
+            Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_doctor_placeholder)
+                    .into(doctorImageView);
         }
 
+        // Clear and update card view
         doctorCard.removeAllViews();
         doctorCard.addView(doctorView);
     }
@@ -368,202 +783,524 @@ public class BookingAppointmentActivity extends AppCompatActivity {
             return;
         }
 
+        // Check if the category schedule was found
+        if (selectedCategorySchedule == null || availableDaysForCategory.isEmpty()) {
+//            Toast.makeText(this, "Clinic schedule not defined for the selected doctor/service.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Calendar calendar = Calendar.getInstance();
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year, month, day) -> {
-            Calendar selectedCalendar = Calendar.getInstance();
-            selectedCalendar.set(year, month, day);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-            SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
-            if (!availableDaysForCategory.contains(dayFormat.format(selectedCalendar.getTime()))) {
-                Toast.makeText(this, "Service is not available on that day.", Toast.LENGTH_LONG).show();
-                return;
-            }
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    Calendar selectedCalendar = Calendar.getInstance();
+                    selectedCalendar.set(selectedYear, selectedMonth, selectedDay);
 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            selectedDate = sdf.format(selectedCalendar.getTime());
-            textSelectedDate.setText(new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(selectedCalendar.getTime()));
-            fetchTimeSlots(selectedDoctorId, selectedDate);
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+                    // --- Schedule Check Logic ---
+                    if (!isDayAvailable(selectedCalendar, selectedCategorySchedule)) {
+                        Toast.makeText(this, "Service is not available on that day based on clinic schedule.", Toast.LENGTH_LONG).show();
 
+                        // Clear all time slots and reset selectedDate/Time
+                        textSelectedDate.setText("No date selected");
+                        selectedDate = null;
+                        selectedTime = null; // Important to reset time
+                        gridMorning.removeAllViews();
+                        gridAfternoon.removeAllViews();
+
+                        return;
+                    }
+                    // --- End Schedule Check Logic ---
+
+                    // If the date IS available, proceed:
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    selectedDate = sdf.format(selectedCalendar.getTime());
+
+                    textSelectedDate.setText(DateFormatter.formatToFullDate(selectedDate));
+
+                    // Reset selected time when date changes (prevents booking stale time)
+                    selectedTime = null;
+                    if (selectedTimeButton != null) {
+                        selectedTimeButton.setSelected(false);
+                        selectedTimeButton.setBackgroundResource(R.drawable.time_slot_available); // Reset visual state
+                        selectedTimeButton = null;
+                    }
+
+                    // Fetch available time slots
+                    if (selectedDoctorId != null) {
+                        fetchTimeSlots(selectedDoctorId, selectedDate);
+                    }
+                },
+                year, month, day
+        );
+
+        // Set minimum date to today
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
         datePickerDialog.show();
     }
 
     private void fetchTimeSlots(String doctorId, String date) {
+        // Clear existing slots
         gridMorning.removeAllViews();
         gridAfternoon.removeAllViews();
 
-        SimpleDateFormat dateDbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String scheduleDocId;
         try {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(dateDbFormat.parse(date));
-            String dayAbbr = new SimpleDateFormat("EEE", Locale.US).format(cal.getTime()).toUpperCase(Locale.US);
-            String scheduleDocId = doctorId + "_" + dayAbbr;
+            SimpleDateFormat dateDbFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Calendar selectedCalendar = Calendar.getInstance();
+            selectedCalendar.setTime(dateDbFormat.parse(date));
+            SimpleDateFormat dayFormat = new SimpleDateFormat("EEE", Locale.US);
+            String dayAbbr = dayFormat.format(selectedCalendar.getTime()).toUpperCase(Locale.US);
+            scheduleDocId = doctorId + "_" + dayAbbr;
+        } catch (Exception e) {
+            Toast.makeText(this, "Error processing date for schedule ID.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            db.collection("clinic_schedules").document(scheduleDocId).get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        generateTimeSlots(doc.getString("start_time"), doc.getString("end_time"), 30);
-                        blockUnavailableSlots(doctorId, date);
+        // 1. Fetch the doctor's standard schedule from clinic_schedules
+        db.collection("clinic_schedules")
+                .document(scheduleDocId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String startTimeStr = documentSnapshot.getString("start_time"); // e.g., "9:00"
+                        String endTimeStr = documentSnapshot.getString("end_time");     // e.g., "14:00"
+                        Long slotDurationLong = documentSnapshot.getLong("slot_duration_minutes");
+
+                        int slotDurationMinutes = (slotDurationLong != null) ? slotDurationLong.intValue() : 30; // Default to 30 mins if null
+
+                        // 2. Generate slots based on the schedule
+                        generateTimeSlots(startTimeStr, endTimeStr, slotDurationMinutes);
+
+                        // 3. Block unavailable slots (appointments and exceptions)
+                        blockUnavailableSlots(doctorId, selectedDate);
+                    } else {
+                        Toast.makeText(this, "No specific clinic schedule found for this day.", Toast.LENGTH_SHORT).show();
+                        disableAllTimeSlots(false);
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to fetch schedule.", Toast.LENGTH_SHORT).show();
+                    disableAllTimeSlots(false);
                 });
-        } catch (Exception e) { e.printStackTrace(); }
     }
+    private void generateTimeSlots(String startTimeStr, String endTimeStr, int slotDurationMinutes) {
+        // Clear existing slots
+        gridMorning.removeAllViews();
+        gridAfternoon.removeAllViews();
 
-    private void generateTimeSlots(String start, String end, int duration) {
-        SimpleDateFormat time24 = new SimpleDateFormat("HH:mm", Locale.US);
-        SimpleDateFormat time12 = new SimpleDateFormat("h:mm a", Locale.US);
+        SimpleDateFormat timeFormat24 = new SimpleDateFormat("HH:mm", Locale.US);
+        SimpleDateFormat timeFormat12 = new SimpleDateFormat("h:mm a", Locale.US);
+        Calendar current = Calendar.getInstance();
+        Calendar end = Calendar.getInstance();
+
         try {
-            Calendar curr = Calendar.getInstance(); curr.setTime(time24.parse(start));
-            Calendar e = Calendar.getInstance(); e.setTime(time24.parse(end));
-            while (curr.before(e)) {
-                createTimeSlotButton(time24.format(curr.getTime()), time12.format(curr.getTime()), curr.get(Calendar.AM_PM));
-                curr.add(Calendar.MINUTE, duration);
-            }
-        } catch (Exception ex) { ex.printStackTrace(); }
+            current.setTime(timeFormat24.parse(startTimeStr));
+            end.setTime(timeFormat24.parse(endTimeStr));
+        } catch (Exception e) {
+            Toast.makeText(this, "Error parsing time format.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        while (current.before(end)) {
+            String slotTime24 = timeFormat24.format(current.getTime()); // Store 24-hour format for backend
+            String slotTime12 = timeFormat12.format(current.getTime()); // Display 12-hour format
+            createTimeSlotButton(slotTime24, slotTime12, current.get(Calendar.AM_PM));
+            current.add(Calendar.MINUTE, slotDurationMinutes);
+        }
     }
 
-    private void createTimeSlotButton(String t24, String t12, int ampm) {
-        Button b = new Button(this);
-        b.setText(t12); b.setTag(t24);
-        b.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_available));
-        b.setAllCaps(false);
-        b.setOnClickListener(this::onTimeSlotClicked);
-        
-        GridLayout.LayoutParams p = new GridLayout.LayoutParams();
-        p.width = 0; p.height = (int)(40 * getResources().getDisplayMetrics().density);
-        p.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-        p.setMargins(6, 6, 6, 6);
-        b.setLayoutParams(p);
-        if (ampm == Calendar.AM) gridMorning.addView(b); else gridAfternoon.addView(b);
+
+    private void createTimeSlotButton(String time24, String time12, int ampm) {
+        Button button = new Button(this);
+
+        // Display 12-hour format to user
+        button.setText(time12);
+        // Store 24-hour format as tag for backend operations
+        button.setTag(time24);
+
+        // Set background drawable
+        button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_available));
+        button.setTextColor(Color.BLACK);
+
+        // Remove default padding
+        button.setPadding(16, 8, 16, 8);
+
+        // Figma font
+        try {
+            Typeface poppinsSemiBold = ResourcesCompat.getFont(this, R.font.poppins_semi_bold);
+            button.setTypeface(poppinsSemiBold);
+        } catch (Exception e) {
+            button.setTypeface(null, Typeface.BOLD);
+        }
+
+        // Make it not all caps (default Android behavior)
+        button.setAllCaps(false);
+
+        button.setOnClickListener(this::onTimeSlotClicked);
+
+        // Layout params
+        float density = getResources().getDisplayMetrics().density;
+        int height = (int) (40 * density);
+
+        GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+        params.width = 0;
+        params.height = height;
+        params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+        params.setMargins(6, 6, 6, 6);
+        button.setLayoutParams(params);
+
+        if (ampm == Calendar.AM) gridMorning.addView(button);
+        else gridAfternoon.addView(button);
     }
 
     private void onTimeSlotClicked(View v) {
-        if (selectedTimeButton != null) {
+        Button button = (Button) v;
+
+        if (selectedTimeButton != null && selectedTimeButton != button) {
+            selectedTimeButton.setSelected(false);
             selectedTimeButton.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_available));
             selectedTimeButton.setTextColor(Color.BLACK);
         }
-        selectedTimeButton = (Button) v;
-        selectedTimeButton.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_selected));
-        selectedTimeButton.setTextColor(Color.WHITE);
-        selectedTime = selectedTimeButton.getTag().toString();
+
+        if (button.isSelected()) {
+            button.setSelected(false);
+            button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_available));
+            button.setTextColor(Color.BLACK);
+            selectedTime = null;
+            selectedTimeButton = null;
+        } else {
+            button.setSelected(true);
+            button.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_selected));
+            button.setTextColor(Color.WHITE);
+
+            selectedTime = button.getTag().toString();
+            selectedTimeButton = button;
+        }
     }
 
+    private String generateAppointmentId() {
+        // Simple way to get a unique number based on current time (in milliseconds)
+        // You might want to format this for better readability or add a counter from Firestore/Remote Config.
+        long timestamp = System.currentTimeMillis();
+        // A unique ID using the last 6-8 digits of the timestamp
+        String uniqueSuffix = String.valueOf(timestamp).substring(String.valueOf(timestamp).length() - 8);
+        return "APPT_" + uniqueSuffix;
+    }
+    // ***************************************************************
+    // *** NEW LOGIC: CHECK PATIENT DAILY APPOINTMENT LIMIT ***
+    // ***************************************************************
+
     private void checkPatientDailyAppointmentLimit() {
-        if (mAuth.getCurrentUser() == null || selectedDoctorId == null || selectedDate == null || selectedTime == null) {
-            Toast.makeText(this, "Complete all details.", Toast.LENGTH_SHORT).show();
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "You must be logged in to book an appointment.", Toast.LENGTH_SHORT).show();
             return;
         }
-        db.collection("appointments").whereEqualTo("userId", mAuth.getCurrentUser().getUid())
-                .whereEqualTo("date", selectedDate).whereIn("status", List.of("pending", "confirmed"))
-                .get().addOnSuccessListener(q -> {
-                    if (!q.isEmpty()) showActiveDialog();
-                    else showConfirmationDialog();
+        if (selectedDoctorId == null || selectedDate == null || selectedTime == null || selectedAppointmentType == null) {
+            Toast.makeText(this, "Please complete all booking details.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String currentUserId = mAuth.getCurrentUser().getUid();
+
+        if (selectedDate == null) {
+            Toast.makeText(this, "Please select a date and time.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Ensure the book button is enabled before starting the check (to handle re-clicks after failure)
+        buttonBook.setEnabled(true);
+
+        db.collection("appointments")
+                .whereEqualTo("userId", currentUserId) // Check appointments for THIS patient
+                .whereEqualTo("date", selectedDate)       // ...on THIS date
+                .whereIn("status", List.of("pending", "approved")) // Only check active statuses
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        // Patient already has an active appointment on this day
+
+                        // Requirement: display “You already have an active appointment on this day.”
+                        showActiveDialog();
+                        buttonBook.setEnabled(false);
+                        buttonBook.setEnabled(true); // Re-enable on failure
+                        return;
+                    }
+
+                    // If no active appointments found, proceed with the actual booking logic
+                    showConfirmationDialog();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to check appointment limit. Please try again.", Toast.LENGTH_SHORT).show();
+                    buttonBook.setEnabled(true); // Re-enable if check failed due to technical error
                 });
     }
 
     private void performBooking() {
-        db.collection("patients").whereEqualTo("userId", mAuth.getCurrentUser().getUid()).limit(1).get()
-                .addOnSuccessListener(q -> {
-                    if (!q.isEmpty()) {
-                        String patientId = q.getDocuments().get(0).getId();
-                        saveAppointmentToFirestore(mAuth.getCurrentUser().getUid(), patientId);
+        if (selectedDoctorId == null || selectedDate == null || selectedTime == null || selectedAppointmentType == null) {
+            Toast.makeText(this, "Please select a doctor, date, and time.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String currentUserId = mAuth.getCurrentUser().getUid();
+
+        // Disable button to prevent double submission
+        buttonBook.setEnabled(false);
+
+        // 1. Query the 'patients' collection to find the document
+        // where the field 'userID' matches the current user's Auth UID.
+        db.collection("patients")
+                .whereEqualTo("userId", currentUserId)
+                .limit(1) // Assuming only one patient document per user ID
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+
+
+                        // Extract the Document ID (which is patient ID)
+
+                        String customPatientId = queryDocumentSnapshots.getDocuments().get(0).getId();
+
+                        // Proceed with Booking using the fetched ID
+                        saveAppointmentToFirestore(currentUserId, customPatientId);
+
+                    } else {
+                        Toast.makeText(this, "Error: Patient document with Auth ID not found in patients collection.", Toast.LENGTH_LONG).show();
+                        buttonBook.setEnabled(true); // Re-enable on failure
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to retrieve patient data: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    buttonBook.setEnabled(true); // Re-enable on failure
                 });
     }
+    private void saveAppointmentToFirestore(String currentUserId, String customPatientId) {
 
-    private void saveAppointmentToFirestore(String authUid, String patientDocId) {
-        String apptId = "APPT_" + System.currentTimeMillis();
-        Map<String, Object> a = new HashMap<>();
-        a.put("userId", authUid);
-        a.put("patientId", patientDocId);
-        a.put("doctorId", selectedDoctorId);
-        a.put("doctorName", selectedDoctor.getName());
-        a.put("specialty", selectedDoctor.getSpecialty());
-        a.put("appointmentType", selectedAppointmentType);
-        a.put("date", selectedDate);
-        a.put("time", selectedTime);
-        a.put("timestamp", new Date());
-        a.put("status", "pending");
+        // Get specialty details
+        String doctorSpecialty = selectedDoctor != null ? selectedDoctor.getSpecialty() : "Unknown Specialty";
 
-        db.collection("appointments").document(apptId).set(a).addOnSuccessListener(v -> {
-            showSuccessDialog();
-            // CRITICAL FIX: Send the Patient's FIRESTORE ID (patientDocId) instead of Auth UID
-            sendNotificationTrigger(patientDocId, "A patient", selectedDoctorId);
-        });
+        // Generate the unique appointment document ID
+        String customDocumentId = generateAppointmentId();
+
+        //  Create the appointment object
+        Map<String, Object> appointment = new HashMap<>();
+        appointment.put("userId", currentUserId);
+        appointment.put("patientId", customPatientId);
+        appointment.put("doctorId", selectedDoctorId);
+        appointment.put("doctorName", selectedDoctor != null ? selectedDoctor.getName() : "Unknown Doctor");
+        appointment.put("specialty", doctorSpecialty);
+        appointment.put("appointmentType", selectedAppointmentType);
+        appointment.put("date", selectedDate);
+        appointment.put("time", selectedTime);
+        appointment.put("timestamp", new java.util.Date());
+        appointment.put("status", "pending");
+        if (hasMedicalHistory()) {
+            appointment.put("medical_history", new HashMap<>(medicalHistory));
+            appointment.put("medical_history_saved_to_profile", saveMedicalHistoryToProfile);
+        }
+
+        //  Save to Firestore
+        com.google.firebase.firestore.WriteBatch batch = db.batch();
+        batch.set(db.collection("appointments").document(customDocumentId), appointment);
+
+        if (saveMedicalHistoryToProfile && hasMedicalHistory()) {
+            Map<String, Object> profileMedicalHistory = new HashMap<>(medicalHistory);
+            profileMedicalHistory.put("updated_from_appointment_id", customDocumentId);
+            batch.update(db.collection("patients").document(customPatientId),
+                    "medical_history", profileMedicalHistory,
+                    "medical_history_updated_at", new java.util.Date());
+        }
+
+        batch.commit()
+                .addOnSuccessListener(aVoid -> {
+                    showSuccessDialog();
+                    //  TRIGGER THE NOTIFICATION HERE
+                    // Fetch patient name from patients collection then trigger notification
+                    db.collection("patients").document(customPatientId).get()
+                            .addOnSuccessListener(patientDoc -> {
+                                String firstName  = patientDoc.getString("first_name")  != null ? patientDoc.getString("first_name")  : "";
+                                String lastName   = patientDoc.getString("last_name")   != null ? patientDoc.getString("last_name")   : "";
+                                String patientFullName = (firstName + " " + lastName).trim();
+
+                                sendNotificationTrigger(
+                                        customPatientId,                                    // Firestore doc ID → RTDB path
+                                        mAuth.getCurrentUser().getUid(),                    // Auth UID → FCM token lookup
+                                        patientFullName.isEmpty() ? "A patient" : patientFullName
+                                );
+                            })
+                            .addOnFailureListener(e -> sendNotificationTrigger(
+                                    customPatientId, mAuth.getCurrentUser().getUid(), "A patient"
+                            ));
+                })
+                .addOnFailureListener(e -> {
+                    showFailureDialog();
+                    buttonBook.setEnabled(true);
+                });
     }
-
-    private void sendNotificationTrigger(String patientDocId, String name, String docId) {
+    private void sendNotificationTrigger(String patientDocId, String patientAuthUid, String patientName) {
         String url = "https://sttherese-api.onrender.com/send_notification.php";
-        StringRequest req = new StringRequest(Request.Method.POST, url, r -> {}, e -> {}) {
-            @Override protected Map<String, String> getParams() {
-                Map<String, String> p = new HashMap<>();
-                p.put("action", "appointment_booked");
-                p.put("uid", patientDocId); // Now sending Firestore ID
-                p.put("patient_name", name);
-                p.put("doctor_id", docId);
-                p.put("date", selectedDate);
-                p.put("time", selectedTime);
-                return p;
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                response -> android.util.Log.d("FCM_NOTIF", "Response: " + response),
+                error -> android.util.Log.e("FCM_NOTIF", "Error: " + error.toString())) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "appointment_booked");
+                params.put("uid", patientDocId);                      // Firestore doc ID → RTDB path
+                params.put("patient_auth_uid", patientAuthUid);       // Auth UID → FCM token lookup
+                params.put("doctor_id", selectedDoctorId != null ? selectedDoctorId : ""); // e.g. "D002"
+                params.put("doctor_auth_uid", selectedDoctor != null && selectedDoctor.getUser_id() != null ? selectedDoctor.getUser_id() : ""); // Doctor Firebase Auth UID
+                params.put("patient_name", patientName);
+                params.put("date", selectedDate != null ? selectedDate : "");
+                params.put("time", selectedTime != null ? selectedTime : "");
+                return params;
+            }
+            @Override
+            public RetryPolicy getRetryPolicy() {
+                return new com.android.volley.DefaultRetryPolicy(60000, 0, 1.0f);
             }
         };
-        Volley.newRequestQueue(this).add(req);
-    }
 
-    private void blockUnavailableSlots(String doctorId, String date) {
-        db.collection("appointments").whereEqualTo("doctorId", doctorId).whereEqualTo("date", date).get()
-                .addOnSuccessListener(q -> {
-                    List<String> booked = new ArrayList<>();
-                    for (DocumentSnapshot d : q) {
-                        if (List.of("pending", "confirmed").contains(d.getString("status"))) {
-                            booked.add(d.getString("time"));
-                        }
-                    }
-                    applyBlocksToUI(booked);
-                });
+        queue.add(stringRequest);
     }
-
-    private void applyBlocksToUI(List<String> booked) {
-        for (int i = 0; i < gridMorning.getChildCount(); i++) {
-            Button b = (Button) gridMorning.getChildAt(i);
-            if (booked.contains(b.getTag().toString())) {
-                b.setEnabled(false); b.setText("BOOKED");
-                b.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_unavailable));
-            }
-        }
-        for (int i = 0; i < gridAfternoon.getChildCount(); i++) {
-            Button b = (Button) gridAfternoon.getChildAt(i);
-            if (booked.contains(b.getTag().toString())) {
-                b.setEnabled(false); b.setText("BOOKED");
-                b.setBackground(ContextCompat.getDrawable(this, R.drawable.time_slot_unavailable));
-            }
-        }
-    }
-
     private void showSuccessDialog() {
-        AlertDialog dialog = new AlertDialog.Builder(this).setView(getLayoutInflater().inflate(R.layout.dialog_appointment_success, null)).create();
-        if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        dialog.show();
-        new android.os.Handler().postDelayed(() -> { dialog.dismiss(); finish(); }, 2000);
+        // Use AlertDialog Builder to create a custom dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Inflate the new layout: dialog_appointment_success.xml
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_appointment_success, null);
+        builder.setView(dialogView);
+        final AlertDialog alertDialog = builder.create();
+
+        // The dialog should automatically close and finish the activity after a delay
+        alertDialog.setCanceledOnTouchOutside(false);
+        alertDialog.setCancelable(false); // Prevent back button dismissal
+
+        // Set a delay (e.g., 2000 milliseconds or 2 seconds) to automatically close
+        dialogView.postDelayed(() -> {
+            if (alertDialog.isShowing()) {
+                alertDialog.dismiss();
+            }
+            finish();
+        }, 2000); // 2 second delay
+
+        if (alertDialog.getWindow() != null) {
+            // Apply the transparent background for a custom-shaped dialog
+            alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        alertDialog.show();
     }
 
-    private void showActiveDialog() {
-        View v = getLayoutInflater().inflate(R.layout.dialog_active_appointment, null);
-        AlertDialog dialog = new AlertDialog.Builder(this).setView(v).create();
-        v.findViewById(R.id.buttonOk).setOnClickListener(view -> dialog.dismiss());
-        if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        dialog.show();
+    private void showActiveDialog()
+    {
+// Use AlertDialog Builder to create a custom dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Inflate the new layout: dialog_appointment_success.xml
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_active_appointment, null);
+        builder.setView(dialogView);
+        final AlertDialog alertDialog = builder.create();
+
+        // Get the OK button from the layout
+        Button buttonOk = dialogView.findViewById(R.id.buttonOk);
+
+        // Set listener to dismiss the dialog
+        buttonOk.setOnClickListener(v -> alertDialog.dismiss());
+
+        // Allow user to dismiss by clicking outside or pressing back, but the button is primary
+        alertDialog.setCanceledOnTouchOutside(true);
+        alertDialog.setCancelable(true);
+
+        if (alertDialog.getWindow() != null) {
+            // Apply the transparent background for a custom-shaped dialog
+            alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        alertDialog.show();
+
+
+    }
+
+    private void showFailureDialog() {
+        // Use AlertDialog Builder to create a custom dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // We will create this new layout next: dialog_booking_failure.xml
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_booking_failure, null);
+        builder.setView(dialogView);
+        final AlertDialog alertDialog = builder.create();
+
+        // Get the OK button from the layout
+        Button buttonOk = dialogView.findViewById(R.id.buttonOk);
+
+        // Set listener to dismiss the dialog
+        buttonOk.setOnClickListener(v -> alertDialog.dismiss());
+
+        // Allow user to dismiss by clicking outside or pressing back, but the button is primary
+        alertDialog.setCanceledOnTouchOutside(true);
+        alertDialog.setCancelable(true);
+
+        if (alertDialog.getWindow() != null) {
+            // Apply the transparent background for a custom-shaped dialog
+            alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        alertDialog.show();
     }
 
     private void showConfirmationDialog() {
-        View v = getLayoutInflater().inflate(R.layout.dialog_appointment_confirm, null);
-        ((TextView)v.findViewById(R.id.confirmAppointmentType)).setText(selectedAppointmentType);
-        ((TextView)v.findViewById(R.id.confirmDoctorName)).setText(selectedDoctor.getName());
-        ((TextView)v.findViewById(R.id.confirmTime)).setText(selectedTime);
-        ((TextView)v.findViewById(R.id.confirmDate)).setText(selectedDate);
-        AlertDialog dialog = new AlertDialog.Builder(this).setView(v).create();
-        v.findViewById(R.id.confirmButton).setOnClickListener(view -> { dialog.dismiss(); performBooking(); });
-        if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        dialog.show();
+        // Use AlertDialog Builder to create a custom dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // We'll create this layout next: dialog_appointment_confirm.xml
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_appointment_confirm, null);
+        builder.setView(dialogView);
+        final AlertDialog alertDialog = builder.create();
+
+        // Initialize dialog views
+        TextView confirmAppointmentType = dialogView.findViewById(R.id.confirmAppointmentType);
+        TextView confirmDoctorName = dialogView.findViewById(R.id.confirmDoctorName);
+        TextView confirmDoctorSpecialty = dialogView.findViewById(R.id.confirmDoctorSpecialty);
+        TextView confirmTime = dialogView.findViewById(R.id.confirmTime);
+        TextView confirmDate = dialogView.findViewById(R.id.confirmDate);
+        Button confirmButton = dialogView.findViewById(R.id.confirmButton);
+
+        // Set data from activity variables
+        confirmAppointmentType.setText(selectedAppointmentType);
+        confirmDoctorName.setText(selectedDoctor.getName());
+        confirmDoctorSpecialty.setText(selectedDoctor.getSpecialty());
+
+        confirmDate.setText(DateFormatter.formatToFullDate(selectedDate));
+
+        String time12Hour = convertTo12HourFormat(selectedTime);
+        confirmTime.setText(time12Hour);
+
+
+
+        // Confirmation button listener
+        confirmButton.setOnClickListener(v -> {
+            alertDialog.dismiss();
+            performBooking(); // Proceed with the actual booking
+        });
+
+        if (alertDialog.getWindow() != null) {
+            // Apply the transparent background for a custom-shaped dialog
+            alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        alertDialog.show();
+    }
+    private String convertTo12HourFormat(String time24) {
+        try {
+            SimpleDateFormat timeFormat24 = new SimpleDateFormat("HH:mm", Locale.US);
+            SimpleDateFormat timeFormat12 = new SimpleDateFormat("h:mm a", Locale.US);
+            Date date = timeFormat24.parse(time24);
+            return timeFormat12.format(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return time24; // Return original if parsing fails
+        }
     }
 }

@@ -27,6 +27,7 @@ import com.google.firebase.firestore.Query;
 import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -162,24 +163,25 @@ public class DoctorAppointmentActivity extends AppCompatActivity
             return;
         }
 
-        // Base Query Setup
+        // Load the doctor's assigned appointments, then filter status/date/search locally.
+        // This avoids Firestore composite-index failures for doctorId + status + date chips.
         Query baseQuery = db.collection("appointments")
-                .whereEqualTo("doctorId", doctorDocId)
-                .orderBy("date", Query.Direction.ASCENDING);
+                .whereEqualTo("doctorId", doctorDocId);
 
-        // Apply Date/Chip Filter
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String todayDate = dateFormat.format(calendar.getTime());
+        String dateFilter = null;
+        String minDateFilter = todayDate;
 
         if ("Today".equalsIgnoreCase(chipFilter)) {
-            String todayDate = dateFormat.format(calendar.getTime());
-            baseQuery = baseQuery.whereEqualTo("date", todayDate);
+            dateFilter = todayDate;
+            minDateFilter = null;
         } else if ("Tomorrow".equalsIgnoreCase(chipFilter)) {
             calendar.add(Calendar.DAY_OF_YEAR, 1);
-            String tomorrowDate = dateFormat.format(calendar.getTime());
-            baseQuery = baseQuery.whereEqualTo("date", tomorrowDate);
+            dateFilter = dateFormat.format(calendar.getTime());
+            minDateFilter = null;
         }
-        // "All" or "Upcoming" - no additional date filter needed
 
         // Remove old listener
         if (appointmentAdapter != null) {
@@ -204,6 +206,7 @@ public class DoctorAppointmentActivity extends AppCompatActivity
                 },
                 "doctor"
         );
+        appointmentAdapter.applyFilters(searchName, dateFilter, minDateFilter, Arrays.asList("approved"));
 
         recyclerView.setAdapter(appointmentAdapter);
     }

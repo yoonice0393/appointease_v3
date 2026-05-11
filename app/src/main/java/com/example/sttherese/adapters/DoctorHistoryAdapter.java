@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 // Ensure you use the correct imports
+import com.example.sttherese.DateFormatter;
 import com.example.sttherese.R;
 import com.example.sttherese.models.Appointment;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
@@ -16,22 +17,27 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 // Renamed the class
 public class DoctorHistoryAdapter extends FirestoreRecyclerAdapter<Appointment, DoctorHistoryAdapter.DoctorHistoryViewHolder> {
 
+    public interface OnDoctorHistoryClickListener {
+        void onHistoryClick(Appointment appointment, DocumentSnapshot snapshot);
+    }
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final OnItemCountChangeListener itemCountChangeListener;
+    private final OnDoctorHistoryClickListener onHistoryClickListener;
 
     public DoctorHistoryAdapter(Query query, OnItemCountChangeListener listener) {
+        this(query, listener, null);
+    }
+
+    public DoctorHistoryAdapter(Query query, OnItemCountChangeListener listener, OnDoctorHistoryClickListener clickListener) {
         super(new FirestoreRecyclerOptions.Builder<Appointment>()
                 .setQuery(query, Appointment.class)
                 .build());
         this.itemCountChangeListener = listener;
+        this.onHistoryClickListener = clickListener;
     }
 
     @Override
@@ -97,21 +103,22 @@ public class DoctorHistoryAdapter extends FirestoreRecyclerAdapter<Appointment, 
         // 4. Date & Time Formatting
         String dateString = model.getDate() != null ? model.getDate() : "N/A";
         String timeString = model.getTime() != null ? model.getTime() : "";
-        String formattedDate = dateString;
-        try {
-            SimpleDateFormat firebaseFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Date date = firebaseFormat.parse(dateString);
-            SimpleDateFormat displayFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
-            formattedDate = displayFormat.format(date);
-        } catch (Exception e) {
-            // Fallback
-        }
+        String formattedDate = DateFormatter.formatToFullDate(dateString);
         holder.tvDate.setText(formattedDate + " at " + timeString);
 
         // 4. Status
         String status = model.getStatus() != null ? model.getStatus().toUpperCase() : "UNKNOWN";
         holder.tvStatusButton.setText(status);
         // (Add logic here to set background color for the button if needed)
+
+        holder.itemView.setOnClickListener(v -> {
+            if (onHistoryClickListener != null) {
+                int adapterPosition = holder.getBindingAdapterPosition();
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    onHistoryClickListener.onHistoryClick(model, getSnapshots().getSnapshot(adapterPosition));
+                }
+            }
+        });
     }
 
     @NonNull

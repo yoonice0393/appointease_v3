@@ -56,7 +56,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/CustomSpinnerInputLayout"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="12dp">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/spinnerAppointmentType"
@@ -72,6 +72,19 @@
             android:paddingTop="16dp"
             android:paddingBottom="16dp"/>
         </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonMedicalHistory"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginBottom="18dp"
+            android:fontFamily="@font/poppins_semi_bold"
+            android:text="Add Medical History"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            app:backgroundTint="@color/brown_text"
+            app:cornerRadius="10dp" />
 
         <!-- Doctor Selection -->
         <TextView

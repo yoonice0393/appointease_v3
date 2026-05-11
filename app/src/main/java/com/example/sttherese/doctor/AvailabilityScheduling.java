@@ -2,6 +2,7 @@ package com.example.sttherese.doctor;
 
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.content.SharedPreferences;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,16 +19,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.sttherese.R;
+import com.example.sttherese.DateFormatter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +60,7 @@ public class AvailabilityScheduling extends AppCompatActivity {
     private final SimpleDateFormat displayTimeFormat = new SimpleDateFormat("h:mm a", Locale.getDefault());
 
     private FirebaseFirestore db;
+    private String currentDoctorId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +71,7 @@ public class AvailabilityScheduling extends AppCompatActivity {
 
         initializeViews();
         setupListeners();
+        loadCurrentDoctorId();
         addInitialSlot();
     }
 
@@ -104,9 +111,11 @@ public class AvailabilityScheduling extends AppCompatActivity {
                 android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerException.setAdapter(adapter);
+        slot.exceptionType = "modified";
 
         spinnerException.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (slot.isAllDay) return;
                 String val = parent.getItemAtPosition(position).toString();
                 slot.exceptionType = val.toLowerCase(Locale.ROOT); // "modified" or "added"
             }
@@ -131,24 +140,25 @@ public class AvailabilityScheduling extends AppCompatActivity {
                 etEndTime.setText("");
                 etStartTime.setEnabled(false);
                 etEndTime.setEnabled(false);
-                spinnerException.setSelection(0); // set to first maybe "modified" but we override below
                 btnAllDay.setBackgroundTintList(getResources().getColorStateList(R.color.red_primary, null));
 
                 slot.startTime = null;
                 slot.endTime = null;
                 slot.exceptionType = "blocked"; // automatic
-                spinnerException.setVisibility(View.GONE);
+                spinnerException.setEnabled(false);
+                spinnerException.setAlpha(0.45f);
             } else {
                 etStartTime.setText("");
                 etEndTime.setText("");
                 etStartTime.setEnabled(true);
                 etEndTime.setEnabled(true);
                 btnAllDay.setBackgroundTintList(getResources().getColorStateList(R.color.brown_text, null));
-                // Restore spinner
-                spinnerException.setVisibility(View.VISIBLE);
+                spinnerException.setEnabled(true);
+                spinnerException.setAlpha(1f);
                 // default to "modified" if not set
                 if (slot.exceptionType == null || slot.exceptionType.equals("blocked")) {
                     slot.exceptionType = "modified";
+                    spinnerException.setSelection(0);
                 }
             }
         });
@@ -173,7 +183,7 @@ public class AvailabilityScheduling extends AppCompatActivity {
                 this,
                 (view, year, month, dayOfMonth) -> {
                     calendar.set(year, month, dayOfMonth);
-                    String display = displayDateFormat.format(calendar.getTime());
+                    String display = com.example.sttherese.DateFormatter.formatToFullDate(firestoreDateFormat.format(calendar.getTime()));
                     etDate.setText(display);
                     slot.dateDisplay = display;
                     slot.dateFirestore = firestoreDateFormat.format(calendar.getTime());
@@ -221,16 +231,34 @@ public class AvailabilityScheduling extends AppCompatActivity {
     }
 
     private void onConfirmClick() {
-        if (!validateSlots()) {
+        List<AvailabilitySlot> slotsToSave = getSlotsToSave();
+        if (!validateSlots(slotsToSave)) {
             Toast.makeText(this, "Please fill in all fields correctly", Toast.LENGTH_SHORT).show();
             return;
         }
-        saveSlotsToFirestore();
+        saveSlotsToFirestore(slotsToSave);
     }
 
-    private boolean validateSlots() {
-        if (availabilitySlots.isEmpty()) return false;
+    private List<AvailabilitySlot> getSlotsToSave() {
+        List<AvailabilitySlot> slotsToSave = new ArrayList<>();
         for (AvailabilitySlot slot : availabilitySlots) {
+            if (!isBlankSlot(slot)) {
+                slotsToSave.add(slot);
+            }
+        }
+        return slotsToSave;
+    }
+
+    private boolean isBlankSlot(AvailabilitySlot slot) {
+        return (slot.dateFirestore == null || slot.dateFirestore.isEmpty())
+                && (slot.startTime == null || slot.startTime.isEmpty())
+                && (slot.endTime == null || slot.endTime.isEmpty())
+                && !slot.isAllDay;
+    }
+
+    private boolean validateSlots(List<AvailabilitySlot> slotsToSave) {
+        if (slotsToSave.isEmpty()) return false;
+        for (AvailabilitySlot slot : slotsToSave) {
             if (slot.dateFirestore == null || slot.dateFirestore.isEmpty()) return false;
             if (!slot.isAllDay) {
                 if (slot.startTime == null || slot.startTime.isEmpty()) return false;
@@ -260,7 +288,7 @@ public class AvailabilityScheduling extends AppCompatActivity {
     /**
      * Save to Firestore using Option B doc IDs: doctorId_yyyy-MM-dd
      */
-    private void saveSlotsToFirestore() {
+    private void saveSlotsToFirestore(List<AvailabilitySlot> slotsToSave) {
         final ProgressDialog progress = new ProgressDialog(this);
         progress.setMessage("Saving availability...");
         progress.setCancelable(false);
@@ -273,11 +301,11 @@ public class AvailabilityScheduling extends AppCompatActivity {
             return;
         }
 
-        final int total = availabilitySlots.size();
+        final int total = slotsToSave.size();
         final int[] completed = {0};
         final int[] failed = {0};
 
-        for (AvailabilitySlot slot : availabilitySlots) {
+        for (AvailabilitySlot slot : slotsToSave) {
             final String docId = doctorId + "_" + slot.dateFirestore;
 
             Map<String, Object> data = new HashMap<>();
@@ -300,34 +328,175 @@ public class AvailabilityScheduling extends AppCompatActivity {
                     .document(docId)
                     .set(data)
                     .addOnSuccessListener(aVoid -> {
-                        completed[0]++;
-                        if (completed[0] + failed[0] == total) {
-                            progress.dismiss();
-                            if (failed[0] == 0) {
-                                Toast.makeText(AvailabilityScheduling.this, "Schedule exception added successfully!", Toast.LENGTH_LONG).show();
-                                finish();
-                            } else {
-                                Toast.makeText(AvailabilityScheduling.this, "Saved with some failures.", Toast.LENGTH_LONG).show();
-                            }
+                        if (slot.isAllDay && "blocked".equals(slot.exceptionType)) {
+                            cancelAppointmentsForBlockedDate(doctorId, slot.dateFirestore, () -> markSlotSaveComplete(progress, completed, failed, total));
+                        } else {
+                            markSlotSaveComplete(progress, completed, failed, total);
                         }
                     })
                     .addOnFailureListener(e -> {
                         failed[0]++;
-                        completed[0]++;
-                        if (completed[0] + failed[0] == total) {
-                            progress.dismiss();
-                            Toast.makeText(AvailabilityScheduling.this, "Failed to save some slots: " + failed[0], Toast.LENGTH_LONG).show();
-                        }
+                        markSlotSaveComplete(progress, completed, failed, total);
                     });
         }
     }
 
-    /**
-     * Replace with real doctor id retrieval.
-     */
+    private void markSlotSaveComplete(ProgressDialog progress, int[] completed, int[] failed, int total) {
+        completed[0]++;
+        if (completed[0] == total) {
+            progress.dismiss();
+            if (failed[0] == 0) {
+                Toast.makeText(AvailabilityScheduling.this, "Schedule exception added successfully!", Toast.LENGTH_LONG).show();
+                finish();
+            } else {
+                Toast.makeText(AvailabilityScheduling.this, "Saved with some failures.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void cancelAppointmentsForBlockedDate(String doctorId, String date, Runnable onComplete) {
+        db.collection("appointments")
+                .whereEqualTo("doctorId", doctorId)
+                .whereEqualTo("date", date)
+                .whereIn("status", Arrays.asList("pending", "approved"))
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot == null || snapshot.isEmpty()) {
+                        onComplete.run();
+                        return;
+                    }
+
+                    final int[] remaining = {snapshot.size()};
+                    String reason = "Doctor marked this date unavailable.";
+
+                    for (com.google.firebase.firestore.DocumentSnapshot appointment : snapshot.getDocuments()) {
+                        Map<String, Object> updates = new HashMap<>();
+                        updates.put("status", "cancelled");
+                        updates.put("cancelled_by", "doctor");
+                        updates.put("cancel_reason", reason);
+                        updates.put("cancellation_reason", reason);
+                        updates.put("cancelled_at", FieldValue.serverTimestamp());
+
+                        appointment.getReference().update(updates)
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        sendBlockedDateNotifications(appointment, date, reason);
+                                    }
+                                    remaining[0]--;
+                                    if (remaining[0] == 0) onComplete.run();
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> onComplete.run());
+    }
+
+    private void sendBlockedDateNotifications(com.google.firebase.firestore.DocumentSnapshot appointment, String date, String reason) {
+        String userId = appointment.getString("userId");
+        String appointmentType = appointment.getString("appointmentType");
+        String time = appointment.getString("time");
+        String displayDate = DateFormatter.formatToFullDate(date);
+        String title = "Appointment Cancelled";
+        String message = "Your " + (appointmentType != null ? appointmentType : "appointment") +
+                " on " + displayDate + (time != null ? " at " + time : "") +
+                " was cancelled. Reason: " + reason;
+
+        if (userId != null && !userId.trim().isEmpty()) {
+            db.collection("patients")
+                    .whereEqualTo("userId", userId)
+                    .limit(1)
+                    .get()
+                    .addOnSuccessListener(q -> {
+                        if (q != null && !q.isEmpty()) {
+                            writePatientNotification(q.getDocuments().get(0).getId(), userId, title, message);
+                        } else {
+                            writePatientNotification(userId, userId, title, message);
+                        }
+                    })
+                    .addOnFailureListener(e -> writePatientNotification(userId, userId, title, message));
+        }
+
+        Map<String, Object> staffNotification = buildNotification(null, title,
+                "An appointment on " + displayDate + " was cancelled because the doctor blocked the date.",
+                "appointment_cancelled", "cancelled");
+        staffNotification.put("appointmentId", appointment.getId());
+        staffNotification.put("doctorId", appointment.getString("doctorId"));
+        db.collection("staff_notifications").add(staffNotification);
+        FirebaseDatabase database = FirebaseDatabase.getInstance("https://appointease-7aa63-default-rtdb.asia-southeast1.firebasedatabase.app");
+        database.getReference("staff_notifications").push().setValue(staffNotification);
+        writeWebsiteRoleNotifications(staffNotification);
+    }
+
+    private void writeWebsiteRoleNotifications(Map<String, Object> notification) {
+        db.collection("users")
+                .whereIn("user_role_type", Arrays.asList("clinic_staff", "clinic_manager", "admin"))
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    FirebaseDatabase database = FirebaseDatabase.getInstance("https://appointease-7aa63-default-rtdb.asia-southeast1.firebasedatabase.app");
+                    for (com.google.firebase.firestore.DocumentSnapshot userDoc : querySnapshot.getDocuments()) {
+                        database.getReference("notifications")
+                                .child(userDoc.getId())
+                                .push()
+                                .setValue(notification);
+                    }
+                });
+    }
+
+    private void writePatientNotification(String notificationOwnerId, String userId, String title, String message) {
+        Map<String, Object> notification = buildNotification(userId, title, message, "appointment_cancelled", "cancelled");
+        FirebaseDatabase.getInstance("https://appointease-7aa63-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("notifications")
+                .child(notificationOwnerId)
+                .push()
+                .setValue(notification);
+    }
+
+    private Map<String, Object> buildNotification(String userId, String title, String message, String type, String status) {
+        Map<String, Object> notification = new HashMap<>();
+        notification.put("userId", userId);
+        notification.put("title", title);
+        notification.put("message", message);
+        notification.put("type", type);
+        notification.put("status", status);
+        notification.put("isRead", false);
+        notification.put("timestamp", System.currentTimeMillis());
+        return notification;
+    }
+
+    private void loadCurrentDoctorId() {
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        currentDoctorId = prefs.getString("doctor_doc_id", null);
+        if (currentDoctorId != null && !currentDoctorId.trim().isEmpty()) {
+            return;
+        }
+
+        String authId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : prefs.getString("user_doc_id", null);
+
+        if (authId == null || authId.trim().isEmpty()) {
+            return;
+        }
+
+        db.collection("doctors")
+                .whereEqualTo("user_id", authId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                        currentDoctorId = querySnapshot.getDocuments().get(0).getId();
+                        prefs.edit().putString("doctor_doc_id", currentDoctorId).apply();
+                    }
+                });
+    }
+
     private String getCurrentDoctorId() {
-        // TODO: Replace with actual logic (e.g., FirebaseAuth.getInstance().getCurrentUser().getUid())
-        return "D001";
+        if (currentDoctorId != null && !currentDoctorId.trim().isEmpty()) {
+            return currentDoctorId;
+        }
+
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String doctorId = prefs.getString("doctor_doc_id", null);
+        return doctorId != null && !doctorId.trim().isEmpty() ? doctorId : null;
     }
 
     // -----------------------------
