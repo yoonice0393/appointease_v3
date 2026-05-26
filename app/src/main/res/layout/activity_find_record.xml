@@ -50,7 +50,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:fontFamily="@font/poppins_semi_bold"
-        android:text="Full Name"
+        android:text="First Name"
         android:textColor="@color/brown_text"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -58,7 +58,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textView1" />
 
     <EditText
-        android:id="@+id/editTextName"
+        android:id="@+id/editTextFirstName"
         style="@style/CustomEditTextStyle"
         android:layout_width="match_parent"
         android:layout_height="40dp"
@@ -66,29 +66,29 @@
         android:layout_marginEnd="20dp"
         android:layout_marginTop="10dp"
         android:background="@drawable/edittext_bg"
-        android:hint="Enter First Name"
+        android:hint="Enter first name"
         android:inputType="textPersonName"
         android:padding="12dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewName" />
 
     <TextView
-        android:id="@+id/textViewContact"
+        android:id="@+id/textViewLastName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
         android:fontFamily="@font/poppins_semi_bold"
-        android:text="Contact Number"
+        android:text="Last Name"
         android:textColor="@color/brown_text"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextName" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextFirstName" />
 
     <EditText
-        android:id="@+id/editTextContact"
+        android:id="@+id/editTextLastName"
         style="@style/CustomEditTextStyle"
         android:layout_width="match_parent"
         android:layout_height="40dp"
@@ -96,12 +96,43 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:background="@drawable/edittext_bg"
-        android:hint="0000-000-0000"
-        android:maxLength="11"
-        android:inputType="phone"
+        android:hint="Enter last name"
+        android:inputType="textPersonName"
         android:padding="12dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewContact" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewLastName" />
+
+    <TextView
+        android:id="@+id/textViewDob"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:fontFamily="@font/poppins_semi_bold"
+        android:text="Birthday"
+        android:textColor="@color/brown_text"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextLastName" />
+
+    <EditText
+        android:id="@+id/editTextDob"
+        style="@style/CustomEditTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/edittext_bg"
+        android:clickable="true"
+        android:focusable="false"
+        android:hint="YYYY-MM-DD"
+        android:inputType="none"
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewDob" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonContinue"
@@ -117,7 +148,7 @@
         app:cornerRadius="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextContact" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextDob" />
 
     <!-- Sign Up Text -->
     <LinearLayout

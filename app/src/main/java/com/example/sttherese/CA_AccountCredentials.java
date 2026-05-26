@@ -34,6 +34,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.android.gms.tasks.Tasks;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -48,7 +49,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
     ImageView backBtn;
 
     // Data from previous screen
-    String firstName, middleName, lastName, dob, gender, contact, address;
+    String firstName, middleName, lastName, dob, gender, contact, address, existingPatientId;
     int age;
 
     // Firebase
@@ -88,6 +89,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
         gender = intent.getStringExtra("gender");
         contact = intent.getStringExtra("contact");
         address = intent.getStringExtra("address");
+        existingPatientId = intent.getStringExtra("existing_patient_id");
         age = intent.getIntExtra("age", 0);
 
         // Toggle password visibility
@@ -409,6 +411,7 @@ public class CA_AccountCredentials extends AppCompatActivity {
         patientData.put("gender", gender);
         patientData.put("contact", contact);
         patientData.put("address", address);
+        patientData.put("existing_patient_id", existingPatientId);
         patientData.put("created_at", com.google.firebase.firestore.FieldValue.serverTimestamp());
         patientData.put("updated_at", com.google.firebase.firestore.FieldValue.serverTimestamp());
         patientData.put("deleted_at", null);
@@ -418,6 +421,26 @@ public class CA_AccountCredentials extends AppCompatActivity {
         com.google.android.gms.tasks.Task<Void> saveTask = db.collection("patients")
                 .document(customDocId) // <-- Using the custom ID here
                 .set(patientData)
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        Exception e = task.getException();
+                        if (e != null) throw e;
+                    }
+
+                    if (existingPatientId == null || existingPatientId.trim().isEmpty()) {
+                        return Tasks.forResult(null);
+                    }
+
+                    Map<String, Object> existingUpdate = new HashMap<>();
+                    existingUpdate.put("account_created", true);
+                    existingUpdate.put("linked_user_id", userId);
+                    existingUpdate.put("linked_patient_id", customDocId);
+                    existingUpdate.put("updated_at", com.google.firebase.firestore.FieldValue.serverTimestamp());
+
+                    return db.collection("existing_patients")
+                            .document(existingPatientId)
+                            .update(existingUpdate);
+                })
                 .addOnSuccessListener(documentReference -> {
 
 //

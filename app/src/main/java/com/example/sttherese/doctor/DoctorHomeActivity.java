@@ -142,7 +142,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
         btnCalendar = findViewById(R.id.btnCalendar);
         btnHistory = findViewById(R.id.btnHistory);
         btnAdd = findViewById(R.id.btnAdd);
-        btnGA= findViewById(R.id.btnGA);
+//        btnGA= findViewById(R.id.btnGA);
     }
 
     private void setupGreeting() {
@@ -158,7 +158,7 @@ public class DoctorHomeActivity extends AppCompatActivity {
         btnHistory.setOnClickListener(v -> startActivity(new Intent(this, DoctorHistoryActivity.class)));
         btnAdd.setOnClickListener(v -> startActivity(new Intent(this, AvailabilityScheduling.class)));
         tvViewAll.setOnClickListener(v -> startActivity(new Intent(this, DoctorAppointmentActivity.class)));
-        btnGA.setOnClickListener(v -> startActivity(new Intent(this, GASimulationActivity.class)));
+//        btnGA.setOnClickListener(v -> startActivity(new Intent(this, GASimulationActivity.class)));
     }
 
     private void fetchTotalAppointmentCount() {

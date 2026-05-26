@@ -21,6 +21,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
     EditText editTextDOB, editTextContactNumber, editTextAddress;
     Button buttonSignUp;
     ImageView backBtn;
+    String existingPatientId;
 
     RadioGroup genderRadioGroup;
     RadioButton maleRadioButton, femaleRadioButton, otherRadioButton;
@@ -49,6 +50,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
 
         Intent intent = getIntent();
         if (intent != null) {
+            existingPatientId = intent.getStringExtra("existing_patient_id");
             editTextFirstName.setText(intent.getStringExtra("first_name"));
             editTextMiddleName.setText(intent.getStringExtra("middle_name"));
             editTextLastName.setText(intent.getStringExtra("last_name"));
@@ -226,6 +228,7 @@ public class CA_PersonalDetails extends AppCompatActivity {
         intent.putExtra("age", age);
         intent.putExtra("contact", contactNumber);
         intent.putExtra("address", address);
+        intent.putExtra("existing_patient_id", existingPatientId);
         startActivity(intent);
     }
     private boolean isValidPhilippineNumber(String number) {

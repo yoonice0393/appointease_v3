@@ -356,7 +356,7 @@ public class BookingAppointmentActivity extends AppCompatActivity {
 
     private void fetchClinicSchedulesForDoctor(String doctorId, String category) {
         // Query all schedule documents that start with the doctor ID
-        db.collection("clinic_schedules")
+        db.collection("clinic_schedules") 
                 .orderBy(com.google.firebase.firestore.FieldPath.documentId())
                 .startAt(doctorId)
                 .endAt(doctorId + "\uf8ff")

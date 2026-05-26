@@ -276,6 +276,12 @@ public class SignInPage extends AppCompatActivity {
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
+                        if (documentSnapshot.contains("deleted_at") && documentSnapshot.get("deleted_at") != null) {
+                            mAuth.signOut();
+                            showCustomDialog(R.drawable.ic_error, "Account Archived", "This account has been archived. Please contact the clinic.");
+                            return;
+                        }
+
                         String role = documentSnapshot.getString("user_role_type");
                         if (role == null) role = "patient";
                         role = role.toLowerCase();
@@ -313,12 +319,39 @@ public class SignInPage extends AppCompatActivity {
         db.collection("patients").whereEqualTo("userId", authUid).limit(1).get()
                 .addOnSuccessListener(querySnapshots -> {
                     if (!querySnapshots.isEmpty()) {
-                        String patId = querySnapshots.getDocuments().get(0).getId();
-                        getSharedPreferences("UserPrefs", MODE_PRIVATE).edit()
-                                .putString("patient_firestore_id", patId).apply();
+                        handlePatientProfileForLogin(querySnapshots.getDocuments().get(0));
+                    } else {
+                        db.collection("patients").whereEqualTo("user_id", authUid).limit(1).get()
+                                .addOnSuccessListener(secondQuery -> {
+                                    if (!secondQuery.isEmpty()) {
+                                        handlePatientProfileForLogin(secondQuery.getDocuments().get(0));
+                                    } else {
+                                        startActivity(new Intent(SignInPage.this, Home.class));
+                                        finish();
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    startActivity(new Intent(SignInPage.this, Home.class));
+                                    finish();
+                                });
                     }
-                    startActivity(new Intent(SignInPage.this, Home.class));
-                    finish();
                 });
+    }
+
+    private void handlePatientProfileForLogin(DocumentSnapshot patientSnapshot) {
+        Boolean archived = patientSnapshot.getBoolean("archived");
+        Boolean active = patientSnapshot.getBoolean("is_active");
+
+        if (Boolean.TRUE.equals(archived) || Boolean.FALSE.equals(active)) {
+            mAuth.signOut();
+            showCustomDialog(R.drawable.ic_error, "Account Archived", "This patient account has been archived. Please contact the clinic.");
+            return;
+        }
+
+        getSharedPreferences("UserPrefs", MODE_PRIVATE).edit()
+                .putString("patient_firestore_id", patientSnapshot.getId())
+                .apply();
+        startActivity(new Intent(SignInPage.this, Home.class));
+        finish();
     }
 }

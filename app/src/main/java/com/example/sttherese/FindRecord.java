@@ -1,5 +1,6 @@
 package com.example.sttherese;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,13 +18,14 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.Calendar;
 import java.util.Locale;
 
 public class FindRecord extends AppCompatActivity {
 
     private static final String TAG = "FindRecordActivity";
 
-    EditText etName, etContactNumber;
+    EditText etFirstName, etLastName, etDob;
     TextView textSignIn;
     MaterialButton buttonContinue;
     ImageView backBtn;
@@ -38,9 +40,10 @@ public class FindRecord extends AppCompatActivity {
         setContentView(R.layout.activity_find_record);
 
         buttonContinue = findViewById(R.id.buttonContinue);
-        etName = findViewById(R.id.editTextName);
+        etFirstName = findViewById(R.id.editTextFirstName);
+        etLastName = findViewById(R.id.editTextLastName);
+        etDob = findViewById(R.id.editTextDob);
         textSignIn=findViewById(R.id.textSignIn);
-        etContactNumber = findViewById(R.id.editTextContact);
         backBtn = findViewById(R.id.buttonBack);
 
         db = FirebaseFirestore.getInstance();
@@ -50,36 +53,34 @@ public class FindRecord extends AppCompatActivity {
         buttonContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String fullName = etName.getText().toString().trim();
-                String contact = etContactNumber.getText().toString().trim();
+                String firstName = etFirstName.getText().toString().trim();
+                String lastName = etLastName.getText().toString().trim();
+                String dob = etDob.getText().toString().trim();
 
                 // 1. Initial check for emptiness
-                if (fullName.isEmpty()) {
-                    etName.setError("Full name is required");
-                    etName.requestFocus();
+                if (firstName.isEmpty()) {
+                    etFirstName.setError("First name is required");
+                    etFirstName.requestFocus();
                     return;
                 }
 
-                if (contact.isEmpty()) {
-                    etContactNumber.setError("Contact number is required");
-                    etContactNumber.requestFocus();
+                if (lastName.isEmpty()) {
+                    etLastName.setError("Last name is required");
+                    etLastName.requestFocus();
                     return;
                 }
 
-                // 2. Clean the contact number (removes any spaces, dashes, etc.)
-                String cleanedContact = contact.replaceAll("[^0-9]", "");
-
-                // 3. Validation Check
-                if (!isValidPhilippineNumber(cleanedContact)) {
-                    etContactNumber.setError("Please enter a valid 11-digit number (e.g., 09123456789)");
-                    etContactNumber.requestFocus();
+                if (dob.isEmpty()) {
+                    etDob.setError("Birthday is required");
+                    etDob.requestFocus();
                     return;
                 }
 
-                // 4. Validation Passed: Use the CLEANED number for the database query
-                findRecord(fullName, cleanedContact);
+                findRecord(firstName, lastName, dob);
             }
         });
+
+        etDob.setOnClickListener(v -> showDatePicker());
 
         textSignIn.setOnClickListener(v -> {
             Intent intent = new Intent(FindRecord.this, SignInPage.class);
@@ -91,54 +92,60 @@ public class FindRecord extends AppCompatActivity {
         backBtn.setOnClickListener(v -> onBackPressed());
     }
 
-    private void findRecord(String fullName, String contact) {
+    private void findRecord(String firstName, String lastName, String dob) {
         Toast.makeText(this, "Searching record...", Toast.LENGTH_SHORT).show();
 
-        // Firestore Query: Filter by 'contact' first for efficiency
-        patientsRef.whereEqualTo("contact", contact)
+        // Firestore does exact filtering by birthday, then local comparison handles case-insensitive names.
+        patientsRef.whereEqualTo("dob", dob)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        boolean found = false;
+                        int matchCount = 0;
+                        QueryDocumentSnapshot matchedDocument = null;
 
-                        // 1. Iterate over the results filtered by contact
                         for (QueryDocumentSnapshot document : task.getResult()) {
-
-                            // 2. Retrieve data using the document.getString() method
                             String dbFirst = document.getString("first_name");
-                            String dbMiddle = document.getString("middle_name");
                             String dbLast = document.getString("last_name");
-                            String dbContact = document.getString("contact");
-                            String dbAddress = document.getString("address");
-                            String dbDob = document.getString("dob"); // Assuming DOB is stored as a String
+                            String dbDob = document.getString("dob");
 
-                            // 3. Perform local filtering for the name (since Firestore can't do combined name matching)
+                            String dbFirstNormalized = normalizeName(dbFirst);
+                            String dbLastNormalized = normalizeName(dbLast);
+                            String enteredFirst = normalizeName(firstName);
+                            String enteredLast = normalizeName(lastName);
 
-                            // Construct the full name from the database fields
-                            String combinedName = String.format(Locale.getDefault(), "%s %s", dbFirst, dbLast).trim().toLowerCase();
-                            String enteredName = fullName.trim().toLowerCase();
-
-                            if (enteredName.equals(combinedName)) {
-                                found = true;
-
-                                // Pass data to next activity
-                                Intent intent = new Intent(FindRecord.this, CA_PersonalDetails.class);
-                                intent.putExtra("first_name", dbFirst);
-                                intent.putExtra("middle_name", dbMiddle);
-                                intent.putExtra("last_name", dbLast);
-                                intent.putExtra("dob", dbDob);
-                                intent.putExtra("contact", dbContact);
-                                intent.putExtra("address", dbAddress);
-
-                                startActivity(intent);
-                                finish();
-                                break;
+                            if (enteredFirst.equals(dbFirstNormalized)
+                                    && enteredLast.equals(dbLastNormalized)
+                                    && dob.equals(dbDob)) {
+                                matchCount++;
+                                matchedDocument = document;
                             }
                         }
 
-                        if (!found) {
+                        if (matchCount == 0) {
                             Toast.makeText(FindRecord.this, "No matching record found. Please contact the clinic.", Toast.LENGTH_SHORT).show();
+                            return;
                         }
+
+                        if (matchCount > 1) {
+                            Toast.makeText(FindRecord.this, "Multiple matching records found. Please contact the clinic for verification.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        Boolean accountCreated = matchedDocument.getBoolean("account_created");
+                        String linkedUserId = matchedDocument.getString("linked_user_id");
+                        if (Boolean.TRUE.equals(accountCreated) || (linkedUserId != null && !linkedUserId.trim().isEmpty())) {
+                            Toast.makeText(FindRecord.this, "This clinic record already has an account. Please sign in or contact the clinic.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        Intent intent = new Intent(FindRecord.this, CA_PersonalDetails.class);
+                        intent.putExtra("existing_patient_id", matchedDocument.getId());
+                        intent.putExtra("first_name", matchedDocument.getString("first_name"));
+                        intent.putExtra("last_name", matchedDocument.getString("last_name"));
+                        intent.putExtra("dob", matchedDocument.getString("dob"));
+
+                        startActivity(intent);
+                        finish();
                     } else {
                         // Handle the case where the query failed
                         Log.e(TAG, "Error getting documents: ", task.getException());
@@ -148,23 +155,26 @@ public class FindRecord extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Checks if the cleaned number is a valid 11-digit Philippine mobile number (starting with 09).
-     */
-    private boolean isValidPhilippineNumber(String number) {
-        // 1. Remove any non-digit characters (in case of spaces/dashes)
-        String cleaned = number.replaceAll("[^0-9]", "");
+    private void showDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        // 2. Must be exactly 11 digits and start with "09" (Standard PH mobile format)
-        if (cleaned.matches("^09\\d{9}$")) {
-            return true;
-        }
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    String formattedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d",
+                            selectedYear, selectedMonth + 1, selectedDay);
+                    etDob.setText(formattedDate);
+                },
+                year, month, day
+        );
+        datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+        datePickerDialog.show();
+    }
 
-        // Optional: If you allow 10-digit numbers starting with 9 (without the leading 0)
-        // if (cleaned.matches("^9\\d{9}$")) {
-        //     return true;
-        // }
-
-        return false;
+    private String normalizeName(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.getDefault());
     }
 }
