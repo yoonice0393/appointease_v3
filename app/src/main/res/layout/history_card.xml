@@ -17,34 +17,46 @@
 
         <TextView
             android:id="@+id/tvServiceType"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:ellipsize="end"
             android:fontFamily="@font/montserrat_extra_bold"
+            android:maxLines="2"
             android:text="Prenatal Check-up"
             android:textColor="@color/brown_text"
             android:textSize="16sp"
+            app:layout_constraintEnd_toStartOf="@id/btnStatusHistory"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tvDateHistory"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:ellipsize="end"
             android:fontFamily="@font/poppins_medium"
+            android:maxLines="1"
             android:text="September 01, 2025"
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
+            app:layout_constraintEnd_toStartOf="@id/btnStatusHistory"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvServiceType" />
 
         <TextView
             android:id="@+id/tvDoctorNameHistory"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:ellipsize="end"
             android:fontFamily="@font/poppins_semi_bold"
+            android:maxLines="1"
             android:text="Doctor: Dr. John Doe"
             android:textColor="@color/brown_text"
             android:textSize="10sp"
+            app:layout_constraintEnd_toStartOf="@id/btnStatusHistory"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvDateHistory" />
 
@@ -52,20 +64,21 @@
             android:id="@+id/btnStatusHistory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minWidth="120dp"
             android:fontFamily="@font/poppins_semi_bold"
+            android:minWidth="120dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
             android:text="COMPLETED"
             android:textAlignment="center"
             android:textAllCaps="false"
             android:textColor="@color/card_white"
-            android:textSize="14sp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:textSize="13sp"
             app:backgroundTint="#808C5A3D"
             app:cornerRadius="24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.466" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

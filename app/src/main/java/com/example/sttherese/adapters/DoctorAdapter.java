@@ -36,16 +36,22 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
     private Query query;
     private ListenerRegistration registration;
     private final int itemLayoutId;
+    private final String specialtyFilter;
 
     public interface OnDoctorClickListener {
         void onDoctorClick(Doctor doctor);
     }
 
     public DoctorAdapter(Context context, OnDoctorClickListener listener, Query query, int layoutId) {
+        this(context, listener, query, layoutId, null);
+    }
+
+    public DoctorAdapter(Context context, OnDoctorClickListener listener, Query query, int layoutId, String specialtyFilter) {
         this.context = context;
         this.listener = listener;
         this.query = query;
         this.itemLayoutId = layoutId;
+        this.specialtyFilter = specialtyFilter;
         listenToQuery();
     }
 
@@ -65,12 +71,26 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.ViewHolder
                     for (QueryDocumentSnapshot doc : snapshots) {
                         Doctor doctor = doc.toObject(Doctor.class);
                         doctor.setId(doc.getId());
-                        doctors.add(doctor);
+                        if (matchesSpecialty(doctor.getSpecialty())) {
+                            doctors.add(doctor);
+                        }
                     }
                     notifyDataSetChanged();
                 }
             });
         }
+    }
+
+    private boolean matchesSpecialty(String specialty) {
+        if (specialtyFilter == null || specialtyFilter.trim().isEmpty()) {
+            return true;
+        }
+        return normalizeSpecialty(specialty).equals(normalizeSpecialty(specialtyFilter));
+    }
+
+    private String normalizeSpecialty(String value) {
+        if (value == null) return "";
+        return value.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
     }
 
     public void removeListener() {

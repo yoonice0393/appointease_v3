@@ -310,10 +310,14 @@ public class BookingAppointmentActivity extends AppCompatActivity {
 
         // 2. Find the specialty for this service
         String specialty = null;
+        String specialtyName = null;
         for (Map<String, Object> serviceData : servicesListWithSpecialty) {
             if (appointmentType.equals(serviceData.get("serviceName"))) {
                 specialty = (String) serviceData.get("specialty");
-                selectedSpecialty = specialty;
+                specialtyName = (String) serviceData.get("specialtyName");
+                selectedSpecialty = (specialtyName != null && !specialtyName.trim().isEmpty())
+                        ? specialtyName
+                        : specialty;
                 break;
             }
         }
@@ -324,13 +328,12 @@ public class BookingAppointmentActivity extends AppCompatActivity {
             return;
         }
 
-        // 3. Query ALL active doctors with this specialty
+        // 3. Query active doctors; the adapter normalizes specialty names to avoid ID/display-case mismatches.
         doctorsQuery = db.collection("doctors")
-                .whereEqualTo("specialty", specialty)
                 .whereEqualTo("is_active", true);
 
         // 4. Prompt user to select a doctor
-        promptDoctorSelectionCard(specialty);
+        promptDoctorSelectionCard(selectedSpecialty);
         Toast.makeText(this, "Please select a doctor", Toast.LENGTH_LONG).show();
     }
     /**
@@ -471,7 +474,8 @@ public class BookingAppointmentActivity extends AppCompatActivity {
         // 1. Set up the query for the Doctor Selection Dialog
         // This query lists ALL doctors matching the service's category/specialty.
         doctorsQuery = db.collection("doctors")
-                .whereEqualTo("specialty", category);
+                .whereEqualTo("is_active", true);
+        selectedSpecialty = category;
 
         // 2. Clear any previously selected doctor state
         selectedDoctorId = null;
@@ -576,7 +580,8 @@ public class BookingAppointmentActivity extends AppCompatActivity {
                 this,
                 listener,
                 doctorsQuery,
-                R.layout.item_doctor_no_button
+                R.layout.item_doctor_no_button,
+                selectedSpecialty
         );
         recyclerView.setAdapter(doctorAdapter);
         updateDoctorEmptyState(recyclerView, textNoDoctors);

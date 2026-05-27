@@ -91,17 +91,18 @@
                 android:id="@+id/tvCompleted"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="COMPLETED"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@color/card_white"
                 android:background="@drawable/bg_completed"
                 android:paddingStart="16dp"
-                android:paddingEnd="16dp"
                 android:paddingTop="8dp"
+                android:paddingEnd="16dp"
                 android:paddingBottom="8dp"
+                android:text="COMPLETED"
+                android:textColor="@color/card_white"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@id/ivService"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/ivService"
-                app:layout_constraintBottom_toBottomOf="@id/ivService" />
+                app:layout_constraintStart_toEndOf="@+id/tvServiceType"
+                app:layout_constraintTop_toTopOf="@id/ivService" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

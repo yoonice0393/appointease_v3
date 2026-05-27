@@ -67,7 +67,6 @@ public class DoctorsActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         initializeViews();
         loadSpecialtyChips();
-        setupFilters();
         setupSearch();
         setupRecyclerView();
         setupClickListeners();
@@ -114,7 +113,9 @@ public class DoctorsActivity extends AppCompatActivity {
     }
 
     private void loadSpecialtyChips() {
+        chipGroup.setOnCheckedStateChangeListener(null);
         chipGroup.removeAllViews();
+        specialtyChips.clear();
 
         if (chipAll != null) {
             chipGroup.addView(chipAll);
@@ -127,12 +128,15 @@ public class DoctorsActivity extends AppCompatActivity {
                 .whereEqualTo("is_active", true) // Only active doctors
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    Set<String> specialties = new HashSet<>();
+                    Map<String, String> specialties = new HashMap<>();
 
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String specialty = document.getString("specialty");
-                        if (specialty != null && !specialty.isEmpty()) {
-                            specialties.add(specialty);
+                        if (specialty != null && !specialty.trim().isEmpty()) {
+                            String normalized = normalizeDoctorSearch(specialty).replaceAll("[^a-z0-9]", "");
+                            if (!normalized.isEmpty() && !specialties.containsKey(normalized)) {
+                                specialties.put(normalized, specialty.trim());
+                            }
                         }
                     }
 
@@ -142,10 +146,12 @@ public class DoctorsActivity extends AppCompatActivity {
                     }
 
                     // Create chips for each unique specialty
-                    for (String specialty : specialties) {
+                    List<String> sortedSpecialties = new ArrayList<>(specialties.values());
+                    sortedSpecialties.sort(String::compareToIgnoreCase);
+                    for (String specialty : sortedSpecialties) {
                         Chip chip = createSpecialtyChip(specialty);
                         chipGroup.addView(chip);
-                        specialtyChips.put(specialty, chip);
+                        specialtyChips.put(specialty.toLowerCase(Locale.ROOT), chip);
                     }
 
                     setupFilters();
